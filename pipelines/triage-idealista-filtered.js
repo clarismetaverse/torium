@@ -8,7 +8,7 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-5.2';
 const DEFAULT_CITY = process.env.TORIUM_CITY || 'Milano';
 const TRIAGE_MAX_ITEMS = Number(process.env.TORIUM_TRIAGE_MAX_ITEMS || 50);
-const GPT_TRIAGE_LIMIT = Number(process.env.TORIUM_GPT_TRIAGE_LIMIT || 5);
+const GPT_TRIAGE_LIMIT = Number(process.env.TORIUM_GPT_TRIAGE_LIMIT || 10);
 
 if (!APIFY_TOKEN) throw new Error('Missing APIFY_TOKEN in .env');
 if (!OPENAI_API_KEY) throw new Error('Missing OPENAI_API_KEY in .env');
