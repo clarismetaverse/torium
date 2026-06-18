@@ -1,0 +1,14 @@
+{
+  "name": "torium",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "scrape:idealista:homes": "node scrapers/idealista/client.js residentialRenovationMilan",
+    "scrape:idealista:premises": "node scrapers/idealista/client.js groundFloorPremisesMilan",
+    "scrape:idealista:buildings": "node scrapers/idealista/client.js buildingsMilan"
+  },
+  "dependencies": {
+    "dotenv": "latest"
+  }
+}
