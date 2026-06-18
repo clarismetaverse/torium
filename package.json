@@ -12,8 +12,8 @@
     "analyze:idealista:premises": "node pipelines/analyze-idealista.js groundFloorPremisesMilan 0",
     "analyze:idealista:fractioning": "node pipelines/analyze-idealista.js largeHomesFractioningMilan 0",
     "analyze:idealista:buildings": "node pipelines/analyze-idealista.js buildingsMilan 0",
-    "triage:idealista:fractioning": "node pipelines/triage-idealista.js largeHomesFractioningMilan",
-    "triage:idealista:homes": "node pipelines/triage-idealista.js residentialRenovationMilan"
+    "triage:idealista:fractioning": "node pipelines/triage-idealista-filtered.js largeHomesFractioningMilan",
+    "triage:idealista:homes": "node pipelines/triage-idealista-filtered.js residentialRenovationMilan"
   },
   "dependencies": {
     "dotenv": "latest"
