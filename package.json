@@ -6,6 +6,7 @@
   "scripts": {
     "scrape:idealista:homes": "node scrapers/idealista/client.js residentialRenovationMilan",
     "scrape:idealista:premises": "node scrapers/idealista/client.js groundFloorPremisesMilan",
+    "scrape:idealista:fractioning": "node scrapers/idealista/client.js largeHomesFractioningMilan",
     "scrape:idealista:buildings": "node scrapers/idealista/client.js buildingsMilan"
   },
   "dependencies": {
