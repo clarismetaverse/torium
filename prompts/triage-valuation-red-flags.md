@@ -18,6 +18,8 @@ The investor profile is currently simple:
 - bilocale target size: around 45 sqm
 - trilocale target size: around 55 sqm
 - cost per newly created unit: 20,000 EUR
+- strong preference for assets that are genuinely "da ristrutturare"
+- lower preference for already renovated / good-condition assets because they usually leave less transformation spread
 
 The valuation must be based primarily on the estimated value of final units, not only on EUR/sqm.
 
@@ -67,5 +69,8 @@ Use this exact structure:
 - Do not invent planimetry details if no floor plan is present.
 - If the Door Engine estimate seems too aggressive, correct it downward.
 - Estimate resale value by final unit type first, then use EUR/sqm only as a sanity check.
+- Treat "da ristrutturare", "da rifare", and similar language as a positive spread signal for this investor profile.
+- Treat "ristrutturato", "ottimo stato", "buono stato", and "abitabile" as lower-spread signals unless the price is still clearly discounted.
+- A hard filter should already remove auctions and likely change-of-use/rural-fabric opportunities before this prompt. If one still appears, recommend discard or request_details instead of high_priority_review.
 - For Milan, small renovated units may command a premium over simple EUR/sqm logic, but do not overstate it.
-- If the listing contains auction, occupation, bare ownership, legal procedure, or cadastral ambiguity, flag it clearly.
+- If the listing contains occupation, bare ownership, legal procedure, cadastral ambiguity, or likely non-residential conversion risk, flag it clearly.
