@@ -1,0 +1,45 @@
+{
+  "examples": {
+    "residential_renovation_milan": {
+      "country": "it",
+      "operation": "sale",
+      "propertyType": "homes",
+      "location": "Milano",
+      "condition": ["renew"],
+      "sortBy": "lowestPriceM2",
+      "maxItems": 50,
+      "fetchDetails": false,
+      "fetchStats": false
+    },
+    "ground_floor_premises_milan": {
+      "country": "it",
+      "operation": "sale",
+      "propertyType": "premises",
+      "location": "Milano",
+      "floor": ["groundFloor"],
+      "sortBy": "highestPriceReduction",
+      "maxItems": 50,
+      "fetchDetails": false,
+      "fetchStats": false
+    },
+    "buildings_milan": {
+      "country": "it",
+      "operation": "sale",
+      "propertyType": "buildings",
+      "location": "Milano",
+      "sortBy": "lowestPriceM2",
+      "maxItems": 30,
+      "fetchDetails": false,
+      "fetchStats": false
+    },
+    "selected_property_details": {
+      "country": "it",
+      "operation": "sale",
+      "propertyType": "homes",
+      "propertyCodes": ["INSERT_IDEALISTA_PROPERTY_CODE"],
+      "fetchDetails": true,
+      "fetchStats": true,
+      "maxItems": 1
+    }
+  }
+}
