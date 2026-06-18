@@ -1,0 +1,1417 @@
+{
+  "search_name": "largeHomesFractioningMilan",
+  "city": "Milano",
+  "investor_profile": "max-doors-20k",
+  "scraped_count": 50,
+  "gpt_analyzed_count": 5,
+  "results": [
+    {
+      "listing_index": 7,
+      "ranking_score": 38,
+      "door_engine": {
+        "basics": {
+          "price": 280000,
+          "surfaceMq": 680,
+          "rooms": 10,
+          "bathrooms": 10,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "priceReductionSignal": false
+        },
+        "investorProfileId": "max-doors-20k",
+        "targetUnitMq": 45,
+        "existingUnits": 1,
+        "estimatedFinalUnits": 15,
+        "newUnitsCreated": 14,
+        "costPerNewUnit": 20000,
+        "transformationCost": 280000,
+        "purchaseCostRate": 0.12,
+        "purchaseCosts": 33600,
+        "estimatedProjectCost": 593600,
+        "doorScore": 95,
+        "doorScoreReasons": [
+          "surface_above_minimum",
+          "multiple_final_units_possible_by_surface",
+          "new_units_created",
+          "two_or_more_bathrooms",
+          "floor_plan_available",
+          "renovation_signal"
+        ]
+      },
+      "spread": {
+        "project_cost_eur": 593600,
+        "spread_low_eur": null,
+        "spread_base_eur": null,
+        "spread_high_eur": null,
+        "roi_base_pct": null
+      },
+      "gpt_analysis": {
+        "id": "resp_02598f682734b492006a3427a329cc819080287dea74a8860a",
+        "object": "response",
+        "created_at": 1781802915,
+        "status": "completed",
+        "background": false,
+        "billing": {
+          "payer": "developer"
+        },
+        "completed_at": 1781802951,
+        "error": null,
+        "frequency_penalty": 0,
+        "incomplete_details": null,
+        "instructions": null,
+        "max_output_tokens": null,
+        "max_tool_calls": null,
+        "model": "gpt-5.2-2025-12-11",
+        "moderation": null,
+        "output": [
+          {
+            "id": "msg_02598f682734b492006a3427a5d98081909cd84ff83f6c3ce8",
+            "type": "message",
+            "status": "completed",
+            "content": [
+              {
+                "type": "output_text",
+                "annotations": [],
+                "logprobs": [],
+                "text": "{\n  \"final_unit_plan\": [\n    {\n      \"unit_type\": \"bilocale\",\n      \"estimated_size_mq\": 45,\n      \"sale_value_low_eur\": 145000,\n      \"sale_value_base_eur\": 170000,\n      \"sale_value_high_eur\": 200000,\n      \"valuation_reasoning\": \"Baggio/Forze Armate area: small renovated bilocali generally trade at a discount vs central Milan but can still be liquid if well-finished. Values assumed per-unit (not per-sqm) and kept conservative given attic conversion risk and no lift.\"\n    },\n    {\n      \"unit_type\": \"bilocale\",\n      \"estimated_size_mq\": 45,\n      \"sale_value_low_eur\": 145000,\n      \"sale_value_base_eur\": 170000,\n      \"sale_value_high_eur\": 200000,\n      \"valuation_reasoning\": \"Same assumptions as above; repeatable product if layouts allow compliant aero-illuminante and proper access/egress.\"\n    },\n    {\n      \"unit_type\": \"bilocale\",\n      \"estimated_size_mq\": 45,\n      \"sale_value_low_eur\": 145000,\n      \"sale_value_base_eur\": 170000,\n      \"sale_value_high_eur\": 200000,\n      \"valuation_reasoning\": \"Attic product can command a premium if terraces/dormers are realizable, but not priced in until confirmed.\"\n    },\n    {\n      \"unit_type\": \"bilocale\",\n      \"estimated_size_mq\": 45,\n      \"sale_value_low_eur\": 145000,\n      \"sale_value_base_eur\": 170000,\n      \"sale_value_high_eur\": 200000,\n      \"valuation_reasoning\": \"Base case assumes standard renovated finish, no meaningful outdoor space, and typical condominium constraints.\"\n    },\n    {\n      \"unit_type\": \"bilocale\",\n      \"estimated_size_mq\": 45,\n      \"sale_value_low_eur\": 145000,\n      \"sale_value_base_eur\": 170000,\n      \"sale_value_high_eur\": 200000,\n      \"valuation_reasoning\": \"Liquidity good for 40–55 sqm if compliant and with independent heating/AC provisions; risk-adjusted.\"\n    },\n    {\n      \"unit_type\": \"bilocale\",\n      \"estimated_size_mq\": 45,\n      \"sale_value_low_eur\": 145000,\n      \"sale_value_base_eur\": 170000,\n      \"sale_value_high_eur\": 200000,\n      \"valuation_reasoning\": \"Assumes one of the repeatable units; final count depends on net usable area after slopes and common parts.\"\n    },\n    {\n      \"unit_type\": \"bilocale\",\n      \"estimated_size_mq\": 45,\n      \"sale_value_low_eur\": 145000,\n      \"sale_value_base_eur\": 170000,\n      \"sale_value_high_eur\": 200000,\n      \"valuation_reasoning\": \"Conservative per-door pricing due to uncertainty on title (solai) and change of use costs/timing.\"\n    },\n    {\n      \"unit_type\": \"bilocale\",\n      \"estimated_size_mq\": 45,\n      \"sale_value_low_eur\": 145000,\n      \"sale_value_base_eur\": 170000,\n      \"sale_value_high_eur\": 200000,\n      \"valuation_reasoning\": \"No lift is a negative; attic floor without lift reduces buyer pool and caps pricing.\"\n    },\n    {\n      \"unit_type\": \"bilocale\",\n      \"estimated_size_mq\": 45,\n      \"sale_value_low_eur\": 145000,\n      \"sale_value_base_eur\": 170000,\n      \"sale_value_high_eur\": 200000,\n      \"valuation_reasoning\": \"Unit value assumes proper heating/cooling and modern specs; otherwise values trend toward low case.\"\n    },\n    {\n      \"unit_type\": \"bilocale\",\n      \"estimated_size_mq\": 45,\n      \"sale_value_low_eur\": 145000,\n      \"sale_value_base_eur\": 170000,\n      \"sale_value_high_eur\": 200000,\n      \"valuation_reasoning\": \"10-unit base plan chosen (vs DoorEngine 15) to reflect slope/height constraints and circulation/common areas.\"\n    }\n  ],\n  \"total_sale_value_low_eur\": 1450000,\n  \"total_sale_value_base_eur\": 1700000,\n  \"total_sale_value_high_eur\": 2000000,\n  \"fractioning_confidence\": \"medium\",\n  \"valuation_confidence\": \"medium\",\n  \"positive_signals\": [\n    \"Very large surface (680 mq) suggests multi-unit potential even after deductions for slopes/common parts\",\n    \"Listing explicitly describes 3 solai/sottotetti to be transformed into housing and mentions potential for multiple apartments\",\n    \"Floor plan is present (needs human review for heights, slopes, openings, access, stair cores)\",\n    \"High ridge height stated (colmo 3.5 m) and average 2.70 m is a positive starting signal for attic feasibility\",\n    \"Condominium garden and potential new parking spaces may support marketability\",\n    \"Seller indicates facade/courtyard works planned (could reduce future capex uncertainty, to be verified)\"\n  ],\n  \"red_flags\": [\n    \"Asset is currently 'solai/sottotetti' (non-residential): change of use to residential is uncertain and can be expensive/time-consuming\",\n    \"No lift in a 1930 building: impacts saleability/pricing for top-floor units\",\n    \"Claimed possibility of 'sopraelevazione' and '10 apartments' is marketing until urban planning feasibility is verified\",\n    \"Bathrooms=10 and rooms mismatch vs typical listing fields suggests scraped data inconsistency; do not rely on it\",\n    \"PriceByArea 412 €/mq is implausibly low for Milan and indicates the 680 mq may be gross/non-commercial or includes non-habitable portions\",\n    \"Need to confirm independent access, fire egress, and ability to create/upgrade stair cores/common areas without condominium/legal issues\",\n    \"Potential structural/roof constraints (dormers, skylights, roof insulation, seismic/wind) not assessable in triage\",\n    \"Unknown whether there are existing constraints: vincoli, condono issues, or cadastral irregularities\"\n  ],\n  \"missing_information\": [\n    \"Exact breakdown of the 680 mq: gross vs net, per-sottotetto surfaces, and portion with compliant heights\",\n    \"Current cadastral category and title for each of the 3 solai (subalterni, consistenza, ownership, pertinenze)\",\n    \"Urban planning feasibility: whether change of use to residential is allowed and under what regime (SCIA/Permesso di Costruire, oneri)\",\n    \"Aero-illuminante feasibility: existing windows/skylights and possibility of new openings/dormers\",\n    \"Common parts: where stair access is, whether new/second stair or elevator can be added, and space for technical shafts\",\n    \"Condominium stance/minutes about conversion/sopraelevazione and allocation of millesimi after works\",\n    \"Presence and condition of utilities (gas, water, sewage) and capacity for multiple meters\",\n    \"Confirm whether terraces 'a tasca' are permitted by regulations and roof geometry\",\n    \"Clarify whether the listed price includes all 3 solai and any parking spaces or if they are separate\"\n  ],\n  \"human_due_diligence_questions\": [\n    \"Please provide the full floor plan(s) in readable resolution and indicate the three separate attic areas with measurements and heights\",\n    \"What are the current cadastral details (foglio/particella/subalterno, categoria) for each of the 3 solai?\",\n    \"Is there already an approved feasibility study or urban planning opinion (Comune) for conversion to residential and for the stated number of units?\",\n    \"What is the minimum internal height distribution (areas under 1.50m / 2.40m / 2.70m) and how much area is actually usable as residenziale?\",\n    \"Where is the access today (single stair)? Is there any possibility/space for a new lift or second egress route?\",\n    \"Are there any constraints (vincoli paesaggistici/monumentali) or prior amnesties/condoni affecting the roof?\",\n    \"What exactly will the seller renovate on facades/courtyard, with what timeline, budget, and condominium resolutions?\",\n    \"Are there existing windows/skylights? Are new dormers/roof openings allowed under current regulations and condominium rules?\",\n    \"Are there existing utility risers and is there capacity for 10+ independent units (meters, sewage fall, ventilation shafts)?\"\n  ],\n  \"recommended_action\": \"send_to_technician\"\n}"
+              }
+            ],
+            "role": "assistant"
+          }
+        ],
+        "parallel_tool_calls": true,
+        "presence_penalty": 0,
+        "previous_response_id": null,
+        "prompt_cache_key": null,
+        "prompt_cache_retention": "24h",
+        "reasoning": {
+          "context": "current_turn",
+          "effort": "none",
+          "summary": null
+        },
+        "safety_identifier": null,
+        "service_tier": "default",
+        "store": true,
+        "temperature": 1,
+        "text": {
+          "format": {
+            "type": "text"
+          },
+          "verbosity": "medium"
+        },
+        "tool_choice": "auto",
+        "tools": [],
+        "top_logprobs": 0,
+        "top_p": 0.98,
+        "truncation": "disabled",
+        "usage": {
+          "input_tokens": 3363,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 1868,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 5231
+        },
+        "user": null,
+        "metadata": {}
+      },
+      "listing": {
+        "address": "Attico in Via Privata Alessandro Scanini, 82, Baggio, Milano",
+        "bathrooms": 10,
+        "contactInfo": {
+          "commercialName": "Dimensione Centro Srl",
+          "contactMethod": "all",
+          "contactName": "Dimensione Centro srl",
+          "micrositeShortName": "dimensionecentro-milano",
+          "needLoginForContact": false,
+          "needLoginForPhone": false,
+          "phone1": {
+            "formattedPhone": "0281273088",
+            "nationalNumber": true,
+            "phoneNumber": "0281273088",
+            "phoneNumberForMobileDialing": "+390281273088",
+            "prefix": "39"
+          },
+          "totalAds": 0,
+          "userType": "professional"
+        },
+        "country": "it",
+        "description": "AMPI SOTTOTETTI - SOLAI DA TRASFORMARE IN ABITAZIONI nel quartiere di Baggio, nelle immediate vicinanze di Forze Armate e Quinto Romano, vendiamo la PIENA PROPRIETA' di 3 AMPI SOLAI/SOTTOTETTI DA TRASFORMARE IN ABITAZIONI I sottotetti si trovano in una palazzina risalente al 1930, con facciata epoca e non dotata di ascensore. Attuale altezza al colmo 3,5 metri, media ponderata 2,70 metri. POSSIBILITA' DI SOPRAELEVAZIONE e realizzazione di 10 appartamenti con o senza terrazzini a tasca. Il palazzo è dotato di un grande giardino condominiale. POSTI AUTO disponibili nel cortile. Le facciate e il cortile saranno oggetto di ristrutturazione da parte degli attuali venditori.   C'è inoltre la possibilità di acquistare posti auto di nuova realizzazione nel cortile condominiale.",
+        "detailedType": {
+          "subTypology": "penthouse",
+          "typology": "flat"
+        },
+        "district": "Baggio",
+        "dropDate": 1779727709000,
+        "externalReference": "1990",
+        "favourite": false,
+        "features": {
+          "hasAirConditioning": false,
+          "hasBoxRoom": false,
+          "hasGarden": true,
+          "hasTerrace": false
+        },
+        "has360": false,
+        "has3DTour": false,
+        "hasLift": false,
+        "hasPlan": true,
+        "hasStaging": false,
+        "hasVideo": false,
+        "isOnlineBookingActive": false,
+        "latitude": 45.4698658,
+        "locationId": "0-EU-IT-MI-01-001-135-17-003",
+        "longitude": 9.0903283,
+        "multimedia": {
+          "images": [
+            {
+              "tag": "unknown",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/f3/f2/fb/806713376.jpg"
+            },
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/4d/a0/97/806713377.jpg"
+            },
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/73/d4/a4/806713379.jpg"
+            },
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/50/34/dc/806713380.jpg"
+            },
+            {
+              "tag": "plan",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/a8/f8/d7/806713382.jpg"
+            },
+            {
+              "tag": "unknown",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/91/cc/07/806713395.jpg"
+            },
+            {
+              "tag": "unknown",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/a8/d2/b5/806713413.jpg"
+            },
+            {
+              "tag": "unknown",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/ae/82/34/806713414.jpg"
+            },
+            {
+              "tag": "unknown",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/2b/0a/c4/806713415.jpg"
+            },
+            {
+              "tag": "unknown",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/89/fa/0d/806713416.jpg"
+            },
+            {
+              "tag": "unknown",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/2a/11/15/806713417.jpg"
+            },
+            {
+              "tag": "unknown",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/db/ec/91/806713362.jpg"
+            },
+            {
+              "tag": "unknown",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/b6/f7/fc/806713424.jpg"
+            },
+            {
+              "tag": "unknown",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/eb/66/e3/806713408.jpg"
+            },
+            {
+              "tag": "unknown",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/28/ff/80/806713397.jpg"
+            },
+            {
+              "tag": "unknown",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/ce/20/12/806713398.jpg"
+            },
+            {
+              "tag": "unknown",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/6d/c7/34/806713429.jpg"
+            },
+            {
+              "tag": "parkingSpace",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/31/ac/66/806713431.jpg"
+            },
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/a7/c5/8a/806713433.jpg"
+            },
+            {
+              "tag": "parkingSpace",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/a0/ca/c8/806713436.jpg"
+            },
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/de/97/1d/806713438.jpg"
+            },
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/08/c5/af/806713440.jpg"
+            },
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/cb/04/ce/806713442.jpg"
+            },
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/bc/02/f1/806713444.jpg"
+            },
+            {
+              "tag": "unknown",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/34/99/e0/806713446.jpg"
+            }
+          ]
+        },
+        "municipality": "Milano",
+        "neighborhood": "Baggio",
+        "newDevelopment": false,
+        "newDevelopmentHighlight": false,
+        "newProperty": false,
+        "notes": [],
+        "numPhotos": 25,
+        "operation": "sale",
+        "preferenceHighlight": false,
+        "price": 280000,
+        "priceByArea": 412,
+        "priceDropPercentage": 30,
+        "priceDropValue": 120000,
+        "priceInfo": {
+          "price": {
+            "amount": 280000,
+            "currencySuffix": "€",
+            "priceDropInfo": {
+              "formerPrice": 400000,
+              "priceDropPercentage": 30,
+              "priceDropValue": 120000
+            }
+          }
+        },
+        "propertyCode": "32922026",
+        "propertyType": "penthouse",
+        "province": "Milano",
+        "ribbons": [],
+        "rooms": 3,
+        "savedAd": {},
+        "showAddress": true,
+        "size": 680,
+        "status": "renew",
+        "suggestedTexts": {
+          "title": "Attico in Via Privata Alessandro Scanini, 82, Baggio, Milano"
+        },
+        "thumbnail": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/f3/f2/fb/806713376.jpg",
+        "topHighlight": false,
+        "topNewDevelopment": false,
+        "topPlus": false,
+        "urgentVisualHighlight": false,
+        "url": "https://www.idealista.it/immobile/32922026/",
+        "visualHighlight": false
+      }
+    },
+    {
+      "listing_index": 16,
+      "ranking_score": 38,
+      "door_engine": {
+        "basics": {
+          "price": 160000,
+          "surfaceMq": 300,
+          "rooms": 2,
+          "bathrooms": 2,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "priceReductionSignal": false
+        },
+        "investorProfileId": "max-doors-20k",
+        "targetUnitMq": 45,
+        "existingUnits": 1,
+        "estimatedFinalUnits": 6,
+        "newUnitsCreated": 5,
+        "costPerNewUnit": 20000,
+        "transformationCost": 100000,
+        "purchaseCostRate": 0.12,
+        "purchaseCosts": 19200,
+        "estimatedProjectCost": 279200,
+        "doorScore": 95,
+        "doorScoreReasons": [
+          "surface_above_minimum",
+          "multiple_final_units_possible_by_surface",
+          "new_units_created",
+          "two_or_more_bathrooms",
+          "floor_plan_available",
+          "renovation_signal"
+        ]
+      },
+      "spread": {
+        "project_cost_eur": 279200,
+        "spread_low_eur": null,
+        "spread_base_eur": null,
+        "spread_high_eur": null,
+        "roi_base_pct": null
+      },
+      "gpt_analysis": {
+        "id": "resp_0036626d2ac2568e006a3427c84eb88195ad49ef35097d1a03",
+        "object": "response",
+        "created_at": 1781802952,
+        "status": "completed",
+        "background": false,
+        "billing": {
+          "payer": "developer"
+        },
+        "completed_at": 1781802977,
+        "error": null,
+        "frequency_penalty": 0,
+        "incomplete_details": null,
+        "instructions": null,
+        "max_output_tokens": null,
+        "max_tool_calls": null,
+        "model": "gpt-5.2-2025-12-11",
+        "moderation": null,
+        "output": [
+          {
+            "id": "msg_0036626d2ac2568e006a3427c971008195bfae0cd07e7a5382",
+            "type": "message",
+            "status": "completed",
+            "content": [
+              {
+                "type": "output_text",
+                "annotations": [],
+                "logprobs": [],
+                "text": "{\n  \"final_unit_plan\": [\n    {\n      \"unit_type\": \"bilocale\",\n      \"estimated_size_mq\": 45,\n      \"sale_value_low_eur\": 125000,\n      \"sale_value_base_eur\": 150000,\n      \"sale_value_high_eur\": 180000,\n      \"valuation_reasoning\": \"Figino (Milano) micro-mercato più debole rispetto a zone centrali; bilocale taglio liquido se realmente ricavabile e ristrutturato. Range prudente basato su appetibilità periferica e incertezza cambio d’uso/qualità finale.\"\n    },\n    {\n      \"unit_type\": \"bilocale\",\n      \"estimated_size_mq\": 45,\n      \"sale_value_low_eur\": 125000,\n      \"sale_value_base_eur\": 150000,\n      \"sale_value_high_eur\": 180000,\n      \"valuation_reasoning\": \"Stesso assunto del primo bilocale: valore dipende fortemente da effettiva residenzialità e standard lavori (impianti, cappotto/serramenti, classe energetica).\"\n    },\n    {\n      \"unit_type\": \"bilocale\",\n      \"estimated_size_mq\": 45,\n      \"sale_value_low_eur\": 125000,\n      \"sale_value_base_eur\": 150000,\n      \"sale_value_high_eur\": 180000,\n      \"valuation_reasoning\": \"Terzo bilocale: assorbimento possibile se corte/contesto gradevole e accessi indipendenti; rischio sconto se affacci/illuminazione scarsi tipici di fabbricati rurali.\"\n    },\n    {\n      \"unit_type\": \"bilocale\",\n      \"estimated_size_mq\": 45,\n      \"sale_value_low_eur\": 125000,\n      \"sale_value_base_eur\": 150000,\n      \"sale_value_high_eur\": 180000,\n      \"valuation_reasoning\": \"Quarto bilocale: fattibilità legata a distribuzione/struttura e requisiti aeroilluminanti; valori prudenziali.\"\n    },\n    {\n      \"unit_type\": \"bilocale\",\n      \"estimated_size_mq\": 45,\n      \"sale_value_low_eur\": 125000,\n      \"sale_value_base_eur\": 150000,\n      \"sale_value_high_eur\": 180000,\n      \"valuation_reasoning\": \"Quinto bilocale: mantenuto lo stesso range; rischio di sovrastima se parte della SLP non convertibile o se vincoli/usi accessori riducono superficie vendibile.\"\n    }\n  ],\n  \"total_sale_value_low_eur\": 625000,\n  \"total_sale_value_base_eur\": 750000,\n  \"total_sale_value_high_eur\": 900000,\n  \"fractioning_confidence\": \"low\",\n  \"valuation_confidence\": \"medium\",\n  \"positive_signals\": [\n    \"Superficie dichiarata molto alta (300 mq) e SLP indicata 370 mq: potenziale teorico per più unità\",\n    \"Prezzo di acquisto molto basso per Milano (attenzione: può riflettere forti criticità/cambio d’uso)\",\n    \"Presenza di planimetrie (ma dichiarate esemplificative in annuncio)\",\n    \"Area cortilizia di pertinenza (~300 mq) potenzialmente utile come valore percepito (spazi esterni/ingressi)\"\n  ],\n  \"red_flags\": [\n    \"Immobile descritto come 'fabbricato rurale' e 'recupero residenziale': alto rischio che oggi NON sia residenziale (cambio d’uso, oneri, standard urbanistici)\",\n    \"L’annuncio specifica che le planimetrie sono solo esemplificative e non contrattuali: forte incertezza sulla configurazione reale\",\n    \"Mismatch dati: listing 300 mq e 4 locali vs DoorEngine 2 stanze; possibile incoerenza catastale/descrittiva\",\n    \"Potenziale necessità di ristrutturazione pesante (strutture, impianti, isolamento) non compatibile con assunzione 20k per unità aggiuntiva\",\n    \"Possibili vincoli tipici di corti lombarde (parti comuni, accessi, servitù) e impatto su frazionamento e vendibilità\",\n    \"Rischio requisiti aeroilluminanti/altezza/illuminazione naturale insufficienti per creare molte unità (tipico in edifici rurali)\",\n    \"Localizzazione periferica (Figino): rischio tempi di vendita più lunghi e prezzi più sensibili alla qualità del prodotto finito\"\n  ],\n  \"missing_information\": [\n    \"Destinazione d’uso attuale (catasto/urbanistica) e possibilità concreta di cambio d’uso a residenziale\",\n    \"Superficie realmente residenzializzabile (netta) vs SLP/volumi accessori\",\n    \"Numero piani, altezze interne, stato strutturale (solai/tetto), presenza umidità\",\n    \"Conformità urbanistica/catastale e presenza di abusi\",\n    \"Esistenza di vincoli (paesaggistici, storici, PGT/ambiti agricoli) e oneri\",\n    \"Accessi carrabili/pedonali, possibilità di ingressi indipendenti e contatori separati\",\n    \"Dotazione parcheggi/standard urbanistici richiesti per nuove unità\",\n    \"Occupazione (libero/occupato) e tempi di rilascio\"\n  ],\n  \"human_due_diligence_questions\": [\n    \"Qual è la destinazione d’uso attuale (catastale e urbanistica) e l’immobile è già residenziale? Se no, il Comune consente il cambio d’uso a residenziale in questa corte/ambito?\",\n    \"Avete visure catastali, planimetrie depositate, titolo edilizio originario e ultimi titoli (CILA/SCIA/Permesso) disponibili?\",\n    \"La SLP 370 mq da cosa deriva e quanta parte è effettivamente trasformabile in superficie residenziale vendibile?\",\n    \"Quanti piani sono presenti e quali sono altezze nette e rapporti aeroilluminanti attuali?\",\n    \"Stato di tetto/solai/strutture: serve consolidamento importante?\",\n    \"Ci sono vincoli o prescrizioni PGT (es. ambito agricolo, nucleo di antica formazione, vincoli paesaggistici)?\",\n    \"Standard parcheggi: quanti posti auto sarebbero necessari per 5-6 unità e sono realizzabili in area di pertinenza?\",\n    \"È già condominio/corte con parti comuni e servitù? Serve consenso terzi per accessi/cortile?\",\n    \"Immobile libero? Se occupato, con che titolo e quali tempi/costi di liberazione?\"\n  ],\n  \"recommended_action\": \"send_to_technician\"\n}"
+              }
+            ],
+            "role": "assistant"
+          }
+        ],
+        "parallel_tool_calls": true,
+        "presence_penalty": 0,
+        "previous_response_id": null,
+        "prompt_cache_key": null,
+        "prompt_cache_retention": "24h",
+        "reasoning": {
+          "context": "current_turn",
+          "effort": "none",
+          "summary": null
+        },
+        "safety_identifier": null,
+        "service_tier": "default",
+        "store": true,
+        "temperature": 1,
+        "text": {
+          "format": {
+            "type": "text"
+          },
+          "verbosity": "medium"
+        },
+        "tool_choice": "auto",
+        "tools": [],
+        "top_logprobs": 0,
+        "top_p": 0.98,
+        "truncation": "disabled",
+        "usage": {
+          "input_tokens": 2622,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 1498,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 4120
+        },
+        "user": null,
+        "metadata": {}
+      },
+      "listing": {
+        "address": "Casa di paese in Via Filippo Anghileri, 8, Figino, Milano",
+        "bathrooms": 2,
+        "contactInfo": {
+          "agencyLogo": "https://st3.idealista.it/d5/b8/05/gabettisettimomilanese.gif",
+          "commercialName": "Gabetti settimo milanese",
+          "contactMethod": "all",
+          "contactName": "Gabetti settimo milanese",
+          "micrositeShortName": "gabettisettimomilanese",
+          "needLoginForContact": false,
+          "needLoginForPhone": false,
+          "phone1": {
+            "formattedPhone": "0289743784",
+            "nationalNumber": true,
+            "phoneNumber": "0289743784",
+            "phoneNumberForMobileDialing": "+390289743784",
+            "prefix": "39"
+          },
+          "totalAds": 0,
+          "userType": "professional"
+        },
+        "country": "it",
+        "description": "Milano Via Filippo Anghileri 8 In tranquilla zona residenziale con vicinanza a mezzi di trasporto, negozi, e ben collegata a Milano, proponiamo in vendita fabbricato rurale ideale come recupero residenziale in tipica corte lombarda.  Slp 370 mq  Area cortilizia di pertinenza di circa 300 mq  Ottima soluzione per imprese edili come recupero edificio rurale in residenziale con potenziale sviluppo di villini  N. B. Le planimetrie inserite sono a titolo esemplificativo e non costituiscono elemento contrattuale La nostra agenzia è a vostra disposizione per offrirvi una VALUTAZIONE, gratuita e senza impegno, del vostro immobile oltre che un servizio di CONSULENZA CREDITIZIA per guidarvi passo dopo passo nella scelta più adatta alle vostre esigenze.",
+        "detailedType": {
+          "subTypology": "casaDePueblo",
+          "typology": "countryHouse"
+        },
+        "district": "San Siro - Trenno",
+        "favourite": false,
+        "features": {
+          "hasAirConditioning": false,
+          "hasBoxRoom": false,
+          "hasGarden": true,
+          "hasSwimmingPool": false,
+          "hasTerrace": false
+        },
+        "has360": false,
+        "has3DTour": false,
+        "hasPlan": true,
+        "hasStaging": false,
+        "hasVideo": false,
+        "isOnlineBookingActive": false,
+        "latitude": 45.4939608,
+        "locationId": "0-EU-IT-MI-01-001-135-18-003",
+        "longitude": 9.0725011,
+        "multimedia": {
+          "images": [
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/21/db/dc/809951942.jpg"
+            },
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/ce/e6/b7/809951943.jpg"
+            },
+            {
+              "tag": "unknown",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/4b/b8/a2/809951944.jpg"
+            },
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/d7/ba/4f/809951945.jpg"
+            },
+            {
+              "tag": "unknown",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/8d/b5/56/809951946.jpg"
+            },
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/f6/a0/de/809951947.jpg"
+            },
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/1a/4a/65/809951948.jpg"
+            },
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/88/33/74/809951949.jpg"
+            },
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/36/b1/6b/809951963.jpg"
+            },
+            {
+              "tag": "unknown",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/b7/e6/3b/809952357.jpg"
+            },
+            {
+              "tag": "plan",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/0d/0c/93/810191560.jpg"
+            },
+            {
+              "tag": "plan",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/3f/1e/b5/810191561.jpg"
+            }
+          ]
+        },
+        "municipality": "Milano",
+        "neighborhood": "Figino",
+        "newDevelopment": false,
+        "newDevelopmentHighlight": false,
+        "newProperty": false,
+        "notes": [],
+        "numPhotos": 12,
+        "operation": "sale",
+        "preferenceHighlight": false,
+        "price": 160000,
+        "priceByArea": 533,
+        "priceInfo": {
+          "price": {
+            "amount": 160000,
+            "currencySuffix": "€"
+          }
+        },
+        "propertyCode": "36002510",
+        "propertyType": "countryHouse",
+        "province": "Milano",
+        "ribbons": [],
+        "rooms": 4,
+        "savedAd": {},
+        "showAddress": true,
+        "size": 300,
+        "status": "renew",
+        "suggestedTexts": {
+          "title": "Casa di paese in Via Filippo Anghileri, 8, Figino, Milano"
+        },
+        "thumbnail": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/21/db/dc/809951942.jpg",
+        "topHighlight": false,
+        "topNewDevelopment": false,
+        "topPlus": false,
+        "urgentVisualHighlight": false,
+        "url": "https://www.idealista.it/immobile/36002510/",
+        "visualHighlight": false
+      }
+    },
+    {
+      "listing_index": 18,
+      "ranking_score": 38,
+      "door_engine": {
+        "basics": {
+          "price": 135750,
+          "surfaceMq": 201,
+          "rooms": 2,
+          "bathrooms": 2,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "priceReductionSignal": false
+        },
+        "investorProfileId": "max-doors-20k",
+        "targetUnitMq": 45,
+        "existingUnits": 1,
+        "estimatedFinalUnits": 4,
+        "newUnitsCreated": 3,
+        "costPerNewUnit": 20000,
+        "transformationCost": 60000,
+        "purchaseCostRate": 0.12,
+        "purchaseCosts": 16290,
+        "estimatedProjectCost": 212040,
+        "doorScore": 95,
+        "doorScoreReasons": [
+          "surface_above_minimum",
+          "multiple_final_units_possible_by_surface",
+          "new_units_created",
+          "two_or_more_bathrooms",
+          "floor_plan_available",
+          "renovation_signal"
+        ]
+      },
+      "spread": {
+        "project_cost_eur": 212040,
+        "spread_low_eur": null,
+        "spread_base_eur": null,
+        "spread_high_eur": null,
+        "roi_base_pct": null
+      },
+      "gpt_analysis": {
+        "id": "resp_05104608bb51a3a2006a3427e2450c819499c47d82acb9ca52",
+        "object": "response",
+        "created_at": 1781802978,
+        "status": "completed",
+        "background": false,
+        "billing": {
+          "payer": "developer"
+        },
+        "completed_at": 1781803003,
+        "error": null,
+        "frequency_penalty": 0,
+        "incomplete_details": null,
+        "instructions": null,
+        "max_output_tokens": null,
+        "max_tool_calls": null,
+        "model": "gpt-5.2-2025-12-11",
+        "moderation": null,
+        "output": [
+          {
+            "id": "msg_05104608bb51a3a2006a3427e3389c8194971e481e2e4e43c7",
+            "type": "message",
+            "status": "completed",
+            "content": [
+              {
+                "type": "output_text",
+                "annotations": [],
+                "logprobs": [],
+                "text": "{\n  \"final_unit_plan\": [\n    {\n      \"unit_type\": \"bilocale\",\n      \"estimated_size_mq\": 45,\n      \"sale_value_low_eur\": 125000,\n      \"sale_value_base_eur\": 145000,\n      \"sale_value_high_eur\": 165000,\n      \"valuation_reasoning\": \"Per Gratosoglio/Abbiategrasso-Chiesa Rossa, bilocali piccoli e ristrutturati vendono tipicamente su fasce medio-basse di Milano. Stima a unità basata su appetibilità taglio 45 mq più che su €/mq; range prudente per assorbire variabilità di piano, esposizione, stato reale e contesto.\"\n    },\n    {\n      \"unit_type\": \"bilocale\",\n      \"estimated_size_mq\": 45,\n      \"sale_value_low_eur\": 125000,\n      \"sale_value_base_eur\": 145000,\n      \"sale_value_high_eur\": 165000,\n      \"valuation_reasoning\": \"Secondo bilocale di taglio simile; ipotizzato valore analogo. Senza planimetria non si differenziano affacci/spazi esterni per premium/discount.\"\n    },\n    {\n      \"unit_type\": \"bilocale\",\n      \"estimated_size_mq\": 45,\n      \"sale_value_low_eur\": 120000,\n      \"sale_value_base_eur\": 140000,\n      \"sale_value_high_eur\": 160000,\n      \"valuation_reasoning\": \"Terzo bilocale possibile solo se distribuzione e altezze lo consentono; applicato lieve haircut perché la terza unità spesso finisce meno regolare (tagli/finestre/impianti).\"\n    },\n    {\n      \"unit_type\": \"bilocale\",\n      \"estimated_size_mq\": 45,\n      \"sale_value_low_eur\": 115000,\n      \"sale_value_base_eur\": 135000,\n      \"sale_value_high_eur\": 155000,\n      \"valuation_reasoning\": \"Quarto bilocale è lo scenario più aggressivo su 201 mq lordi in villetta su più piani con cantina/pertinenze: rischio di superfici non residenziali e vincoli finestrature/rapporti aeroilluminanti. Valore ridotto per maggiore rischio di qualità commerciale inferiore.\"\n    }\n  ],\n  \"total_sale_value_low_eur\": 485000,\n  \"total_sale_value_base_eur\": 565000,\n  \"total_sale_value_high_eur\": 645000,\n  \"fractioning_confidence\": \"low\",\n  \"valuation_confidence\": \"medium\",\n  \"positive_signals\": [\n    \"Superficie dichiarata 201 mq: potenzialmente frazionabile in più tagli piccoli se tutta residenziale\",\n    \"2 bagni: possibile facilitazione nel riposizionamento impianti per più unità\",\n    \"Presenza box e aree esterne pertinenziali (potenziale plus commerciale se assegnabili a una o più unità)\",\n    \"Prezzo di aggiudicazione/listino molto basso rispetto a Milano (potenziale upside se situazione liberabile e regolarizzabile)\"\n  ],\n  \"red_flags\": [\n    \"Immobile in asta (ASTEXTUTTI): rischio occupazione, tempi lunghi, costi legali e incertezza su liberazione\",\n    \"Descrizione indica ASSAGO (MI) mentre il listing è Milano/Gratosoglio: forte ambiguità di ubicazione e quindi dei comparabili\",\n    \"Tipologia 'villino a schiera su più piani' con cantina: parte dei 201 mq potrebbe essere non residenziale/non commerciabile come unità abitative\",\n    \"Nessuna planimetria nel listing (hasPlan=false) e incongruenza con Door Engine (hasFloorPlan=true): impossibile validare numero porte, finestre, scale e possibilità di accessi separati\",\n    \"Frazionamento in villetta su più livelli spesso richiede interventi rilevanti (scale, accessi, impianti, antincendio/rumori/condominio) e può ridurre efficienza dei mq vendibili\",\n    \"Prezzo €/mq 675 è anomalo: può indicare criticità importanti (occupato, abusi, stato pessimo, vincoli, o componenti non residenziali)\"\n  ],\n  \"missing_information\": [\n    \"Planimetria e distribuzione per piano (PT/P1/P2/interrato) e superfici nette residenziali vs accessorie\",\n    \"Stato di occupazione (libero/occupato con titolo/abusivo) e tempi di liberazione in asta\",\n    \"Perizia d'asta completa: conformità edilizia/catastale, eventuali abusi, servitù, vincoli, spese condominiali arretrate\",\n    \"Dati catastali (categoria, consistenza, rendita) e pertinenze (box/cantina/aree esterne) con mappali/subalterni\",\n    \"Anno di costruzione, stato impianti, presenza riscaldamento autonomo/centralizzato e contabilizzazione\",\n    \"Possibilità di creare accessi indipendenti (ingressi separati) e posizione vani scala\",\n    \"Altezze interne e rapporti aeroilluminanti dei locali che si vorrebbero rendere abitativi\"\n  ],\n  \"human_due_diligence_questions\": [\n    \"Confermate comune/indirizzo esatto: è Assago (MI) o Milano (Gratosoglio)? Fornite mappa e dati catastali\",\n    \"Avete la perizia del tribunale e l'ordinanza di vendita? Indicare base d'asta, rilanci, stato occupativo e oneri a carico dell'aggiudicatario\",\n    \"Quanti mq sono effettivamente residenziali per piano e quanti sono cantina/interrato/box/esterni?\",\n    \"La villetta è parte di condominio? Esistono regolamenti o vincoli che impediscono frazionamenti o nuovi accessi?\",\n    \"È già presente più di un ingresso? Se no, dove si potrebbe realizzare senza impatti strutturali importanti?\",\n    \"Sono presenti difformità edilizie/catastali in perizia? Quali costi/tempi stimati per sanatoria o ripristino?\",\n    \"Situazione impianti (colonne scarichi, canne fumarie/ventilazione): è realistico portare 3-4 cucine/bagni senza opere pesanti?\"\n  ],\n  \"recommended_action\": \"request_details\"\n}"
+              }
+            ],
+            "role": "assistant"
+          }
+        ],
+        "parallel_tool_calls": true,
+        "presence_penalty": 0,
+        "previous_response_id": null,
+        "prompt_cache_key": null,
+        "prompt_cache_retention": "24h",
+        "reasoning": {
+          "context": "current_turn",
+          "effort": "none",
+          "summary": null
+        },
+        "safety_identifier": null,
+        "service_tier": "default",
+        "store": true,
+        "temperature": 1,
+        "text": {
+          "format": {
+            "type": "text"
+          },
+          "verbosity": "medium"
+        },
+        "tool_choice": "auto",
+        "tools": [],
+        "top_logprobs": 0,
+        "top_p": 0.98,
+        "truncation": "disabled",
+        "usage": {
+          "input_tokens": 2330,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 1417,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 3747
+        },
+        "user": null,
+        "metadata": {}
+      },
+      "listing": {
+        "address": "Villetta a schiera in Via Rozzano s.n.c, Gratosoglio, Milano",
+        "bathrooms": 2,
+        "contactInfo": {
+          "commercialName": "ASTEXTUTTI",
+          "contactMethod": "all",
+          "contactName": "ASTEXTUTTI",
+          "micrositeShortName": "aste-immobiliari-",
+          "needLoginForContact": false,
+          "needLoginForPhone": false,
+          "phone1": {
+            "formattedPhone": "0289736121",
+            "nationalNumber": true,
+            "phoneNumber": "0289736121",
+            "phoneNumberForMobileDialing": "+390289736121",
+            "prefix": "39"
+          },
+          "totalAds": 0,
+          "userType": "professional"
+        },
+        "country": "it",
+        "description": "LOTTO 1: ASSAGO (MI), Via Rozzano snc: Appartamento in villino a schiera su più piani + cantina al piano interrato + due aree esterne pertinenziali + box.",
+        "detailedType": {
+          "subTypology": "terracedHouse",
+          "typology": "chalet"
+        },
+        "district": "Abbiategrasso - Chiesa Rossa",
+        "favourite": false,
+        "features": {
+          "hasAirConditioning": false,
+          "hasBoxRoom": true,
+          "hasGarden": true,
+          "hasSwimmingPool": false,
+          "hasTerrace": true
+        },
+        "has360": false,
+        "has3DTour": false,
+        "hasPlan": false,
+        "hasStaging": false,
+        "hasVideo": false,
+        "isAuction": true,
+        "isOnlineBookingActive": false,
+        "latitude": 45.4040665,
+        "locationId": "0-EU-IT-MI-01-001-135-14-003",
+        "longitude": 9.1568877,
+        "multimedia": {
+          "images": [
+            {
+              "tag": "facade",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/aa/10/c9/781645051.jpg"
+            },
+            {
+              "tag": "facade",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/84/d3/c9/781645077.jpg"
+            },
+            {
+              "tag": "facade",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/0f/4a/42/781645066.jpg"
+            },
+            {
+              "tag": "unknown",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/7c/a4/2b/781645078.jpg"
+            },
+            {
+              "tag": "facade",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/3c/05/b4/781645079.jpg"
+            },
+            {
+              "tag": "facade",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/4e/48/fb/781645054.jpg"
+            },
+            {
+              "tag": "corridor",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/01/30/a7/781645052.jpg"
+            },
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/0b/9b/0b/781645067.jpg"
+            },
+            {
+              "tag": "unknown",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/5b/83/70/781645083.jpg"
+            }
+          ]
+        },
+        "municipality": "Milano",
+        "neighborhood": "Gratosoglio",
+        "newDevelopment": false,
+        "newDevelopmentHighlight": false,
+        "newProperty": false,
+        "notes": [],
+        "numPhotos": 9,
+        "operation": "sale",
+        "parkingSpace": {
+          "hasParkingSpace": true,
+          "isParkingSpaceIncludedInPrice": true
+        },
+        "preferenceHighlight": false,
+        "price": 135750,
+        "priceByArea": 675,
+        "priceInfo": {
+          "price": {
+            "amount": 135750,
+            "currencySuffix": "€"
+          }
+        },
+        "propertyCode": "35143471",
+        "propertyType": "chalet",
+        "province": "Milano",
+        "ribbons": [],
+        "rooms": 9,
+        "savedAd": {},
+        "showAddress": true,
+        "size": 201,
+        "status": "renew",
+        "suggestedTexts": {
+          "title": "Villetta a schiera in Via Rozzano s.n.c, Gratosoglio, Milano"
+        },
+        "thumbnail": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/aa/10/c9/781645051.jpg",
+        "topHighlight": false,
+        "topNewDevelopment": false,
+        "topPlus": false,
+        "urgentVisualHighlight": false,
+        "url": "https://www.idealista.it/immobile/35143471/",
+        "visualHighlight": false
+      }
+    },
+    {
+      "listing_index": 19,
+      "ranking_score": 38,
+      "door_engine": {
+        "basics": {
+          "price": 320000,
+          "surfaceMq": 418,
+          "rooms": 6,
+          "bathrooms": 6,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "priceReductionSignal": false
+        },
+        "investorProfileId": "max-doors-20k",
+        "targetUnitMq": 45,
+        "existingUnits": 1,
+        "estimatedFinalUnits": 9,
+        "newUnitsCreated": 8,
+        "costPerNewUnit": 20000,
+        "transformationCost": 160000,
+        "purchaseCostRate": 0.12,
+        "purchaseCosts": 38400,
+        "estimatedProjectCost": 518400,
+        "doorScore": 95,
+        "doorScoreReasons": [
+          "surface_above_minimum",
+          "multiple_final_units_possible_by_surface",
+          "new_units_created",
+          "two_or_more_bathrooms",
+          "floor_plan_available",
+          "renovation_signal"
+        ]
+      },
+      "spread": {
+        "project_cost_eur": 518400,
+        "spread_low_eur": null,
+        "spread_base_eur": null,
+        "spread_high_eur": null,
+        "roi_base_pct": null
+      },
+      "gpt_analysis": {
+        "id": "resp_0200cc901a23981c006a3427fbeeb481979cb139ac9524821c",
+        "object": "response",
+        "created_at": 1781803003,
+        "status": "completed",
+        "background": false,
+        "billing": {
+          "payer": "developer"
+        },
+        "completed_at": 1781803036,
+        "error": null,
+        "frequency_penalty": 0,
+        "incomplete_details": null,
+        "instructions": null,
+        "max_output_tokens": null,
+        "max_tool_calls": null,
+        "model": "gpt-5.2-2025-12-11",
+        "moderation": null,
+        "output": [
+          {
+            "id": "msg_0200cc901a23981c006a3427fe3ff8819798207178e29f5658",
+            "type": "message",
+            "status": "completed",
+            "content": [
+              {
+                "type": "output_text",
+                "annotations": [],
+                "logprobs": [],
+                "text": "{\n  \"final_unit_plan\": [\n    {\n      \"unit_type\": \"bilocale\",\n      \"estimated_size_mq\": 45,\n      \"sale_value_low_eur\": 220000,\n      \"sale_value_base_eur\": 250000,\n      \"sale_value_high_eur\": 285000,\n      \"valuation_reasoning\": \"Inganni/Lorenteggio-Bande Nere: bilocali ristrutturati e ben distribuiti tendono a essere liquidi; stima per unità basata su taglio 45 mq (non su €/mq dell'asta) con range prudente per qualità finiture/altezza sottotetto e appetibilità piano 5.\"\n    },\n    {\n      \"unit_type\": \"bilocale\",\n      \"estimated_size_mq\": 45,\n      \"sale_value_low_eur\": 220000,\n      \"sale_value_base_eur\": 250000,\n      \"sale_value_high_eur\": 285000,\n      \"valuation_reasoning\": \"Secondo bilocale ipotizzato; valori replicati per coerenza in assenza di layout/affacci specifici. Sensibile a luminanza e rapporti aeroilluminanti tipici dei sottotetti.\"\n    },\n    {\n      \"unit_type\": \"bilocale\",\n      \"estimated_size_mq\": 45,\n      \"sale_value_low_eur\": 220000,\n      \"sale_value_base_eur\": 250000,\n      \"sale_value_high_eur\": 285000,\n      \"valuation_reasoning\": \"Terzo bilocale ipotizzato; range include rischio che una parte della superficie non sia pienamente commerciale/abitabile (altezze) riducendo valore o rendendo il taglio meno vendibile.\"\n    },\n    {\n      \"unit_type\": \"bilocale\",\n      \"estimated_size_mq\": 45,\n      \"sale_value_low_eur\": 220000,\n      \"sale_value_base_eur\": 250000,\n      \"sale_value_high_eur\": 285000,\n      \"valuation_reasoning\": \"Quarto bilocale ipotizzato come da descrizione. Valori condizionati da stato impianti e livello di ristrutturazione necessario per mercato retail.\"\n    },\n    {\n      \"unit_type\": \"trilocale\",\n      \"estimated_size_mq\": 55,\n      \"sale_value_low_eur\": 270000,\n      \"sale_value_base_eur\": 310000,\n      \"sale_value_high_eur\": 350000,\n      \"valuation_reasoning\": \"Trilocale 55 mq: in zona può spuntare premio se taglio efficiente (2 camere/1 bagno) e finiture moderne; range prudente dato contesto sottotetto e incertezza su layout/terrazzi (non indicati).\"\n    },\n    {\n      \"unit_type\": \"trilocale\",\n      \"estimated_size_mq\": 55,\n      \"sale_value_low_eur\": 270000,\n      \"sale_value_base_eur\": 310000,\n      \"sale_value_high_eur\": 350000,\n      \"valuation_reasoning\": \"Secondo trilocale ipotizzato come da descrizione; valori replicati in assenza di differenze note (esposizione, tagli, pertinenze).\"\n    }\n  ],\n  \"total_sale_value_low_eur\": 1420000,\n  \"total_sale_value_base_eur\": 1620000,\n  \"total_sale_value_high_eur\": 1840000,\n  \"fractioning_confidence\": \"medium\",\n  \"valuation_confidence\": \"medium\",\n  \"positive_signals\": [\n    \"Annuncio dichiara progetto (bozza aprile 2023) per recupero sottotetto a fini abitativi con 6 appartamenti (4 bilocali + 2 trilocali)\",\n    \"Superficie molto ampia (418 mq) coerente con frazionamento multi-unità\",\n    \"Piano 5 con ascensore (utile per vendibilità, anche se sottotetto può avere limiti)\",\n    \"Presenza planimetria (da verificare contenuto/scala e se corrisponde allo stato di fatto)\",\n    \"5 posti auto menzionati (potenziale incremento valore/assorbimento mercato)\"\n  ],\n  \"red_flags\": [\n    \"Immobile in asta: rischio tempi, incertezza su liberazione, procedura e oneri/accessori non noti in questo triage\",\n    \"Sottotetto 'recuperabile': non è certezza di abitabilità; rischio altezze minime, rapporti aeroilluminanti, requisiti igienico-sanitari e vincoli urbanistici/condominiali\",\n    \"Descrizione parla di 'progetto in bozza': non equivale a titolo abilitativo approvato\",\n    \"Prezzo €/mq molto basso (circa 766 €/mq): indica bene non comparabile al residenziale finito; alto rischio di costi reali molto superiori ai 20k/unità per rendere vendibili 6 unità\",\n    \"Numero bagni/stanze nel listing potrebbe non riflettere lo stato reale (tipico da scraping/annunci asta)\",\n    \"Nessuna informazione chiara su spese condominiali, stato impianti, presenza abusi, vincoli, accessi comuni, vani tecnici\",\n    \"Potenziale complessità antincendio/evacuazione/impianti e accatastamenti su operazione multi-unità (non verificabile qui)\"\n  ],\n  \"missing_information\": [\n    \"Altezze interne (minima/media) e percentuale superficie con altezza utile\",\n    \"Rapporti aeroilluminanti e tipologia di aperture (lucernari/abbaini/finestre) per ciascuna unità\",\n    \"Conferma esistenza/ottenibilità del titolo abilitativo (SCIA/Permesso) e stato iter comunale\",\n    \"Stato di occupazione e tempi/condizioni di liberazione post-asta\",\n    \"Capitolato ristrutturazione necessario e stima costi completa (impianti, isolamento, serramenti, bagni, riscaldamento/raffrescamento)\",\n    \"APE previsto o classe energetica attuale/post intervento\",\n    \"Dettagli sui 5 posti auto (pertinenzialità, proprietà, ubicazione, servitù, possibilità di vendita separata)\",\n    \"Dati condominiali: regolamento (eventuali divieti), millesimi, spese ordinarie/straordinarie, lavori deliberati\",\n    \"Planimetria/floor plan leggibile e computo superficie commerciale per singola unità\"\n  ],\n  \"human_due_diligence_questions\": [\n    \"È disponibile la perizia del CTU e il bando d'asta (prezzo base, cauzione, rilanci, data, eventuali oneri e debiti condominiali)?\",\n    \"L'immobile è libero o occupato? Se occupato, con quale titolo e quali tempi stimati di rilascio?\",\n    \"Il 'progetto bozza' del 04/2023 è stato presentato in Comune? Esiste protocollo, esito istruttoria o richiesta integrazioni?\",\n    \"Quali sono le altezze minime e medie del sottotetto e come sono distribuite (sezioni)?\",\n    \"Sono già presenti o autorizzabili lucernari/abbaini? Ci sono vincoli di facciata/tetto o vincoli paesaggistici?\",\n    \"Il condominio consente il frazionamento e l'aumento di unità? Serve delibera? Ci sono limitazioni nel regolamento?\",\n    \"Qual è la dotazione impiantistica attuale (colonne scarichi, canne fumarie, contatori) e la fattibilità di 6 allacci indipendenti?\",\n    \"I 5 posti auto sono compresi nella vendita all'asta e risultano catastalmente corretti/pertinenziali?\",\n    \"Quali interventi strutturali o di isolamento tetto sono necessari (anche solo indicativamente da perizia)?\",\n    \"Esiste già una ripartizione ipotizzata delle superfici delle 6 unità (mq per unità) e un layout distributivo?\"\n  ],\n  \"recommended_action\": \"send_to_technician\"\n}"
+              }
+            ],
+            "role": "assistant"
+          }
+        ],
+        "parallel_tool_calls": true,
+        "presence_penalty": 0,
+        "previous_response_id": null,
+        "prompt_cache_key": null,
+        "prompt_cache_retention": "24h",
+        "reasoning": {
+          "context": "current_turn",
+          "effort": "none",
+          "summary": null
+        },
+        "safety_identifier": null,
+        "service_tier": "default",
+        "store": true,
+        "temperature": 1,
+        "text": {
+          "format": {
+            "type": "text"
+          },
+          "verbosity": "medium"
+        },
+        "tool_choice": "auto",
+        "tools": [],
+        "top_logprobs": 0,
+        "top_p": 0.98,
+        "truncation": "disabled",
+        "usage": {
+          "input_tokens": 3602,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 1776,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 5378
+        },
+        "user": null,
+        "metadata": {}
+      },
+      "listing": {
+        "address": "Appartamento in Via Angelo Inganni, 77, Inganni, Milano",
+        "bathrooms": 6,
+        "contactInfo": {
+          "agencyLogo": "https://st3.idealista.it/75/c9/23/affari-in-asta.gif",
+          "commercialName": "Affari In Asta",
+          "contactMethod": "all",
+          "contactName": "Affari",
+          "micrositeShortName": "affari-in-asta",
+          "needLoginForContact": false,
+          "needLoginForPhone": false,
+          "phone1": {
+            "formattedPhone": "0287178670",
+            "nationalNumber": true,
+            "phoneNumber": "0287178670",
+            "phoneNumberForMobileDialing": "+390287178670",
+            "prefix": "39"
+          },
+          "totalAds": 0,
+          "userType": "professional"
+        },
+        "country": "it",
+        "description": "In asta ampio locale sottotetto, recuperabile ai fini abitativi, con progetto redatto in bozza nell'aprile 2023, che prevede la realizzazione di n. 6 appartamenti (n. 4 bilocali e n. 2 trilocali). Completano la soluzione cinque posti auto. Si riceve su appuntamento nei nostri uffici ad Abbiategrasso, Rosate, Assago, Milano e Pavia POSSIBILITÀ MUTUO 100%. Comprare un’ immobile all’asta consente un risparmio medio sui prezzi di mercato superiore al 30%, con risparmi che possono superare anche il 50%. In virtù di tali considerazioni la Nostra società ha deciso di offrire ai Ns. Clienti l’opportunità di cogliere tutte le occasioni di investimento nelle aste immobiliari provenienti da tutti i Tribunali ita-liani, attraverso la collaborazione con una società di consulenzat ope-rante su tutto il territorio nazionale, specializzata nelle aste immobilia-ri per assisterVi presso i ns. uffici a 360°, dalla selezione dell’ immobi-le, sino alla consegna delle chiavi da parte del Tribunale e anche nelle fasi successive per eventuali ulteriori necessità. Siamo quindi a Vs. di-sposizione per un incontro di approfondimento in merito a questa oc-casione immobiliare all’asta senza escludere eventuali altre opportuni-tà di acquisti pre-asta nei cosiddetti “saldi e stralci”. ASSISTENZA A 360°, VISITA CONGIUNTA, ACQUISTO SICURO AL 100%, POSSIBILI-TÀ DI MUTUARE SINO AL 100%, RISPETTO AI PREZZI DI MERCATO, RISPARMIO MEDIO DEL 50% RISPARMIO ANCHE SUI COSTI ACCES-SORI. Una volta aggiudicato/acquistato un immobile in asta o pre-asta la Ns. assistenza a 360° continua anche nel caso vogliate rivenderlo, metterlo a reddito o nel caso vogliate vendere altra unità immobiliare come ad esempio la Vs. prima casa.",
+        "detailedType": {
+          "typology": "flat"
+        },
+        "district": "Lorenteggio - Bande Nere",
+        "favourite": false,
+        "features": {
+          "hasAirConditioning": false,
+          "hasBoxRoom": false,
+          "hasGarden": false,
+          "hasSwimmingPool": false,
+          "hasTerrace": false
+        },
+        "floor": "5",
+        "has360": false,
+        "has3DTour": false,
+        "hasLift": true,
+        "hasPlan": true,
+        "hasStaging": false,
+        "hasVideo": false,
+        "highlight": {
+          "groupDescription": "Premium"
+        },
+        "isAuction": true,
+        "isOnlineBookingActive": false,
+        "latitude": 45.4534324,
+        "locationId": "0-EU-IT-MI-01-001-135-16-006",
+        "longitude": 9.1241084,
+        "multimedia": {
+          "images": [
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/76/e6/8c/795357522.jpg"
+            },
+            {
+              "tag": "unknown",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/1b/0e/3e/795357532.jpg"
+            },
+            {
+              "tag": "unknown",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/b6/dc/98/795357547.jpg"
+            },
+            {
+              "tag": "unknown",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/1f/85/61/795357548.jpg"
+            },
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/97/a9/57/795357549.jpg"
+            },
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/2d/10/9d/795357585.jpg"
+            },
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/5f/61/c2/795357576.jpg"
+            },
+            {
+              "tag": "unknown",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/19/6b/65/795357568.jpg"
+            },
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/dd/24/9c/795357580.jpg"
+            },
+            {
+              "tag": "unknown",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/eb/68/bd/795357561.jpg"
+            },
+            {
+              "tag": "unknown",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/65/ea/db/795357581.jpg"
+            },
+            {
+              "tag": "unknown",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/48/3e/0f/795357582.jpg"
+            },
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/ca/7d/26/795357623.jpg"
+            },
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/7d/d8/8d/795357562.jpg"
+            },
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/b2/81/c3/795357624.jpg"
+            },
+            {
+              "tag": "unknown",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/0a/97/2a/795357512.jpg"
+            },
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/b5/51/e7/795357975.jpg"
+            },
+            {
+              "tag": "unknown",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/03/a0/63/795357983.jpg"
+            },
+            {
+              "tag": "unknown",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/9a/4d/c4/795357976.jpg"
+            },
+            {
+              "tag": "unknown",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/60/d2/5e/795357977.jpg"
+            },
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/3d/75/bd/795357968.jpg"
+            },
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/7f/f9/2b/795357938.jpg"
+            },
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/95/5f/bc/795357978.jpg"
+            },
+            {
+              "tag": "unknown",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/32/79/78/795357969.jpg"
+            },
+            {
+              "tag": "plan",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/6e/10/20/795357577.jpg"
+            }
+          ]
+        },
+        "municipality": "Milano",
+        "neighborhood": "Inganni",
+        "newDevelopment": false,
+        "newDevelopmentHighlight": false,
+        "newProperty": false,
+        "notes": [],
+        "numPhotos": 25,
+        "operation": "sale",
+        "preferenceHighlight": true,
+        "price": 320000,
+        "priceByArea": 766,
+        "priceInfo": {
+          "price": {
+            "amount": 320000,
+            "currencySuffix": "€"
+          }
+        },
+        "propertyCode": "35556232",
+        "propertyType": "flat",
+        "province": "Milano",
+        "ribbons": [],
+        "rooms": 9,
+        "savedAd": {},
+        "showAddress": true,
+        "size": 418,
+        "status": "renew",
+        "suggestedTexts": {
+          "title": "Appartamento in Via Angelo Inganni, 77, Inganni, Milano"
+        },
+        "thumbnail": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/76/e6/8c/795357522.jpg",
+        "topHighlight": false,
+        "topNewDevelopment": false,
+        "topPlus": false,
+        "urgentVisualHighlight": false,
+        "url": "https://www.idealista.it/immobile/35556232/",
+        "visualHighlight": false
+      }
+    },
+    {
+      "listing_index": 20,
+      "ranking_score": 38,
+      "door_engine": {
+        "basics": {
+          "price": 320625,
+          "surfaceMq": 418,
+          "rooms": 5,
+          "bathrooms": 5,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "priceReductionSignal": false
+        },
+        "investorProfileId": "max-doors-20k",
+        "targetUnitMq": 45,
+        "existingUnits": 1,
+        "estimatedFinalUnits": 9,
+        "newUnitsCreated": 8,
+        "costPerNewUnit": 20000,
+        "transformationCost": 160000,
+        "purchaseCostRate": 0.12,
+        "purchaseCosts": 38475,
+        "estimatedProjectCost": 519100,
+        "doorScore": 95,
+        "doorScoreReasons": [
+          "surface_above_minimum",
+          "multiple_final_units_possible_by_surface",
+          "new_units_created",
+          "two_or_more_bathrooms",
+          "floor_plan_available",
+          "renovation_signal"
+        ]
+      },
+      "spread": {
+        "project_cost_eur": 519100,
+        "spread_low_eur": null,
+        "spread_base_eur": null,
+        "spread_high_eur": null,
+        "roi_base_pct": null
+      },
+      "gpt_analysis": {
+        "id": "resp_0fbf465ed243ac4b006a34281d09948194adbd48b98f685184",
+        "object": "response",
+        "created_at": 1781803037,
+        "status": "completed",
+        "background": false,
+        "billing": {
+          "payer": "developer"
+        },
+        "completed_at": 1781803068,
+        "error": null,
+        "frequency_penalty": 0,
+        "incomplete_details": null,
+        "instructions": null,
+        "max_output_tokens": null,
+        "max_tool_calls": null,
+        "model": "gpt-5.2-2025-12-11",
+        "moderation": null,
+        "output": [
+          {
+            "id": "msg_0fbf465ed243ac4b006a34281ddd24819480cab6d22035c2ce",
+            "type": "message",
+            "status": "completed",
+            "content": [
+              {
+                "type": "output_text",
+                "annotations": [],
+                "logprobs": [],
+                "text": "{\n  \"final_unit_plan\": [\n    {\n      \"unit_type\": \"bilocale\",\n      \"estimated_size_mq\": 45,\n      \"sale_value_low_eur\": 225000,\n      \"sale_value_base_eur\": 260000,\n      \"sale_value_high_eur\": 300000,\n      \"valuation_reasoning\": \"Bilocale taglio liquido (circa 45 mq) in zona Lorenteggio/Inganni: valori tipici per piccolo taglio ristrutturato. Essendo sottotetto da recuperare, applico prudenza (rischio altezze/abitabilità/finestre) e non spingo al top di mercato.\"\n    },\n    {\n      \"unit_type\": \"bilocale\",\n      \"estimated_size_mq\": 45,\n      \"sale_value_low_eur\": 225000,\n      \"sale_value_base_eur\": 260000,\n      \"sale_value_high_eur\": 300000,\n      \"valuation_reasoning\": \"Stessa logica del primo bilocale: domanda solida per piccoli tagli, ma premio limitato per incertezza tecnica/urbanistica del recupero sottotetto.\"\n    },\n    {\n      \"unit_type\": \"bilocale\",\n      \"estimated_size_mq\": 45,\n      \"sale_value_low_eur\": 225000,\n      \"sale_value_base_eur\": 260000,\n      \"sale_value_high_eur\": 300000,\n      \"valuation_reasoning\": \"Bilocale ~45 mq: stima per unità finita e ristrutturata; prudenza per eventuali parti con altezza ridotta e distribuzione condizionata da canne fumarie/impianti.\"\n    },\n    {\n      \"unit_type\": \"bilocale\",\n      \"estimated_size_mq\": 45,\n      \"sale_value_low_eur\": 225000,\n      \"sale_value_base_eur\": 260000,\n      \"sale_value_high_eur\": 300000,\n      \"valuation_reasoning\": \"Bilocale ~45 mq: prezzi per taglio piccolo in Milano semicentrale; range ampio per variabilità di esposizione, terrazzi/abbaini e qualità finiture.\"\n    },\n    {\n      \"unit_type\": \"trilocale\",\n      \"estimated_size_mq\": 55,\n      \"sale_value_low_eur\": 275000,\n      \"sale_value_base_eur\": 320000,\n      \"sale_value_high_eur\": 370000,\n      \"valuation_reasoning\": \"Trilocale piccolo (~55 mq) se ben distribuito: valore unitario superiore al bilocale ma attenzione a fattibilità di layout in sottotetto (alzate, pendenze, aeroilluminazione).\"\n    },\n    {\n      \"unit_type\": \"trilocale\",\n      \"estimated_size_mq\": 55,\n      \"sale_value_low_eur\": 275000,\n      \"sale_value_base_eur\": 320000,\n      \"sale_value_high_eur\": 370000,\n      \"valuation_reasoning\": \"Secondo trilocale piccolo: stessa metrica; eventuali terrazzi/abbaini possono aumentare ma non li assumo senza conferma.\"\n    }\n  ],\n  \"total_sale_value_low_eur\": 1450000,\n  \"total_sale_value_base_eur\": 1680000,\n  \"total_sale_value_high_eur\": 1940000,\n  \"fractioning_confidence\": \"medium\",\n  \"valuation_confidence\": \"medium\",\n  \"positive_signals\": [\n    \"Superficie molto ampia (418 mq) con potenziale multi-unità\",\n    \"Annuncio cita progetto (anche se 'in bozza') per 6 appartamenti (4 bilocali + 2 trilocali)\",\n    \"Presenza di planimetrie/immagini 'plan' nella scheda\",\n    \"Presenza di ascensore (e ipotesi di sopralzo ascensori esterni nel progetto)\",\n    \"5 posti auto indicati (potenziale plus commerciale, se effettivamente pertinenziali e vendibili/assegnabili)\"\n  ],\n  \"red_flags\": [\n    \"Immobile all'asta (rischi procedurali, tempi, condizioni, saldo prezzo, eventuali gravami)\",\n    \"Sottotetto 'recuperabile' non equivale ad abitabile: rischio alto su altezze minime, rapporto aeroilluminante, isolamento, requisiti igienico-sanitari\",\n    \"Accesso attuale 'da botola' dalle scale condominiali: oggi non è accesso idoneo a unità residenziali; potrebbero servire nuove scale/disimpegni/ingressi e accordi condominiali\",\n    \"Transito di canne fumarie dalle unità sottostanti: vincoli forti su layout, sicurezza, distanze, servitù e lavori costosi\",\n    \"Necessità di opere su parti comuni (sopralzo ascensori esterni) con probabile necessità di delibere condominiali e autorizzazioni\",\n    \"Numero bagni (5) non coerente con stato 'open-space sottotetto': possibile dato non affidabile/errato da scraping\",\n    \"Door Engine stima 9 unità finali appare aggressiva rispetto a progetto citato (6 unità) e ai vincoli tipici dei sottotetti\"\n  ],\n  \"missing_information\": [\n    \"Perizia del tribunale e condizioni di vendita (occupazione, abusi, vincoli, servitù, spese condominiali arretrate)\",\n    \"Altezze interne (min/max) e superficie realmente 'utile' ai fini abitativi vs accessori\",\n    \"Dati su lucernari/abbaini/terrazzi e rapporto aeroilluminante per ciascuna porzione\",\n    \"Stato urbanistico/catastale del sottotetto (C/2, soffitta, ecc.) e possibilità di cambio d'uso/recupero\",\n    \"Esistenza e dettaglio del 'progetto in bozza' (tavole, computo, iter autorizzativo, pareri preliminari)\",\n    \"Regolamento condominiale e fattibilità di frazionamento/nuove utenze/contatori/colonne di scarico\",\n    \"Titolarità e disciplina dei 5 posti auto (pertinenza esclusiva? assegnazione? vendibilità separata?)\",\n    \"Presenza/posizione di colonne di scarico e possibilità di realizzare 6 cucine e 6 bagni (almeno) in modo efficiente\"\n  ],\n  \"human_due_diligence_questions\": [\n    \"Confermate che la vendita è asta giudiziaria? Qual è il numero di procedura e dove reperire la perizia integrale?\",\n    \"Il sottotetto è già accatastato come unità autonoma? Qual è la categoria e la consistenza catastale attuale?\",\n    \"Quali sono altezze minima e massima e quanta superficie rispetta i requisiti per abitabilità (h media, h minima, RAI)?\",\n    \"Il progetto per 6 unità ha già avuto interlocuzioni con Comune/SUE o è solo studio interno? Esistono pareri preliminari?\",\n    \"L'accesso: è prevista nuova scala interna, corridoio, o sbarco ascensore dedicato? Serve modificare parti comuni?\",\n    \"Le canne fumarie che attraversano l'unità: quante sono, dove passano, e sono spostabili o soggette a servitù inderogabili?\",\n    \"Ascensori: il 'sopralzo' è tecnicamente e condominialmente fattibile? Esistono vincoli su facciate/cortile?\",\n    \"I 5 posti auto: sono di proprietà, in uso esclusivo, o solo 'indicati' nel cortile condominiale? Sono compresi nel lotto?\",\n    \"Ci sono vincoli (paesaggistici, monumentali) o limitazioni comunali sul recupero sottotetti in quell'edificio/zona?\",\n    \"Spese condominiali ordinarie/straordinarie e eventuali lavori deliberati (tetto, facciate, ascensori)?\"\n  ],\n  \"recommended_action\": \"send_to_technician\"\n}"
+              }
+            ],
+            "role": "assistant"
+          }
+        ],
+        "parallel_tool_calls": true,
+        "presence_penalty": 0,
+        "previous_response_id": null,
+        "prompt_cache_key": null,
+        "prompt_cache_retention": "24h",
+        "reasoning": {
+          "context": "current_turn",
+          "effort": "none",
+          "summary": null
+        },
+        "safety_identifier": null,
+        "service_tier": "default",
+        "store": true,
+        "temperature": 1,
+        "text": {
+          "format": {
+            "type": "text"
+          },
+          "verbosity": "medium"
+        },
+        "tool_choice": "auto",
+        "tools": [],
+        "top_logprobs": 0,
+        "top_p": 0.98,
+        "truncation": "disabled",
+        "usage": {
+          "input_tokens": 3767,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 1766,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 5533
+        },
+        "user": null,
+        "metadata": {}
+      },
+      "listing": {
+        "address": "Appartamento in Via Angelo Inganni, 77, Inganni, Milano",
+        "bathrooms": 5,
+        "contactInfo": {
+          "agencyLogo": "https://st3.idealista.it/86/c1/20/caseasta-aste-casa-brescia-bergamo.gif",
+          "commercialName": "Case all'Asta - Acquista senza Rischi",
+          "contactMethod": "all",
+          "contactName": "Case all'Asta",
+          "micrositeShortName": "caseasta-aste-casa-brescia-bergamo",
+          "needLoginForContact": false,
+          "needLoginForPhone": false,
+          "phone1": {
+            "formattedPhone": "0305782702",
+            "nationalNumber": true,
+            "phoneNumber": "0305782702",
+            "phoneNumberForMobileDialing": "+390305782702",
+            "prefix": "39"
+          },
+          "totalAds": 0,
+          "userType": "professional"
+        },
+        "country": "it",
+        "description": "Sottotetto recuperabile ai fini abitativi al quinto piano, accessibile da botola. Superficie 418mq. Progetto prevede realizzazione di 6 appartamenti (4 bilocali e 2 trilocali). Cinque posti auto scoperti nel cortile condominiale. Sottotetto open-space al quinto piano di edificio condominiale, accessibile tramite botola dalle scale condominiali. Superficie commerciale 418mq. È presente un progetto in bozza che prevede il recupero ai fini abitativi con realizzazione di 6 appartamenti (4 bilocali e 2 trilocali) e sopralzo dei due ascensori esterni. All'interno transitano canne fumarie dalle unità sottostanti. Comprende 5 posti auto scoperti nel cortile condominiale. Lo stabile si trova in zona semicentrale residenziale con traffico sostenuto e parcheggi sufficienti. Scopri tutte le occasioni all'asta sul sito Case-Asta. it L'immobile che hai appena visto verrà venduto dal tribunale con un'asta pubblica. Presenta delle caratteristiche molto interessanti e un prezzo particolarmente conveniente (Il prezzo si riferisce all'offerta minima) Può diventare un vero affare se si cancellano i rischi legati alle aste, quali: - Clausole nascoste che rendono lecito espropriare lappartamento appena acquistato. - Ritardi burocratici o problemi con le banche che causano conseguenze pesanti nella fase post-asta. - Casa appena acquistata che risulta occupata illegittimamente. Se vuoi eliminare questi ma anche molti altri rischi e tenere solo i benefici, ti suggeriamo di contattare gli esperti di Case-Asta. it. Non solo ti aiuteranno senza impegno a valutare lacquisto, ma ti permetteranno di effettuarlo in totale sicurezza e alle condizioni più adatte alle tue esigenze. Ecco alcuni vantaggi: - Supporto in tutte le fasi, dalla scelta dellimmobile alla compilazione degli ultimi documenti. - Accesso ai migliori mutui, fino al 100%, grazie a speciali accordi con gli Istituti di Credito. - Stima delle eventuali spese nascoste per fare un acquisto davvero consapevole e senza brutte sorprese. - Analisi delle clausole e supporto burocratico. - Costi del mutuo inferiori al prezzo di un affitto. Chiama subito il N° e fissa un appuntamento per ottenere la tua consulenza senza impegno. Case all'Asta Srl precisa che i dati contenuti in questo annuncio potrebbero contenere errori e/o omissioni. Tali dati saranno esaminati e verificati dal nostro ufficio legale interno prima della partecipazione all'asta per garantire l'accuratezza.",
+        "detailedType": {
+          "typology": "flat"
+        },
+        "district": "Lorenteggio - Bande Nere",
+        "externalReference": "46328",
+        "favourite": false,
+        "has360": false,
+        "has3DTour": false,
+        "hasLift": true,
+        "hasPlan": true,
+        "hasStaging": false,
+        "hasVideo": false,
+        "highlight": {
+          "groupDescription": "Premium"
+        },
+        "isAuction": true,
+        "isOnlineBookingActive": false,
+        "latitude": 45.4534324,
+        "locationId": "0-EU-IT-MI-01-001-135-16-006",
+        "longitude": 9.1241084,
+        "multimedia": {
+          "images": [
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/91/59/4b/795510493.jpg"
+            },
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/9e/cc/84/795510494.jpg"
+            },
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/dc/d1/f9/795510495.jpg"
+            },
+            {
+              "tag": "unknown",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/85/3c/23/795510496.jpg"
+            },
+            {
+              "tag": "unknown",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/1f/70/62/795510497.jpg"
+            },
+            {
+              "tag": "unknown",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/7a/af/42/795510498.jpg"
+            },
+            {
+              "tag": "facade",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/d7/9e/b6/795510499.jpg"
+            },
+            {
+              "tag": "plan",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/87/28/6b/795510501.jpg"
+            },
+            {
+              "tag": "plan",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/af/4c/42/795510502.jpg"
+            },
+            {
+              "tag": "plan",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/f9/95/80/795510503.jpg"
+            },
+            {
+              "tag": "plan",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/e3/19/b4/795510504.jpg"
+            },
+            {
+              "tag": "plan",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/57/53/33/795510505.jpg"
+            },
+            {
+              "tag": "plan",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/ce/ce/89/795510506.jpg"
+            },
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/04/a0/c3/795510507.jpg"
+            },
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/28/0e/73/795510508.jpg"
+            },
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/67/7f/82/795510509.jpg"
+            },
+            {
+              "tag": "unknown",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/08/fe/54/795510510.jpg"
+            },
+            {
+              "tag": "unknown",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/51/2b/e0/795510511.jpg"
+            },
+            {
+              "tag": "unknown",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/6c/3d/1f/795510512.jpg"
+            },
+            {
+              "tag": "facade",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/1b/9b/80/795510513.jpg"
+            },
+            {
+              "tag": "plan",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/38/7d/ee/795510514.jpg"
+            },
+            {
+              "tag": "plan",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/65/df/bf/795510515.jpg"
+            },
+            {
+              "tag": "plan",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/fd/44/f8/795510516.jpg"
+            },
+            {
+              "tag": "plan",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/ef/66/2e/795510517.jpg"
+            },
+            {
+              "tag": "plan",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/68/17/4a/795510518.jpg"
+            },
+            {
+              "tag": "plan",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/1a/a3/5a/795510519.jpg"
+            }
+          ]
+        },
+        "municipality": "Milano",
+        "neighborhood": "Inganni",
+        "newDevelopment": false,
+        "newDevelopmentHighlight": false,
+        "newProperty": false,
+        "notes": [],
+        "numPhotos": 26,
+        "operation": "sale",
+        "preferenceHighlight": true,
+        "price": 320625,
+        "priceByArea": 767,
+        "priceInfo": {
+          "price": {
+            "amount": 320625,
+            "currencySuffix": "€"
+          }
+        },
+        "propertyCode": "35560405",
+        "propertyType": "flat",
+        "province": "Milano",
+        "ribbons": [],
+        "rooms": 5,
+        "savedAd": {},
+        "showAddress": true,
+        "size": 418,
+        "status": "renew",
+        "suggestedTexts": {
+          "title": "Appartamento in Via Angelo Inganni, 77, Inganni, Milano"
+        },
+        "thumbnail": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/91/59/4b/795510493.jpg",
+        "topHighlight": false,
+        "topNewDevelopment": false,
+        "topPlus": false,
+        "urgentVisualHighlight": false,
+        "url": "https://www.idealista.it/immobile/35560405/",
+        "visualHighlight": false
+      }
+    }
+  ]
+}
