@@ -3,6 +3,8 @@ import 'dotenv/config';
 const APIFY_TOKEN = process.env.APIFY_TOKEN;
 const ACTOR_ENDPOINT = 'https://api.apify.com/v2/acts/igolaizola~idealista-scraper/run-sync-get-dataset-items';
 
+const DEFAULT_CITY = process.env.TORIUM_CITY || 'Milano';
+
 if (!APIFY_TOKEN) {
   throw new Error('Missing APIFY_TOKEN. Create a .env file from .env.example and add your Apify token.');
 }
@@ -31,7 +33,8 @@ const searches = {
     country: 'it',
     operation: 'sale',
     propertyType: 'homes',
-    location: 'Milano',
+    location: DEFAULT_CITY,
+    minSize: '100',
     condition: ['renew'],
     sortBy: 'lowestPriceM2',
     maxItems: 50,
@@ -43,9 +46,22 @@ const searches = {
     country: 'it',
     operation: 'sale',
     propertyType: 'premises',
-    location: 'Milano',
+    location: DEFAULT_CITY,
+    minSize: '60',
     floor: ['groundFloor'],
     sortBy: 'highestPriceReduction',
+    maxItems: 50,
+    fetchDetails: false,
+    fetchStats: false,
+  },
+
+  largeHomesFractioningMilan: {
+    country: 'it',
+    operation: 'sale',
+    propertyType: 'homes',
+    location: DEFAULT_CITY,
+    minSize: '120',
+    sortBy: 'lowestPriceM2',
     maxItems: 50,
     fetchDetails: false,
     fetchStats: false,
@@ -55,7 +71,8 @@ const searches = {
     country: 'it',
     operation: 'sale',
     propertyType: 'buildings',
-    location: 'Milano',
+    location: DEFAULT_CITY,
+    minSize: '160',
     sortBy: 'lowestPriceM2',
     maxItems: 30,
     fetchDetails: false,
