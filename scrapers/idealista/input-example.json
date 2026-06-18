@@ -1,10 +1,18 @@
 {
+  "defaults": {
+    "country": "it",
+    "operation": "sale",
+    "location": "Milano",
+    "fetchDetails": false,
+    "fetchStats": false
+  },
   "examples": {
     "residential_renovation_milan": {
       "country": "it",
       "operation": "sale",
       "propertyType": "homes",
       "location": "Milano",
+      "minSize": "100",
       "condition": ["renew"],
       "sortBy": "lowestPriceM2",
       "maxItems": 50,
@@ -16,8 +24,20 @@
       "operation": "sale",
       "propertyType": "premises",
       "location": "Milano",
+      "minSize": "60",
       "floor": ["groundFloor"],
       "sortBy": "highestPriceReduction",
+      "maxItems": 50,
+      "fetchDetails": false,
+      "fetchStats": false
+    },
+    "large_homes_fractioning_milan": {
+      "country": "it",
+      "operation": "sale",
+      "propertyType": "homes",
+      "location": "Milano",
+      "minSize": "120",
+      "sortBy": "lowestPriceM2",
       "maxItems": 50,
       "fetchDetails": false,
       "fetchStats": false
@@ -27,6 +47,7 @@
       "operation": "sale",
       "propertyType": "buildings",
       "location": "Milano",
+      "minSize": "160",
       "sortBy": "lowestPriceM2",
       "maxItems": 30,
       "fetchDetails": false,
