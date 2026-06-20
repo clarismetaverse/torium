@@ -73,6 +73,28 @@ function tryParseJson(text) {
   }
 }
 
+function getListingTitle(listing) {
+  return listing?.suggestedTexts?.title || listing?.address || listing?.propertyCode || 'Untitled listing';
+}
+
+function getListingUrl(listing) {
+  return listing?.url || null;
+}
+
+function buildResultLink(result, rank) {
+  return {
+    rank,
+    score: result.ranking_score,
+    title: result.title,
+    url: result.url,
+    price: result.listing?.price ?? null,
+    size_mq: result.listing?.size ?? null,
+    spread_base_eur: result.spread?.spread_base_eur ?? null,
+    roi_base_pct: result.spread?.roi_base_pct ?? null,
+    action: result.gpt_analysis?.recommended_action ?? null,
+  };
+}
+
 async function analyzeWithOpenAI(prompt, listing, doorEngine, investorProfile) {
   const response = await fetch('https://api.openai.com/v1/responses', {
     method: 'POST',
@@ -133,7 +155,12 @@ async function main() {
   listings.forEach((listing, index) => {
     const exclusion = getPreTriageExclusion(listing);
     if (exclusion.excluded) {
-      filteredOut.push({ index, exclusion, title: listing?.suggestedTexts?.title || listing?.address || listing?.url, url: listing?.url });
+      filteredOut.push({
+        index,
+        exclusion,
+        title: getListingTitle(listing),
+        url: getListingUrl(listing),
+      });
     } else {
       eligibleListings.push({ index, listing });
     }
@@ -147,14 +174,18 @@ async function main() {
   for (const item of preScored.slice(0, GPT_TRIAGE_LIMIT)) {
     const gptAnalysis = await analyzeWithOpenAI(prompt, item.listing, item.doorEngine, investorProfile);
     const spread = computeSpread(item.doorEngine, gptAnalysis);
-    results.push({
+    const result = {
       listing_index: item.index,
+      title: getListingTitle(item.listing),
+      url: getListingUrl(item.listing),
+      idealista_url: getListingUrl(item.listing),
       ranking_score: computeRankingScore(item.doorEngine, spread, gptAnalysis),
       door_engine: item.doorEngine,
       spread,
       gpt_analysis: gptAnalysis,
       listing: item.listing,
-    });
+    };
+    results.push(result);
   }
 
   results.sort((a, b) => b.ranking_score - a.ranking_score);
@@ -169,6 +200,7 @@ async function main() {
     filtered_out_summary: summarizeExclusions(filteredOut),
     filtered_out: filteredOut,
     gpt_analyzed_count: results.length,
+    result_links: results.map((result, index) => buildResultLink(result, index + 1)),
     results,
   };
 
