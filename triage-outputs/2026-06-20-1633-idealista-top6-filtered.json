@@ -1,0 +1,1805 @@
+{
+  "search_name": "largeHomesFractioningMilan",
+  "city": "Milano",
+  "investor_profile": "max-doors-20k",
+  "scraped_count": 50,
+  "eligible_count": 2,
+  "filtered_out_count": 48,
+  "filtered_out_summary": {
+    "auction_excluded": 8,
+    "change_of_use_or_rural_fabric_excluded": 5,
+    "typology_excluded_for_max_doors_profile": 20,
+    "non_residential_or_basement_excluded": 35,
+    "ownership_or_occupancy_excluded": 5
+  },
+  "filtered_out": [
+    {
+      "index": 0,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "auction_excluded"
+        ],
+        "basics": {
+          "price": 41000,
+          "surfaceMq": 167,
+          "rooms": 1,
+          "bathrooms": 1,
+          "hasFloorPlan": false,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": true,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": false
+        }
+      },
+      "title": "Appartamento in Viale Sarca, 193, Bicocca - Bignami, Milano",
+      "url": "https://www.idealista.it/immobile/36035472/"
+    },
+    {
+      "index": 1,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "change_of_use_or_rural_fabric_excluded"
+        ],
+        "basics": {
+          "price": 280000,
+          "surfaceMq": 680,
+          "rooms": 10,
+          "bathrooms": 10,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": false,
+          "changeOfUseSignal": true,
+          "priceReductionSignal": true
+        }
+      },
+      "title": "Attico in Via Privata Alessandro Scanini, 82, Baggio, Milano",
+      "url": "https://www.idealista.it/immobile/32922026/"
+    },
+    {
+      "index": 2,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "change_of_use_or_rural_fabric_excluded",
+          "typology_excluded_for_max_doors_profile"
+        ],
+        "basics": {
+          "price": 160000,
+          "surfaceMq": 300,
+          "rooms": 2,
+          "bathrooms": 2,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": false,
+          "changeOfUseSignal": true,
+          "priceReductionSignal": false
+        }
+      },
+      "title": "Casa di paese in Via Filippo Anghileri, 8, Figino, Milano",
+      "url": "https://www.idealista.it/immobile/36002510/"
+    },
+    {
+      "index": 3,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "auction_excluded",
+          "typology_excluded_for_max_doors_profile",
+          "non_residential_or_basement_excluded"
+        ],
+        "basics": {
+          "price": 135750,
+          "surfaceMq": 201,
+          "rooms": 2,
+          "bathrooms": 2,
+          "hasFloorPlan": false,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": true,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": false
+        }
+      },
+      "title": "Villetta a schiera in Via Rozzano s.n.c, Gratosoglio, Milano",
+      "url": "https://www.idealista.it/immobile/35143471/"
+    },
+    {
+      "index": 4,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "auction_excluded",
+          "ownership_or_occupancy_excluded"
+        ],
+        "basics": {
+          "price": 320625,
+          "surfaceMq": 418,
+          "rooms": 5,
+          "bathrooms": 5,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": true,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": false
+        }
+      },
+      "title": "Appartamento in Via Angelo Inganni, 77, Inganni, Milano",
+      "url": "https://www.idealista.it/immobile/35560405/"
+    },
+    {
+      "index": 5,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "typology_excluded_for_max_doors_profile",
+          "non_residential_or_basement_excluded"
+        ],
+        "basics": {
+          "price": 1250000,
+          "surfaceMq": 1600,
+          "rooms": 10,
+          "bathrooms": 10,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": false,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": false
+        }
+      },
+      "title": "Casale/cascina in Via Guascona, 60, Muggiano, Milano",
+      "url": "https://www.idealista.it/immobile/25638282/"
+    },
+    {
+      "index": 6,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "non_residential_or_basement_excluded"
+        ],
+        "basics": {
+          "price": 190000,
+          "surfaceMq": 188,
+          "rooms": 0,
+          "bathrooms": 0,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": false,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": false
+        }
+      },
+      "title": "Trilocale in Via del Mare, 67 /a, Barona - San Paolo, Milano",
+      "url": "https://www.idealista.it/immobile/34906177/"
+    },
+    {
+      "index": 7,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "non_residential_or_basement_excluded"
+        ],
+        "basics": {
+          "price": 160000,
+          "surfaceMq": 150,
+          "rooms": 2,
+          "bathrooms": 2,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": false,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": true
+        }
+      },
+      "title": "Monolocale in Via Pietro da Cemmo, 4, Ghisolfa, Milano",
+      "url": "https://www.idealista.it/immobile/30969558/"
+    },
+    {
+      "index": 8,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "non_residential_or_basement_excluded"
+        ],
+        "basics": {
+          "price": 385000,
+          "surfaceMq": 346,
+          "rooms": 0,
+          "bathrooms": 0,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": false,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": false
+        }
+      },
+      "title": "Appartamento in Via del Mare, 67 /a, Barona - San Paolo, Milano",
+      "url": "https://www.idealista.it/immobile/34894977/"
+    },
+    {
+      "index": 9,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "typology_excluded_for_max_doors_profile",
+          "non_residential_or_basement_excluded"
+        ],
+        "basics": {
+          "price": 850000,
+          "surfaceMq": 687,
+          "rooms": 2,
+          "bathrooms": 2,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": false,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": false
+        }
+      },
+      "title": "Villa a Crescenzago, Milano",
+      "url": "https://www.idealista.it/immobile/34999248/"
+    },
+    {
+      "index": 10,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "typology_excluded_for_max_doors_profile"
+        ],
+        "basics": {
+          "price": 2400000,
+          "surfaceMq": 1600,
+          "rooms": 0,
+          "bathrooms": 0,
+          "hasFloorPlan": false,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": false,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": false
+        }
+      },
+      "title": "Villa in Via Asiago s.n.c, Gorla, Milano",
+      "url": "https://www.idealista.it/immobile/33286695/"
+    },
+    {
+      "index": 11,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "auction_excluded",
+          "non_residential_or_basement_excluded"
+        ],
+        "basics": {
+          "price": 445000,
+          "surfaceMq": 295,
+          "rooms": 1,
+          "bathrooms": 1,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": true,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": false
+        }
+      },
+      "title": "Trilocale in Via Foggia, 4, Fondazione Prada - Scalo Romana, Milano",
+      "url": "https://www.idealista.it/immobile/28894019/"
+    },
+    {
+      "index": 12,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "auction_excluded"
+        ],
+        "basics": {
+          "price": 219000,
+          "surfaceMq": 140,
+          "rooms": 2,
+          "bathrooms": 2,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": true,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": false
+        }
+      },
+      "title": "Quadrilocale in Via Giacinto Serrati Menotti, 11, Ponte Lambro, Milano",
+      "url": "https://www.idealista.it/immobile/34478066/"
+    },
+    {
+      "index": 13,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "typology_excluded_for_max_doors_profile"
+        ],
+        "basics": {
+          "price": 266000,
+          "surfaceMq": 166,
+          "rooms": 0,
+          "bathrooms": 0,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": false,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": false
+        }
+      },
+      "title": "Villetta a schiera in Via Selvanesco, 30, Gratosoglio, Milano",
+      "url": "https://www.idealista.it/immobile/35860451/"
+    },
+    {
+      "index": 14,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "auction_excluded",
+          "change_of_use_or_rural_fabric_excluded",
+          "non_residential_or_basement_excluded"
+        ],
+        "basics": {
+          "price": 350000,
+          "surfaceMq": 210,
+          "rooms": 3,
+          "bathrooms": 3,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": true,
+          "changeOfUseSignal": true,
+          "priceReductionSignal": false
+        }
+      },
+      "title": "Appartamento in Via Cadibona, 14, Porta Vittoria - Calvairate, Milano",
+      "url": "https://www.idealista.it/immobile/35895174/"
+    },
+    {
+      "index": 15,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "typology_excluded_for_max_doors_profile",
+          "non_residential_or_basement_excluded"
+        ],
+        "basics": {
+          "price": 392000,
+          "surfaceMq": 231,
+          "rooms": 3,
+          "bathrooms": 3,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": false,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": false
+        }
+      },
+      "title": "Villetta a schiera in Via Selvanesco, 30, Gratosoglio, Milano",
+      "url": "https://www.idealista.it/immobile/35834837/"
+    },
+    {
+      "index": 16,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "typology_excluded_for_max_doors_profile",
+          "non_residential_or_basement_excluded"
+        ],
+        "basics": {
+          "price": 394000,
+          "surfaceMq": 232,
+          "rooms": 2,
+          "bathrooms": 2,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": false,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": false
+        }
+      },
+      "title": "Casa indipendente in Via Selvanesco, 30, Gratosoglio, Milano",
+      "url": "https://www.idealista.it/immobile/35946048/"
+    },
+    {
+      "index": 17,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "typology_excluded_for_max_doors_profile",
+          "non_residential_or_basement_excluded"
+        ],
+        "basics": {
+          "price": 3600000,
+          "surfaceMq": 2000,
+          "rooms": 0,
+          "bathrooms": 0,
+          "hasFloorPlan": false,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": false,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": false
+        }
+      },
+      "title": "Villa in Piazzale Luigi Emanuele Corvetto s.n.c, Corvetto, Milano",
+      "url": "https://www.idealista.it/immobile/36061178/"
+    },
+    {
+      "index": 18,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "typology_excluded_for_max_doors_profile"
+        ],
+        "basics": {
+          "price": 1980000,
+          "surfaceMq": 1082,
+          "rooms": 5,
+          "bathrooms": 5,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": false,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": false
+        }
+      },
+      "title": "Casa indipendente in Via Selvanesco, 30, Gratosoglio, Milano",
+      "url": "https://www.idealista.it/immobile/34094435/"
+    },
+    {
+      "index": 19,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "non_residential_or_basement_excluded"
+        ],
+        "basics": {
+          "price": 649000,
+          "surfaceMq": 350,
+          "rooms": 1,
+          "bathrooms": 1,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": false,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": false
+        }
+      },
+      "title": "Monolocale in Viale Monza, 17, NoLo - Brianza - Pasteur, Milano",
+      "url": "https://www.idealista.it/immobile/34801361/"
+    },
+    {
+      "index": 20,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "typology_excluded_for_max_doors_profile",
+          "non_residential_or_basement_excluded"
+        ],
+        "basics": {
+          "price": 595000,
+          "surfaceMq": 314,
+          "rooms": 2,
+          "bathrooms": 2,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": false,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": false
+        }
+      },
+      "title": "Villetta a schiera in Via Selvanesco, 30, Gratosoglio, Milano",
+      "url": "https://www.idealista.it/immobile/36013218/"
+    },
+    {
+      "index": 21,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "typology_excluded_for_max_doors_profile"
+        ],
+        "basics": {
+          "price": 1980000,
+          "surfaceMq": 1032,
+          "rooms": 3,
+          "bathrooms": 3,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": false,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": false
+        }
+      },
+      "title": "Villa in Via Selvanesco, 30, Gratosoglio, Milano",
+      "url": "https://www.idealista.it/immobile/35225604/"
+    },
+    {
+      "index": 22,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "ownership_or_occupancy_excluded"
+        ],
+        "basics": {
+          "price": 299000,
+          "surfaceMq": 145,
+          "rooms": 1,
+          "bathrooms": 1,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": false,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": false
+        }
+      },
+      "title": "Trilocale in Via Privata Ottaviano Vimercati, 16, Precotto, Milano",
+      "url": "https://www.idealista.it/immobile/35308547/"
+    },
+    {
+      "index": 23,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "non_residential_or_basement_excluded"
+        ],
+        "basics": {
+          "price": 298000,
+          "surfaceMq": 130,
+          "rooms": 2,
+          "bathrooms": 2,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": false,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": false
+        }
+      },
+      "title": "Quadrilocale in Via Carlo Marx, 9, Quarto Cagnino - San Carlo, Milano",
+      "url": "https://www.idealista.it/immobile/35696391/"
+    },
+    {
+      "index": 24,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "auction_excluded",
+          "non_residential_or_basement_excluded"
+        ],
+        "basics": {
+          "price": 299000,
+          "surfaceMq": 130,
+          "rooms": 2,
+          "bathrooms": 2,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": true,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": true,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": false
+        }
+      },
+      "title": "Appartamento su due piani in Via Giosuè Borsi, 3, Navigli - Porta Genova, Milano",
+      "url": "https://www.idealista.it/immobile/34145764/"
+    },
+    {
+      "index": 25,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "typology_excluded_for_max_doors_profile",
+          "non_residential_or_basement_excluded"
+        ],
+        "basics": {
+          "price": 513000,
+          "surfaceMq": 223,
+          "rooms": 2,
+          "bathrooms": 2,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": false,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": false
+        }
+      },
+      "title": "Villetta a schiera in Via Selvanesco, 30, Gratosoglio, Milano",
+      "url": "https://www.idealista.it/immobile/34078942/"
+    },
+    {
+      "index": 26,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "typology_excluded_for_max_doors_profile",
+          "non_residential_or_basement_excluded"
+        ],
+        "basics": {
+          "price": 458000,
+          "surfaceMq": 199,
+          "rooms": 2,
+          "bathrooms": 2,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": false,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": false
+        }
+      },
+      "title": "Villetta a schiera in Via Selvanesco, 30, Gratosoglio, Milano",
+      "url": "https://www.idealista.it/immobile/33998741/"
+    },
+    {
+      "index": 27,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "typology_excluded_for_max_doors_profile",
+          "non_residential_or_basement_excluded"
+        ],
+        "basics": {
+          "price": 465000,
+          "surfaceMq": 202,
+          "rooms": 2,
+          "bathrooms": 2,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": false,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": false
+        }
+      },
+      "title": "Villetta a schiera in Via Selvanesco, 30, Gratosoglio, Milano",
+      "url": "https://www.idealista.it/immobile/34048255/"
+    },
+    {
+      "index": 28,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "ownership_or_occupancy_excluded"
+        ],
+        "basics": {
+          "price": 290000,
+          "surfaceMq": 121,
+          "rooms": 2,
+          "bathrooms": 2,
+          "hasFloorPlan": false,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": false,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": false
+        }
+      },
+      "title": "Appartamento in Viale Brianza, 20, NoLo - Brianza - Pasteur, Milano",
+      "url": "https://www.idealista.it/immobile/35902981/"
+    },
+    {
+      "index": 29,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "non_residential_or_basement_excluded"
+        ],
+        "basics": {
+          "price": 290000,
+          "surfaceMq": 120,
+          "rooms": 2,
+          "bathrooms": 2,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": false,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": false
+        }
+      },
+      "title": "Trilocale in Via San Dionigi, 11, Corvetto, Milano",
+      "url": "https://www.idealista.it/immobile/34915644/"
+    },
+    {
+      "index": 30,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "typology_excluded_for_max_doors_profile",
+          "non_residential_or_basement_excluded"
+        ],
+        "basics": {
+          "price": 495000,
+          "surfaceMq": 200,
+          "rooms": 2,
+          "bathrooms": 2,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": false,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": true
+        }
+      },
+      "title": "Casa indipendente in Via Privata Pietro Colla s.n.c, Baggio, Milano",
+      "url": "https://www.idealista.it/immobile/34947751/"
+    },
+    {
+      "index": 32,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "typology_excluded_for_max_doors_profile",
+          "non_residential_or_basement_excluded"
+        ],
+        "basics": {
+          "price": 849000,
+          "surfaceMq": 334,
+          "rooms": 2,
+          "bathrooms": 2,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": false,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": false
+        }
+      },
+      "title": "Villetta a schiera a Qt8, Milano",
+      "url": "https://www.idealista.it/immobile/35471580/"
+    },
+    {
+      "index": 33,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "typology_excluded_for_max_doors_profile",
+          "non_residential_or_basement_excluded"
+        ],
+        "basics": {
+          "price": 1050000,
+          "surfaceMq": 405,
+          "rooms": 4,
+          "bathrooms": 4,
+          "hasFloorPlan": false,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": false,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": false
+        }
+      },
+      "title": "Casa indipendente in Via Privata Montefior, 11, Gorla, Milano",
+      "url": "https://www.idealista.it/immobile/32416561/"
+    },
+    {
+      "index": 34,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "typology_excluded_for_max_doors_profile",
+          "non_residential_or_basement_excluded"
+        ],
+        "basics": {
+          "price": 513000,
+          "surfaceMq": 196,
+          "rooms": 2,
+          "bathrooms": 2,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": false,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": false
+        }
+      },
+      "title": "Casa indipendente in Via Selvanesco, 30, Gratosoglio, Milano",
+      "url": "https://www.idealista.it/immobile/28409569/"
+    },
+    {
+      "index": 36,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "non_residential_or_basement_excluded"
+        ],
+        "basics": {
+          "price": 589000,
+          "surfaceMq": 220,
+          "rooms": 0,
+          "bathrooms": 0,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": false,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": false
+        }
+      },
+      "title": "Appartamento in Piazza Leonardo da Vinci s.n.c, Città Studi, Milano",
+      "url": "https://www.idealista.it/immobile/35139671/"
+    },
+    {
+      "index": 37,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "change_of_use_or_rural_fabric_excluded"
+        ],
+        "basics": {
+          "price": 495000,
+          "surfaceMq": 184,
+          "rooms": 3,
+          "bathrooms": 3,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": false,
+          "changeOfUseSignal": true,
+          "priceReductionSignal": false
+        }
+      },
+      "title": "Attico in Viale Certosa s.n.c, Garegnano, Milano",
+      "url": "https://www.idealista.it/immobile/35532397/"
+    },
+    {
+      "index": 38,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "non_residential_or_basement_excluded"
+        ],
+        "basics": {
+          "price": 378000,
+          "surfaceMq": 140,
+          "rooms": 1,
+          "bathrooms": 1,
+          "hasFloorPlan": false,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": false,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": false
+        }
+      },
+      "title": "Trilocale in Via Privata Treviso, 20, Cimiano, Milano",
+      "url": "https://www.idealista.it/immobile/36073248/"
+    },
+    {
+      "index": 39,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "non_residential_or_basement_excluded"
+        ],
+        "basics": {
+          "price": 348000,
+          "surfaceMq": 125,
+          "rooms": 2,
+          "bathrooms": 2,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": false,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": false
+        }
+      },
+      "title": "Trilocale in Via Sebastiano del Piombo, 23, Fiera, Milano",
+      "url": "https://www.idealista.it/immobile/35932864/"
+    },
+    {
+      "index": 40,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "ownership_or_occupancy_excluded",
+          "non_residential_or_basement_excluded"
+        ],
+        "basics": {
+          "price": 390000,
+          "surfaceMq": 139,
+          "rooms": 2,
+          "bathrooms": 2,
+          "hasFloorPlan": false,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": false,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": false
+        }
+      },
+      "title": "Trilocale in Via Ronchi, 24, Udine, Milano",
+      "url": "https://www.idealista.it/immobile/34389977/"
+    },
+    {
+      "index": 41,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "non_residential_or_basement_excluded"
+        ],
+        "basics": {
+          "price": 395000,
+          "surfaceMq": 140,
+          "rooms": 2,
+          "bathrooms": 2,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": false,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": false
+        }
+      },
+      "title": "Quadrilocale in Via Valsesia, 28, Baggio, Milano",
+      "url": "https://www.idealista.it/immobile/35296955/"
+    },
+    {
+      "index": 42,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "non_residential_or_basement_excluded"
+        ],
+        "basics": {
+          "price": 370000,
+          "surfaceMq": 130,
+          "rooms": 2,
+          "bathrooms": 2,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": false,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": false
+        }
+      },
+      "title": "Quadrilocale in Viale Giovanni Suzzani, 290, Bicocca - Bignami, Milano",
+      "url": "https://www.idealista.it/immobile/35661481/"
+    },
+    {
+      "index": 43,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "non_residential_or_basement_excluded"
+        ],
+        "basics": {
+          "price": 400000,
+          "surfaceMq": 138,
+          "rooms": 2,
+          "bathrooms": 2,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": false,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": true
+        }
+      },
+      "title": "Bilocale in Via Maestri Campionesi, 17, Cinque Giornate - Cadore, Milano",
+      "url": "https://www.idealista.it/immobile/35995084/"
+    },
+    {
+      "index": 44,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "auction_excluded",
+          "non_residential_or_basement_excluded"
+        ],
+        "basics": {
+          "price": 349000,
+          "surfaceMq": 120,
+          "rooms": 1,
+          "bathrooms": 1,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": true,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": true
+        }
+      },
+      "title": "Quadrilocale in Via Enrico Cialdini, Affori, Milano",
+      "url": "https://www.idealista.it/immobile/35558397/"
+    },
+    {
+      "index": 45,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "ownership_or_occupancy_excluded",
+          "non_residential_or_basement_excluded"
+        ],
+        "basics": {
+          "price": 350000,
+          "surfaceMq": 120,
+          "rooms": 1,
+          "bathrooms": 1,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": false,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": false
+        }
+      },
+      "title": "Trilocale in Via degli Imbriani, 1, Bovisa, Milano",
+      "url": "https://www.idealista.it/immobile/28705937/"
+    },
+    {
+      "index": 46,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "non_residential_or_basement_excluded"
+        ],
+        "basics": {
+          "price": 397000,
+          "surfaceMq": 136,
+          "rooms": 1,
+          "bathrooms": 1,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": false,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": true
+        }
+      },
+      "title": "Quadrilocale in Via Sulmona, 23, Sulmona, Milano",
+      "url": "https://www.idealista.it/immobile/35971366/"
+    },
+    {
+      "index": 47,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "non_residential_or_basement_excluded"
+        ],
+        "basics": {
+          "price": 368000,
+          "surfaceMq": 126,
+          "rooms": 1,
+          "bathrooms": 1,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": false,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": false
+        }
+      },
+      "title": "Quadrilocale in Via Uruguay, 10, Gallaratese, Milano",
+      "url": "https://www.idealista.it/immobile/32448671/"
+    },
+    {
+      "index": 48,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "non_residential_or_basement_excluded"
+        ],
+        "basics": {
+          "price": 419000,
+          "surfaceMq": 140,
+          "rooms": 2,
+          "bathrooms": 2,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": false,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": false
+        }
+      },
+      "title": "Trilocale in Via Porto Corsini, Villa San Giovanni, Milano",
+      "url": "https://www.idealista.it/immobile/34583959/"
+    },
+    {
+      "index": 49,
+      "exclusion": {
+        "excluded": true,
+        "reasons": [
+          "change_of_use_or_rural_fabric_excluded",
+          "typology_excluded_for_max_doors_profile"
+        ],
+        "basics": {
+          "price": 364000,
+          "surfaceMq": 121,
+          "rooms": 2,
+          "bathrooms": 2,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": false,
+          "changeOfUseSignal": true,
+          "priceReductionSignal": false
+        }
+      },
+      "title": "Trilocale in Via Enrico Cosenz, 44, Bovisa, Milano",
+      "url": "https://www.idealista.it/immobile/33868645/"
+    }
+  ],
+  "gpt_analyzed_count": 2,
+  "results": [
+    {
+      "listing_index": 31,
+      "ranking_score": 40,
+      "door_engine": {
+        "basics": {
+          "price": 300000,
+          "surfaceMq": 120,
+          "rooms": 2,
+          "bathrooms": 2,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": false,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": true
+        },
+        "investorProfileId": "max-doors-20k",
+        "targetUnitMq": 45,
+        "existingUnits": 1,
+        "estimatedFinalUnits": 2,
+        "newUnitsCreated": 1,
+        "costPerNewUnit": 20000,
+        "transformationCost": 20000,
+        "purchaseCostRate": 0.12,
+        "purchaseCosts": 36000,
+        "estimatedProjectCost": 356000,
+        "doorScore": 81,
+        "doorScoreReasons": [
+          "surface_above_minimum",
+          "multiple_final_units_possible_by_surface",
+          "new_units_created",
+          "two_or_more_bathrooms",
+          "floor_plan_available",
+          "renovation_signal_positive_for_spread",
+          "price_reduction_signal"
+        ]
+      },
+      "spread": {
+        "project_cost_eur": 356000,
+        "spread_low_eur": 64000,
+        "spread_base_eur": 144000,
+        "spread_high_eur": 224000,
+        "roi_base_pct": 40.45
+      },
+      "gpt_analysis": {
+        "final_unit_plan": [
+          {
+            "unit_type": "bilocale",
+            "estimated_size_mq": 55,
+            "sale_value_low_eur": 210000,
+            "sale_value_base_eur": 250000,
+            "sale_value_high_eur": 290000,
+            "valuation_reasoning": "Lorenteggio/Giambellino, attico ultimo piano con balconata: tagli piccoli ristrutturati possono vendere bene. Stima prudente per bilocale ampio (circa 55 mq) in zona non prime; premio moderato per piano alto/luminosità/spazi esterni ma senza esagerare."
+          },
+          {
+            "unit_type": "bilocale",
+            "estimated_size_mq": 55,
+            "sale_value_low_eur": 210000,
+            "sale_value_base_eur": 250000,
+            "sale_value_high_eur": 290000,
+            "valuation_reasoning": "Seconda unità ipotizzata simmetrica per superficie totale 120 mq. Valori allineati alla prima unità; sensibilità alta a qualità ristrutturazione, distribuzione reale impianti e possibilità di creare due ingressi/contatori."
+          }
+        ],
+        "total_sale_value_low_eur": 420000,
+        "total_sale_value_base_eur": 500000,
+        "total_sale_value_high_eur": 580000,
+        "fractioning_confidence": "medium",
+        "valuation_confidence": "medium",
+        "positive_signals": [
+          "Superficie 120 mq: compatibile con 2 unità (es. 2 bilocali ~55 mq) mantenendo spazi tecnici",
+          "Ultimo piano/attico, doppia esposizione angolare: appetibilità in rivendita",
+          "Ampia balconata perimetrale: potenziale premio commerciale",
+          "Due bagni già presenti: facilita redistribuzione in due unità",
+          "Planimetria presente (da verificare leggibilità e vincoli strutturali)",
+          "Immobile 'da personalizzare': potenziale spread per investitore che cerca ristrutturazione",
+          "Prezzo €/mq indicato molto basso (2.500 €/mq) rispetto a Milano: possibile opportunità (da verificare motivi)"
+        ],
+        "red_flags": [
+          "Attico con balconata perimetrale: frazionamento può essere più complesso (scarichi/colonne, distanze, vincoli condominiali su facciata/serramenti e ripartizione spazi esterni)",
+          "Nessun segnale di doppio ingresso: potrebbe essere necessario crearne uno (costi/condominio)",
+          "Zona Lorenteggio/Giambellino: domanda e valori dei micro-tagli dipendono molto da micro-posizione e qualità stabile; rischio di assorbimento a prezzi troppo ottimistici",
+          "Listing lo propone come 'esclusivo attico': potrebbe essere più rivendibile come singola unità grande che come due piccole (rischio di perdita del 'taglio premium')",
+          "Stabile con portineria/giardino: spese condominiali potenzialmente alte, impattano rivendita/investimento",
+          "Non sono indicati classe energetica, spese condominiali, anno stabile: impatto forte su valore post lavori"
+        ],
+        "missing_information": [
+          "Planimetria in dettaglio (posizione colonne di scarico, cucina attuale, setti/portanti, dimensioni locali)",
+          "Metri quadri commerciali vs calpestabili",
+          "Presenza e dimensione reale della balconata e se è pertinenza esclusiva o in parte comune/uso esclusivo",
+          "Numero di accessi al pianerottolo e possibilità di creare secondo ingresso",
+          "Spese condominiali annue e delibere straordinarie in corso",
+          "Classe energetica (APE) e tipologia serramenti/caldaia/impianti",
+          "Vincoli condominiali su modifiche (porte sul pianerottolo, contatori, canne fumarie/ventilazioni)",
+          "Stato occupazione (libero/locato) e tempi di rilascio",
+          "Presenza di posto auto/box (non indicato) e pertinenze oltre cantina",
+          "Altezze interne e conformità urbanistico-catastale (solo da chiedere, non da assumere)"
+        ],
+        "human_due_diligence_questions": [
+          "L’appartamento è libero? Se locato/occupato, con quale contratto e scadenza?",
+          "La planimetria è aggiornata e conforme allo stato di fatto? Ci sono difformità note?",
+          "Dove sono posizionate colonne di scarico e canne di ventilazione? È tecnicamente plausibile ricavare 2 cucine/2 bagni senza opere invasive?",
+          "Esiste già un secondo accesso/porta di servizio? In alternativa, il condominio autorizzerebbe la realizzazione di un secondo ingresso sul pianerottolo?",
+          "La balconata è tutta di proprietà esclusiva? Ci sono vincoli su frazionamento e ripartizione/uso dello spazio esterno?",
+          "Quanto ammontano le spese condominiali e sono previste spese straordinarie (facciate, tetto, ascensore, balconi)?",
+          "Qual è la classe energetica e sono richiesti interventi importanti su impianti/serramenti per rivendere bene?",
+          "È possibile installare contatori separati (gas/energia) e predisporre impianti indipendenti per le due unità?",
+          "Conferma dei mq: 120 mq sono commerciali? Quali sono i mq calpestabili interni esclusi balconi?",
+          "Ci sono vincoli strutturali (muri portanti) che limitano la redistribuzione?"
+        ],
+        "recommended_action": "send_to_technician"
+      },
+      "listing": {
+        "address": "Trilocale in Via Francesco Gonin, Lorenteggio - Giambellino, Milano",
+        "bathrooms": 2,
+        "contactInfo": {
+          "agencyLogo": "https://st3.idealista.it/cb/dc/0b/masterhome-washington.gif",
+          "commercialName": "Masterhome Washington",
+          "contactMethod": "all",
+          "contactName": "MasterHome Srl",
+          "micrositeShortName": "masterhome-washington",
+          "needLoginForContact": false,
+          "needLoginForPhone": false,
+          "phone1": {
+            "formattedPhone": "0281273460",
+            "nationalNumber": true,
+            "phoneNumber": "0281273460",
+            "phoneNumberForMobileDialing": "+390281273460",
+            "prefix": "39"
+          },
+          "totalAds": 0,
+          "userType": "professional"
+        },
+        "country": "it",
+        "description": "AD. ZE VIA GONIN LUMINOSO ATTICO CON BALCONATA PERIMETRALEIn contesto medio signorile con servizio di portineria ed ampio giardino condominiale, proponiamo in vendita esclusivo attico, situato all’ultimo piano dello stabile. L’appartamento, estremamente luminoso grazie alla doppia esposizione angolare, è composto da: ingresso, ampio soggiorno doppio, cucina abitabile, due camere da letto e doppi servizi entrambi finestrati. Elemento distintivo della proprietà è l’ampia balconata che si sviluppa lungo gran parte del perimetro dell’abitazione, ideale per momenti di relax all’aperto e convivialità. L’immobile si presenta da personalizzare, con ottime possibilità di ridistribuzione degli spazi interni, consentendo la realizzazione di un comodo quattro locali con cucina a vista. Il riscaldamento è centralizzato con radiatori dotati di termo valvole. Completa la proprietà una pratica cantina di pertinenza. Da vedere! MasterHome Real Estate Agency nasce dall’esperienza ultra ventennale nell’ambito del settore immobiliare milanese dei soci fondatori e dei nostri collaboratori operativi presso i nostri punti vendita. La nostra competenza nasce dalla passione che abbiamo per questo lavoro e dalla ricerca quotidiana del risultato finale ovvero: la soddisfazione delle esigenze della nostra clientela, coronando il sogno di una vita ossia una casa consona ai propri bisogni familiari. Il nostro percorso professionale nasce 27 anni orsono, in un franchising nazionale che stava cominciando la sua scalata alla leadership immobiliare italiana: PROFESSIONECASA S. P. A. Un’ascesa a cui abbiamo contribuito con l’operatività e la professionalità dei nostri uffici di Milano in via Rembrandt, 34, in C. so Lodi, 76 ed in Via Washington, 76. Arrivati ad un punto della nostra crescita professionale, abbiamo notato che era giunto il momento di scendere in campo con una nuova maglia, ma con gli stessi protagonisti vincenti, così i soci di riferimento hanno deciso di coniare un nuovo marchio che poteva svincolare sia i propri collaboratori che la propria clientela dai limiti territoriali che rappresentano il punto debole del Franchising.",
+        "detailedType": {
+          "typology": "flat"
+        },
+        "district": "Lorenteggio - Bande Nere",
+        "dropDate": 1780489332000,
+        "externalReference": "Via Francesco Gonin ",
+        "favourite": false,
+        "features": {
+          "hasAirConditioning": false,
+          "hasBoxRoom": true,
+          "hasGarden": false,
+          "hasTerrace": false
+        },
+        "floor": "8",
+        "has360": false,
+        "has3DTour": false,
+        "hasLift": true,
+        "hasPlan": true,
+        "hasStaging": false,
+        "hasVideo": false,
+        "isOnlineBookingActive": false,
+        "latitude": 45.4421596,
+        "locationId": "0-EU-IT-MI-01-001-135-16-004",
+        "longitude": 9.1230389,
+        "multimedia": {
+          "images": [
+            {
+              "tag": "unknown",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/12/2a/f6/806249000.jpg"
+            },
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/58/e4/17/726329227.jpg"
+            },
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/88/d5/a4/726329230.jpg"
+            },
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/65/b9/e8/726329232.jpg"
+            },
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/b2/79/bd/726329244.jpg"
+            },
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/c6/2c/14/726329246.jpg"
+            },
+            {
+              "tag": "livingRoom",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/8b/c0/9d/726329247.jpg"
+            },
+            {
+              "tag": "livingRoom",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/e2/18/6c/726329248.jpg"
+            },
+            {
+              "tag": "terrace",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/c9/ea/76/726329249.jpg"
+            },
+            {
+              "tag": "bedroom",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/bb/51/e8/726329250.jpg"
+            },
+            {
+              "tag": "bedroom",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/f1/09/42/726329251.jpg"
+            },
+            {
+              "tag": "corridor",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/bc/8a/67/726329252.jpg"
+            },
+            {
+              "tag": "unknown",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/0a/74/61/726329273.jpg"
+            },
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/fd/c8/d0/726329274.jpg"
+            },
+            {
+              "tag": "kitchen",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/32/70/9f/726329275.jpg"
+            },
+            {
+              "tag": "livingRoom",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/a6/2b/41/726329276.jpg"
+            },
+            {
+              "tag": "bedroom",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/a9/b5/a6/726329277.jpg"
+            },
+            {
+              "tag": "bedroom",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/c0/9a/4d/726329278.jpg"
+            },
+            {
+              "tag": "bedroom",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/4d/66/93/726329279.jpg"
+            },
+            {
+              "tag": "bathroom",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/c2/d8/20/726329280.jpg"
+            },
+            {
+              "tag": "bathroom",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/f8/bd/b2/726329281.jpg"
+            },
+            {
+              "tag": "bathroom",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/f3/bf/78/726329282.jpg"
+            },
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/e9/52/02/806249063.jpg"
+            },
+            {
+              "tag": "plan",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/0f/ec/f6/806249066.jpg"
+            }
+          ]
+        },
+        "municipality": "Milano",
+        "neighborhood": "Lorenteggio - Giambellino",
+        "newDevelopment": false,
+        "newDevelopmentHighlight": false,
+        "newProperty": false,
+        "notes": [],
+        "numPhotos": 24,
+        "operation": "sale",
+        "preferenceHighlight": false,
+        "price": 300000,
+        "priceByArea": 2500,
+        "priceDropPercentage": 3,
+        "priceDropValue": 10000,
+        "priceInfo": {
+          "price": {
+            "amount": 300000,
+            "currencySuffix": "€",
+            "priceDropInfo": {
+              "formerPrice": 310000,
+              "priceDropPercentage": 3,
+              "priceDropValue": 10000
+            }
+          }
+        },
+        "propertyCode": "33673666",
+        "propertyType": "flat",
+        "province": "Milano",
+        "ribbons": [],
+        "rooms": 3,
+        "savedAd": {},
+        "showAddress": false,
+        "size": 120,
+        "status": "renew",
+        "suggestedTexts": {
+          "title": "Trilocale in Via Francesco Gonin, Lorenteggio - Giambellino, Milano"
+        },
+        "thumbnail": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/12/2a/f6/806249000.jpg",
+        "topHighlight": false,
+        "topNewDevelopment": false,
+        "topPlus": false,
+        "urgentVisualHighlight": false,
+        "url": "https://www.idealista.it/immobile/33673666/",
+        "visualHighlight": false
+      }
+    },
+    {
+      "listing_index": 35,
+      "ranking_score": 34,
+      "door_engine": {
+        "basics": {
+          "price": 320000,
+          "surfaceMq": 120,
+          "rooms": 1,
+          "bathrooms": 1,
+          "hasFloorPlan": true,
+          "doubleEntranceSignal": false,
+          "renovationSignal": true,
+          "renovatedSignal": false,
+          "auctionSignal": false,
+          "changeOfUseSignal": false,
+          "priceReductionSignal": false
+        },
+        "investorProfileId": "max-doors-20k",
+        "targetUnitMq": 45,
+        "existingUnits": 1,
+        "estimatedFinalUnits": 2,
+        "newUnitsCreated": 1,
+        "costPerNewUnit": 20000,
+        "transformationCost": 20000,
+        "purchaseCostRate": 0.12,
+        "purchaseCosts": 38400,
+        "estimatedProjectCost": 378400,
+        "doorScore": 66,
+        "doorScoreReasons": [
+          "surface_above_minimum",
+          "multiple_final_units_possible_by_surface",
+          "new_units_created",
+          "floor_plan_available",
+          "renovation_signal_positive_for_spread"
+        ]
+      },
+      "spread": {
+        "project_cost_eur": 378400,
+        "spread_low_eur": 61600,
+        "spread_base_eur": 121600,
+        "spread_high_eur": 191600,
+        "roi_base_pct": 32.14
+      },
+      "gpt_analysis": {
+        "final_unit_plan": [
+          {
+            "unit_type": "bilocale",
+            "estimated_size_mq": 55,
+            "sale_value_low_eur": 220000,
+            "sale_value_base_eur": 250000,
+            "sale_value_high_eur": 285000,
+            "valuation_reasoning": "Barona/Famagosta: bilocali ristrutturati tendono a vendere bene ma non ai livelli semicentrali. Ipotesi di unità ~55 mq (alto per bilocale) per mantenere tagli vendibili e spazi regolari. Stima per unità basata su range prudente per zona e premio per ristrutturato/ben distribuito (sanity check: ~4.0k–5.2k €/mq)."
+          },
+          {
+            "unit_type": "bilocale",
+            "estimated_size_mq": 55,
+            "sale_value_low_eur": 220000,
+            "sale_value_base_eur": 250000,
+            "sale_value_high_eur": 285000,
+            "valuation_reasoning": "Seconda unità ipotizzata speculare per massimizzare porte (2 unità totali). Valori allineati alla prima; eventuali differenze dipendono da esposizione, affacci, presenza balconi/cantina e qualità finiture, non determinabili dalla scheda."
+          }
+        ],
+        "total_sale_value_low_eur": 440000,
+        "total_sale_value_base_eur": 500000,
+        "total_sale_value_high_eur": 570000,
+        "fractioning_confidence": "medium",
+        "valuation_confidence": "medium",
+        "positive_signals": [
+          "Superficie 120 mq: compatibile con frazionamento in 2 unità vendibili",
+          "Immobile dichiarato 'da ristrutturare' (spread potenziale più alto per questo profilo)",
+          "Planimetria presente (riduce rischio di ipotesi totalmente cieca)",
+          "Secondo piano con ascensore: più facile rivendere unità piccole",
+          "Zona servita (M2 Famagosta, servizi, ospedale San Paolo) utile per domanda di bilocali"
+        ],
+        "red_flags": [
+          "Un solo bagno attuale: il frazionamento in 2 unità richiede verosimilmente 2 bagni e verifiche scarichi/colonne (costi/rischi tecnici non inclusi)",
+          "Nessun segnale di doppio ingresso: possibile necessità di creare nuovo accesso/ridefinire parti comuni (incertezza condominiale)",
+          "Prezzo d'acquisto già non bassissimo per zona (2.667 €/mq): il margine dipende molto dal risultato progettuale e dal prezzo di rivendita effettivo",
+          "Assenza di informazioni su spese condominiali, classe energetica, riscaldamento e stato impianti (impattano costi e rivendibilità)",
+          "Frazionamento non assumibile come automaticamente autorizzabile (regolamento condominiale/Comune/catasto da verificare)"
+        ],
+        "missing_information": [
+          "Planimetria in alta definizione e misure interne (posizione colonne scarico, muri portanti, cavedi)",
+          "Tipologia riscaldamento (centralizzato/autonomo), presenza contabilizzatori e spazi tecnici per 2 impianti",
+          "Presenza e dimensioni di balconi, cantina/solaio, posto auto (incrementano liquidità e valore)",
+          "Classe energetica e stato serramenti",
+          "Spese condominiali ordinarie e straordinarie deliberate (facciate, tetto, ascensore, caldaia centrale)",
+          "Stato occupativo (libero/locato) e tempistiche rilascio",
+          "Regolamento condominiale: eventuali limiti a frazionamenti/nuove unità/BB"
+        ],
+        "human_due_diligence_questions": [
+          "La planimetria mostra muri portanti o vincoli strutturali che impediscono un taglio in 2 bilocali regolari?",
+          "Dove sono cucina e bagno attuali rispetto alle colonne di scarico? È realistico creare 2 bagni completi senza interventi invasivi?",
+          "È possibile realizzare un secondo accesso/porta di ingresso alle nuove unità senza problemi condominiali (pianerottolo/antincendio/decoro)?",
+          "Qual è l'esposizione reale e la distribuzione delle finestre? Entrambe le future unità avrebbero soggiorno/camera con aeroilluminazione conforme?",
+          "Ci sono balconi o pertinenze assegnabili a una o entrambe le unità per migliorare la rivendibilità?",
+          "Spese condominiali e lavori straordinari già deliberati nei prossimi 12-24 mesi?",
+          "L'immobile è libero e rogito rapido o ci sono vincoli/occupazioni?"
+        ],
+        "recommended_action": "send_to_technician"
+      },
+      "listing": {
+        "address": "Quadrilocale in Via San Paolino, 28, Barona - San Paolo, Milano",
+        "bathrooms": 1,
+        "contactInfo": {
+          "agencyLogo": "https://st3.idealista.it/d6/67/8c/dhome-real-estate.gif",
+          "commercialName": "DHOME REAL ESTATE",
+          "contactMethod": "all",
+          "contactName": "DHOME",
+          "micrositeShortName": "dhome-real-estate",
+          "needLoginForContact": false,
+          "needLoginForPhone": false,
+          "phone1": {
+            "formattedPhone": "0289732269",
+            "nationalNumber": true,
+            "phoneNumber": "0289732269",
+            "phoneNumberForMobileDialing": "+390289732269",
+            "prefix": "39"
+          },
+          "totalAds": 0,
+          "userType": "professional"
+        },
+        "country": "it",
+        "description": "Quadrilocale di ampia metratura da personalizzare – Via San Paolino 28, Milano In zona residenziale tranquilla e ben servita, nel quartiere Barona/Famagosta, proponiamo in vendita un ampio quadrilocale di circa 120 mq situato al secondo piano di uno stabile dotato di ascensore. L’appartamento si apre su un comodo ingresso che conduce a un luminoso soggiorno, caratterizzato da ampie finestre che garantiscono luce naturale per gran parte della giornata. La cucina è abitabile, separata e spaziosa, ideale per chi desidera un ambiente conviviale e funzionale. La zona notte comprende tre camere da letto di generose dimensioni, adatte sia a famiglie sia a chi necessita di uno studio o di una stanza per gli ospiti. Il bagno è finestrato e, grazie alla metratura complessiva dell’immobile, esiste la possibilità di ridistribuire gli spazi e realizzare un secondo servizio. La doppia esposizione assicura una piacevole luminosità e una buona ventilazione degli ambienti. L’immobile si presenta da ristrutturare, offrendo così l’opportunità di personalizzare completamente gli spazi interni e valorizzarne al massimo il potenziale, rendendolo una soluzione ideale sia come abitazione principale sia come investimento. Lo stabile è inserito in un contesto silenzioso e ben curato. La posizione è particolarmente strategica: nelle immediate vicinanze si trovano supermercati, negozi di prima necessità, farmacie e scuole, rendendo la zona perfetta per la vita quotidiana. I collegamenti sono ottimi grazie alla vicinanza della metropolitana M2 Famagosta e a diverse linee di autobus, che permettono di raggiungere rapidamente il centro città. A breve distanza si trova anche l’Ospedale San Paolo, oltre a numerose aree verdi ideali per il tempo libero e le attività all’aperto. Una soluzione ideale per chi è alla ricerca di spazi ampi, tranquillità e possibilità di personalizzazione in una zona ben collegata e ricca di servizi.",
+        "detailedType": {
+          "typology": "flat"
+        },
+        "district": "Famagosta - Naviglio Grande",
+        "externalReference": "DHOME_00006157",
+        "favourite": false,
+        "features": {
+          "hasAirConditioning": true,
+          "hasBoxRoom": false,
+          "hasGarden": false,
+          "hasSwimmingPool": false,
+          "hasTerrace": false
+        },
+        "floor": "2",
+        "has360": true,
+        "has3DTour": false,
+        "hasLift": true,
+        "hasPlan": true,
+        "hasStaging": false,
+        "hasVideo": false,
+        "highlight": {
+          "groupDescription": "Premium"
+        },
+        "isOnlineBookingActive": false,
+        "latitude": 45.4296951,
+        "locationId": "0-EU-IT-MI-01-001-135-15-002",
+        "longitude": 9.1618414,
+        "multimedia": {
+          "images": [
+            {
+              "tag": "livingRoom",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/38/f8/0a/797428294.jpg"
+            },
+            {
+              "tag": "bedroom",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/90/ac/85/797428299.jpg"
+            },
+            {
+              "tag": "livingRoom",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/9b/1a/d1/797428302.jpg"
+            },
+            {
+              "tag": "livingRoom",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/3c/43/76/797428313.jpg"
+            },
+            {
+              "tag": "bedroom",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/75/b5/18/797428305.jpg"
+            },
+            {
+              "tag": "bedroom",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/73/48/62/797428314.jpg"
+            },
+            {
+              "tag": "bedroom",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/d5/8f/d7/797428291.jpg"
+            },
+            {
+              "tag": "bedroom",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/68/aa/dd/797428292.jpg"
+            },
+            {
+              "tag": "kitchen",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/29/f6/10/797428323.jpg"
+            },
+            {
+              "tag": "corridor",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/58/e5/45/797428324.jpg"
+            },
+            {
+              "tag": "kitchen",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/cb/0f/49/797428325.jpg"
+            },
+            {
+              "tag": "unknown",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/0b/0f/d6/797428326.jpg"
+            },
+            {
+              "tag": "livingRoom",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/fc/70/8a/797428327.jpg"
+            },
+            {
+              "tag": "livingRoom",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/f0/25/8d/797428315.jpg"
+            },
+            {
+              "tag": "livingRoom",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/77/eb/18/797428316.jpg"
+            },
+            {
+              "tag": "livingRoom",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/47/35/ee/797428330.jpg"
+            },
+            {
+              "tag": "livingRoom",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/df/05/a9/797428332.jpg"
+            },
+            {
+              "tag": "bedroom",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/c7/80/b8/797428334.jpg"
+            },
+            {
+              "tag": "corridor",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/61/bc/be/797428336.jpg"
+            },
+            {
+              "tag": "bathroom",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/c6/4b/1a/797428337.jpg"
+            },
+            {
+              "tag": "bathroom",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/d0/9d/31/797428318.jpg"
+            },
+            {
+              "tag": "bathroom",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/a8/9c/c9/797428349.jpg"
+            },
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/00/1f/8e/797428075.jpg"
+            },
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/07/8e/d1/797428076.jpg"
+            },
+            {
+              "tag": "views",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/2a/8b/89/797428340.jpg"
+            },
+            {
+              "tag": "plan",
+              "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/a1/d1/82/797428341.jpg"
+            }
+          ],
+          "virtual3DTours": [
+            {
+              "category": "360",
+              "thumbnail": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/90/ac/85/797428299.jpg",
+              "url": "https://floorfy.com/tour/2625636?src=idealista-tools&lang=it"
+            }
+          ]
+        },
+        "municipality": "Milano",
+        "neighborhood": "Barona - San Paolo",
+        "newDevelopment": false,
+        "newDevelopmentHighlight": false,
+        "newProperty": false,
+        "notes": [],
+        "numPhotos": 26,
+        "operation": "sale",
+        "preferenceHighlight": true,
+        "price": 320000,
+        "priceByArea": 2667,
+        "priceInfo": {
+          "price": {
+            "amount": 320000,
+            "currencySuffix": "€"
+          }
+        },
+        "propertyCode": "35618417",
+        "propertyType": "flat",
+        "province": "Milano",
+        "ribbons": [],
+        "rooms": 4,
+        "savedAd": {},
+        "showAddress": true,
+        "size": 120,
+        "status": "renew",
+        "suggestedTexts": {
+          "title": "Quadrilocale in Via San Paolino, 28, Barona - San Paolo, Milano"
+        },
+        "thumbnail": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/0/id.pro.it.image.master/38/f8/0a/797428294.jpg",
+        "topHighlight": false,
+        "topNewDevelopment": false,
+        "topPlus": false,
+        "urgentVisualHighlight": false,
+        "url": "https://www.idealista.it/immobile/35618417/",
+        "visualHighlight": false
+      }
+    }
+  ]
+}
