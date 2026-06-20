@@ -13,7 +13,8 @@
     "analyze:idealista:fractioning": "node pipelines/analyze-idealista.js largeHomesFractioningMilan 0",
     "analyze:idealista:buildings": "node pipelines/analyze-idealista.js buildingsMilan 0",
     "triage:idealista:fractioning": "node pipelines/triage-idealista-filtered.js largeHomesFractioningMilan",
-    "triage:idealista:homes": "node pipelines/triage-idealista-filtered.js residentialRenovationMilan"
+    "triage:idealista:homes": "node pipelines/triage-idealista-filtered.js residentialRenovationMilan",
+    "viewer:triage": "node viewer/server.js"
   },
   "dependencies": {
     "dotenv": "latest"
