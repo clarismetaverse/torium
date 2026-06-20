@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TORIUM Triage Viewer</title>
+  <style>
+    :root {
+      --bg: #f4f1ea;
+      --panel: #fffaf0;
+      --panel-2: #ffffff;
+      --ink: #171717;
+      --muted: #716b61;
+      --line: #dfd5c5;
+      --accent: #151515;
+      --good: #106b3b;
+      --warn: #9a5a00;
+      --bad: #9b1c1c;
+      --chip: #eee4d3;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+    }
+
+    a { color: inherit; }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 380px minmax(0, 1fr);
+    }
+
+    aside {
+      border-right: 1px solid var(--line);
+      background: var(--panel);
+      padding: 18px;
+      overflow-y: auto;
+      max-height: 100vh;
+      position: sticky;
+      top: 0;
+    }
+
+    main {
+      padding: 22px;
+      overflow: auto;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .brand h1 {
+      font-size: 20px;
+      margin: 0;
+      letter-spacing: -0.02em;
+    }
+
+    .brand span {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .controls, .summary, .dropzone, .card, .detail-block {
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+    }
+
+    .controls { padding: 12px; margin-bottom: 12px; }
+    .summary { padding: 12px; margin-bottom: 12px; }
+    .dropzone {
+      padding: 14px;
+      margin-bottom: 12px;
+      border-style: dashed;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .spaced { justify-content: space-between; }
+
+    select, button, input[type="file"]::file-selector-button {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      border-radius: 12px;
+      padding: 9px 10px;
+      font: inherit;
+    }
+
+    select { width: 100%; margin-top: 8px; }
+
+    button {
+      cursor: pointer;
+      transition: transform .08s ease, background .15s ease;
+    }
+    button:hover { background: #f8f2e8; }
+    button:active { transform: scale(.98); }
+    button.primary { background: var(--accent); color: white; border-color: var(--accent); }
+    button.primary:hover { background: #303030; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .stat {
+      padding: 10px;
+      background: #f9f4ea;
+      border-radius: 14px;
+      border: 1px solid #eadfcd;
+    }
+    .stat b { display: block; font-size: 18px; }
+    .stat span { font-size: 12px; color: var(--muted); }
+
+    .result-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .result-item {
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 16px;
+      padding: 12px;
+      cursor: pointer;
+    }
+    .result-item.active { outline: 2px solid #111; }
+    .result-item h3 { margin: 0 0 8px; font-size: 14px; line-height: 1.25; }
+
+    .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+    .chip {
+      font-size: 11px;
+      padding: 5px 7px;
+      border-radius: 999px;
+      background: var(--chip);
+      color: #2f2a22;
+      white-space: nowrap;
+    }
+    .chip.good { background: #dff3e7; color: var(--good); }
+    .chip.warn { background: #fff1d3; color: var(--warn); }
+    .chip.bad { background: #ffe1de; color: var(--bad); }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: start;
+      margin-bottom: 16px;
+    }
+
+    .hero h2 {
+      font-size: clamp(25px, 4vw, 44px);
+      line-height: 0.98;
+      letter-spacing: -0.055em;
+      margin: 0 0 12px;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin: 16px 0;
+    }
+
+    .metric {
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px;
+    }
+    .metric span { color: var(--muted); font-size: 12px; display: block; }
+    .metric b { font-size: 22px; display: block; margin-top: 4px; }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .detail-block { padding: 16px; }
+    .detail-block h3 { margin: 0 0 10px; font-size: 16px; }
+    .detail-block ul { margin: 0; padding-left: 18px; }
+    .detail-block li { margin: 6px 0; line-height: 1.35; }
+
+    .unit-card {
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fff;
+      margin-bottom: 8px;
+    }
+    .unit-card b { display: block; margin-bottom: 4px; }
+    .unit-card p { margin: 6px 0 0; color: var(--muted); font-size: 13px; line-height: 1.4; }
+
+    .json-box {
+      white-space: pre-wrap;
+      overflow: auto;
+      background: #171717;
+      color: #f6f1e8;
+      border-radius: 16px;
+      padding: 14px;
+      font-size: 12px;
+      max-height: 360px;
+    }
+
+    .muted { color: var(--muted); }
+    .empty { padding: 36px; color: var(--muted); text-align: center; }
+
+    @media (max-width: 980px) {
+      .app { grid-template-columns: 1fr; }
+      aside { position: static; max-height: unset; border-right: 0; border-bottom: 1px solid var(--line); }
+      .hero, .detail-grid { grid-template-columns: 1fr; }
+      .meta-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside>
+      <div class="brand">
+        <div>
+          <h1>TORIUM Triage</h1>
+          <span>Quick deal browser</span>
+        </div>
+        <button id="refreshButton" title="Refresh outputs">↻</button>
+      </div>
+
+      <div class="controls">
+        <div class="row spaced">
+          <button id="prevButton">← Prev</button>
+          <button id="nextButton" class="primary">Next →</button>
+        </div>
+        <select id="outputSelect"></select>
+      </div>
+
+      <div class="dropzone" id="dropzone">
+        Drop a triage JSON here, or load manually:<br /><br />
+        <input id="fileInput" type="file" accept="application/json,.json" />
+      </div>
+
+      <div class="summary" id="summary"></div>
+      <div class="result-list" id="resultList"></div>
+    </aside>
+
+    <main id="main">
+      <div class="empty">Load a triage JSON to start.</div>
+    </main>
+  </div>
+
+  <script>
+    const state = {
+      outputs: [],
+      output: null,
+      results: [],
+      selectedIndex: 0,
+    };
+
+    const els = {
+      outputSelect: document.getElementById('outputSelect'),
+      resultList: document.getElementById('resultList'),
+      summary: document.getElementById('summary'),
+      main: document.getElementById('main'),
+      refreshButton: document.getElementById('refreshButton'),
+      prevButton: document.getElementById('prevButton'),
+      nextButton: document.getElementById('nextButton'),
+      fileInput: document.getElementById('fileInput'),
+      dropzone: document.getElementById('dropzone'),
+    };
+
+    const money = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
+    const number = new Intl.NumberFormat('it-IT');
+
+    function formatMoney(value) {
+      return Number.isFinite(Number(value)) ? money.format(Number(value)) : '—';
+    }
+
+    function formatNumber(value, suffix = '') {
+      return Number.isFinite(Number(value)) ? `${number.format(Number(value))}${suffix}` : '—';
+    }
+
+    function getTitle(result) {
+      return result?.title || result?.listing?.suggestedTexts?.title || result?.listing?.address || 'Untitled result';
+    }
+
+    function getUrl(result) {
+      return result?.url || result?.idealista_url || result?.listing?.url || null;
+    }
+
+    function getActionClass(action) {
+      if (!action) return '';
+      if (String(action).includes('discard')) return 'bad';
+      if (String(action).includes('request')) return 'warn';
+      return 'good';
+    }
+
+    function deriveResults(output) {
+      if (Array.isArray(output?.results) && output.results.length) return output.results;
+      if (Array.isArray(output?.result_links)) return output.result_links;
+      return [];
+    }
+
+    async function loadOutputList() {
+      const response = await fetch('/api/outputs');
+      const data = await response.json();
+      state.outputs = data.outputs || [];
+      renderOutputSelect();
+      if (state.outputs.length) await loadOutputById(state.outputs[0].id);
+    }
+
+    function renderOutputSelect() {
+      els.outputSelect.innerHTML = '';
+      if (!state.outputs.length) {
+        els.outputSelect.innerHTML = '<option>No outputs found</option>';
+        return;
+      }
+      for (const output of state.outputs) {
+        const option = document.createElement('option');
+        option.value = output.id;
+        option.textContent = `${output.dir}/${output.name}`;
+        els.outputSelect.appendChild(option);
+      }
+    }
+
+    async function loadOutputById(id) {
+      const response = await fetch(`/api/output?file=${encodeURIComponent(id)}`);
+      const output = await response.json();
+      setOutput(output);
+      els.outputSelect.value = id;
+    }
+
+    function setOutput(output) {
+      state.output = output;
+      state.results = deriveResults(output);
+      state.selectedIndex = 0;
+      renderAll();
+    }
+
+    function renderAll() {
+      renderSummary();
+      renderResultList();
+      renderDetail();
+    }
+
+    function renderSummary() {
+      const output = state.output;
+      if (!output) {
+        els.summary.innerHTML = '';
+        return;
+      }
+
+      els.summary.innerHTML = `
+        <div class="muted">${output.search_name || 'triage output'} · ${output.city || ''}</div>
+        <div class="stats">
+          <div class="stat"><b>${formatNumber(output.scraped_count)}</b><span>scraped</span></div>
+          <div class="stat"><b>${formatNumber(output.eligible_count)}</b><span>eligible</span></div>
+          <div class="stat"><b>${formatNumber(output.filtered_out_count)}</b><span>filtered out</span></div>
+          <div class="stat"><b>${formatNumber(output.gpt_analyzed_count)}</b><span>GPT analyzed</span></div>
+        </div>
+      `;
+    }
+
+    function renderResultList() {
+      els.resultList.innerHTML = '';
+      state.results.forEach((result, index) => {
+        const item = document.createElement('div');
+        item.className = `result-item ${index === state.selectedIndex ? 'active' : ''}`;
+        item.innerHTML = `
+          <h3>${index + 1}. ${getTitle(result)}</h3>
+          <div class="chips">
+            <span class="chip">Score ${formatNumber(result.ranking_score ?? result.score)}</span>
+            <span class="chip">${formatMoney(result.listing?.price ?? result.price)}</span>
+            <span class="chip">${formatNumber(result.listing?.size ?? result.size_mq, ' mq')}</span>
+            <span class="chip good">ROI ${formatNumber(result.spread?.roi_base_pct ?? result.roi_base_pct, '%')}</span>
+            <span class="chip ${getActionClass(result.gpt_analysis?.recommended_action ?? result.action)}">${result.gpt_analysis?.recommended_action ?? result.action ?? '—'}</span>
+          </div>
+        `;
+        item.addEventListener('click', () => {
+          state.selectedIndex = index;
+          renderAll();
+        });
+        els.resultList.appendChild(item);
+      });
+    }
+
+    function renderArray(title, items, klass = '') {
+      if (!Array.isArray(items) || !items.length) return '';
+      return `
+        <section class="detail-block ${klass}">
+          <h3>${title}</h3>
+          <ul>${items.map((item) => `<li>${String(item)}</li>`).join('')}</ul>
+        </section>
+      `;
+    }
+
+    function renderUnits(units) {
+      if (!Array.isArray(units) || !units.length) return '';
+      return `
+        <section class="detail-block">
+          <h3>Final unit plan</h3>
+          ${units.map((unit, index) => `
+            <div class="unit-card">
+              <b>${index + 1}. ${unit.unit_type || 'unit'} · ${formatNumber(unit.estimated_size_mq, ' mq')}</b>
+              <div class="chips">
+                <span class="chip">Low ${formatMoney(unit.sale_value_low_eur)}</span>
+                <span class="chip good">Base ${formatMoney(unit.sale_value_base_eur)}</span>
+                <span class="chip">High ${formatMoney(unit.sale_value_high_eur)}</span>
+              </div>
+              <p>${unit.valuation_reasoning || ''}</p>
+            </div>
+          `).join('')}
+        </section>
+      `;
+    }
+
+    function renderDetail() {
+      const result = state.results[state.selectedIndex];
+      if (!result) {
+        els.main.innerHTML = '<div class="empty">No results in this output.</div>';
+        return;
+      }
+
+      const analysis = result.gpt_analysis || {};
+      const spread = result.spread || {};
+      const listing = result.listing || result;
+      const url = getUrl(result);
+
+      els.main.innerHTML = `
+        <div class="hero">
+          <div>
+            <div class="muted">Result ${state.selectedIndex + 1} / ${state.results.length}</div>
+            <h2>${getTitle(result)}</h2>
+            <div class="chips">
+              <span class="chip ${getActionClass(analysis.recommended_action ?? result.action)}">${analysis.recommended_action ?? result.action ?? '—'}</span>
+              <span class="chip">${analysis.fractioning_confidence ? `Fractioning ${analysis.fractioning_confidence}` : 'Fractioning —'}</span>
+              <span class="chip">${analysis.valuation_confidence ? `Valuation ${analysis.valuation_confidence}` : 'Valuation —'}</span>
+            </div>
+          </div>
+          <div class="row">
+            ${url ? `<a href="${url}" target="_blank" rel="noreferrer"><button class="primary">Open Idealista ↗</button></a>` : ''}
+          </div>
+        </div>
+
+        <div class="meta-grid">
+          <div class="metric"><span>Price</span><b>${formatMoney(listing.price)}</b></div>
+          <div class="metric"><span>Size</span><b>${formatNumber(listing.size, ' mq')}</b></div>
+          <div class="metric"><span>Spread base</span><b>${formatMoney(spread.spread_base_eur ?? result.spread_base_eur)}</b></div>
+          <div class="metric"><span>ROI base</span><b>${formatNumber(spread.roi_base_pct ?? result.roi_base_pct, '%')}</b></div>
+          <div class="metric"><span>Project cost</span><b>${formatMoney(spread.project_cost_eur)}</b></div>
+          <div class="metric"><span>Score</span><b>${formatNumber(result.ranking_score ?? result.score)}</b></div>
+          <div class="metric"><span>Floor</span><b>${listing.floor ?? '—'}</b></div>
+          <div class="metric"><span>Bathrooms</span><b>${listing.bathrooms ?? result.door_engine?.basics?.bathrooms ?? '—'}</b></div>
+        </div>
+
+        <div class="detail-grid">
+          ${renderUnits(analysis.final_unit_plan)}
+          ${renderArray('Positive signals', analysis.positive_signals)}
+          ${renderArray('Red flags', analysis.red_flags, 'red-flags')}
+          ${renderArray('Missing information', analysis.missing_information)}
+          ${renderArray('Due diligence questions', analysis.human_due_diligence_questions)}
+          <section class="detail-block">
+            <h3>Door engine</h3>
+            <div class="chips">
+              <span class="chip">Door score ${formatNumber(result.door_engine?.doorScore)}</span>
+              <span class="chip">Final units ${formatNumber(result.door_engine?.estimatedFinalUnits)}</span>
+              <span class="chip">New units ${formatNumber(result.door_engine?.newUnitsCreated)}</span>
+              <span class="chip">Transform ${formatMoney(result.door_engine?.transformationCost)}</span>
+            </div>
+            ${renderArray('', result.door_engine?.doorScoreReasons).replace('<h3></h3>', '')}
+          </section>
+          <section class="detail-block">
+            <h3>Raw listing snapshot</h3>
+            <div class="json-box">${JSON.stringify({ address: listing.address, price: listing.price, size: listing.size, floor: listing.floor, status: listing.status, url }, null, 2)}</div>
+          </section>
+        </div>
+      `;
+    }
+
+    function move(delta) {
+      if (!state.results.length) return;
+      state.selectedIndex = (state.selectedIndex + delta + state.results.length) % state.results.length;
+      renderAll();
+    }
+
+    async function loadFile(file) {
+      const text = await file.text();
+      setOutput(JSON.parse(text));
+    }
+
+    els.outputSelect.addEventListener('change', (event) => loadOutputById(event.target.value));
+    els.refreshButton.addEventListener('click', loadOutputList);
+    els.prevButton.addEventListener('click', () => move(-1));
+    els.nextButton.addEventListener('click', () => move(1));
+    els.fileInput.addEventListener('change', (event) => {
+      const file = event.target.files?.[0];
+      if (file) loadFile(file);
+    });
+
+    els.dropzone.addEventListener('dragover', (event) => {
+      event.preventDefault();
+      els.dropzone.style.background = '#fff6e5';
+    });
+    els.dropzone.addEventListener('dragleave', () => {
+      els.dropzone.style.background = '';
+    });
+    els.dropzone.addEventListener('drop', (event) => {
+      event.preventDefault();
+      els.dropzone.style.background = '';
+      const file = event.dataTransfer.files?.[0];
+      if (file) loadFile(file);
+    });
+
+    window.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowLeft') move(-1);
+      if (event.key === 'ArrowRight') move(1);
+    });
+
+    loadOutputList().catch((error) => {
+      els.main.innerHTML = `<div class="empty">${error.message}</div>`;
+    });
+  </script>
+</body>
+</html>
