@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import fs from 'node:fs/promises';
+import path from 'node:path';
 import { runDoorEngine } from '../lib/door-engine.js';
 import { getPreTriageExclusion, summarizeExclusions } from '../lib/pre-triage-filters.js';
 
@@ -9,6 +10,8 @@ const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-5.2';
 const DEFAULT_CITY = process.env.TORIUM_CITY || 'Milano';
 const TRIAGE_MAX_ITEMS = Number(process.env.TORIUM_TRIAGE_MAX_ITEMS || 50);
 const GPT_TRIAGE_LIMIT = Number(process.env.TORIUM_GPT_TRIAGE_LIMIT || 10);
+const XANO_TRIAGE_POST_URL = process.env.XANO_TRIAGE_POST_URL;
+const XANO_TRIAGE_API_KEY = process.env.XANO_TRIAGE_API_KEY;
 
 if (!APIFY_TOKEN) throw new Error('Missing APIFY_TOKEN in .env');
 if (!OPENAI_API_KEY) throw new Error('Missing OPENAI_API_KEY in .env');
@@ -93,6 +96,50 @@ function buildResultLink(result, rank) {
     roi_base_pct: result.spread?.roi_base_pct ?? null,
     action: result.gpt_analysis?.recommended_action ?? null,
   };
+}
+
+function buildXanoPayload(output, filename) {
+  return {
+    run_id: path.basename(filename, '.json'),
+    created_at_iso: new Date().toISOString(),
+    filename,
+    search_name: output.search_name,
+    city: output.city,
+    investor_profile: output.investor_profile,
+    scraped_count: output.scraped_count,
+    eligible_count: output.eligible_count,
+    filtered_out_count: output.filtered_out_count,
+    gpt_analyzed_count: output.gpt_analyzed_count,
+    filtered_out_summary: output.filtered_out_summary,
+    result_links: output.result_links,
+    top_result_url: output.result_links?.[0]?.url ?? null,
+    top_result_title: output.result_links?.[0]?.title ?? null,
+    top_result_score: output.result_links?.[0]?.score ?? null,
+    top_result_spread_base_eur: output.result_links?.[0]?.spread_base_eur ?? null,
+    top_result_roi_base_pct: output.result_links?.[0]?.roi_base_pct ?? null,
+    raw_output: output,
+  };
+}
+
+async function postRunToXano(output, filename) {
+  if (!XANO_TRIAGE_POST_URL) return;
+
+  const headers = { 'Content-Type': 'application/json' };
+  if (XANO_TRIAGE_API_KEY) headers.Authorization = `Bearer ${XANO_TRIAGE_API_KEY}`;
+
+  const response = await fetch(XANO_TRIAGE_POST_URL, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(buildXanoPayload(output, filename)),
+  });
+
+  const body = await response.text();
+  if (!response.ok) {
+    throw new Error(`Xano POST failed: ${response.status}\n${body}`);
+  }
+
+  console.log(`Saved triage run to Xano: ${response.status}`);
+  if (body.trim()) console.log(body);
 }
 
 async function analyzeWithOpenAI(prompt, listing, doorEngine, investorProfile) {
@@ -207,6 +254,7 @@ async function main() {
   await fs.mkdir('outputs/triage', { recursive: true });
   const filename = `outputs/triage/${Date.now()}-${searchName}-filtered.json`;
   await fs.writeFile(filename, JSON.stringify(output, null, 2));
+  await postRunToXano(output, filename);
   console.log(JSON.stringify(output, null, 2));
   console.log(`Saved triage output to ${filename}`);
 }
