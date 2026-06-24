@@ -10,6 +10,7 @@ const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-5.2';
 const DEFAULT_CITY = process.env.TORIUM_CITY || 'Milano';
 const TRIAGE_MAX_ITEMS = Number(process.env.TORIUM_TRIAGE_MAX_ITEMS || 50);
 const GPT_TRIAGE_LIMIT = Number(process.env.TORIUM_GPT_TRIAGE_LIMIT || 10);
+const SAVE_LOCAL_JSON = process.env.TORIUM_SAVE_LOCAL_JSON === 'true';
 
 if (!APIFY_TOKEN) throw new Error('Missing APIFY_TOKEN in .env');
 if (!OPENAI_API_KEY) throw new Error('Missing OPENAI_API_KEY in .env');
@@ -205,12 +206,26 @@ async function main() {
     results,
   };
 
-  await fs.mkdir('outputs/triage', { recursive: true });
   const filename = `outputs/triage/${Date.now()}-${searchName}-filtered.json`;
-  await fs.writeFile(filename, JSON.stringify(output, null, 2));
   await syncTriageRunToSupabase(output, filename);
-  console.log(JSON.stringify(output, null, 2));
-  console.log(`Saved triage output to ${filename}`);
+
+  if (SAVE_LOCAL_JSON) {
+    await fs.mkdir('outputs/triage', { recursive: true });
+    await fs.writeFile(filename, JSON.stringify(output, null, 2));
+    console.log(`Saved local triage output to ${filename}`);
+  } else {
+    console.log('Skipped local JSON output. Set TORIUM_SAVE_LOCAL_JSON=true to enable it.');
+  }
+
+  console.log(JSON.stringify({
+    search_name: output.search_name,
+    city: output.city,
+    scraped_count: output.scraped_count,
+    eligible_count: output.eligible_count,
+    filtered_out_count: output.filtered_out_count,
+    gpt_analyzed_count: output.gpt_analyzed_count,
+    result_links: output.result_links,
+  }, null, 2));
 }
 
 main().catch((error) => {
