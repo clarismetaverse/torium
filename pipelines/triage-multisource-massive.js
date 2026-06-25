@@ -17,24 +17,21 @@ const RUN_MODE_DEFAULTS = {
     areas: 'corso-san-gottardo',
     maxItemsPerQuery: 20,
     maxPagesPerQuery: 1,
-    maxTotalRawListings: 40,
     topPrescoreLimit: 40,
     includeDiscountedVariant: false,
   },
   normal: {
     areas: 'corso-san-gottardo,Barona,Corvetto',
-    maxItemsPerQuery: 60,
-    maxPagesPerQuery: 3,
-    maxTotalRawListings: 200,
-    topPrescoreLimit: 100,
+    maxItemsPerQuery: 100,
+    maxPagesPerQuery: 5,
+    topPrescoreLimit: 250,
     includeDiscountedVariant: false,
   },
   deep: {
-    areas: 'corso-san-gottardo,Barona,Corvetto,NoLo,Bovisa,Dergano',
+    areas: 'corso-san-gottardo,Barona,Corvetto,NoLo,Bovisa,Dergano,Lambrate,Giambellino',
     maxItemsPerQuery: 120,
     maxPagesPerQuery: 6,
-    maxTotalRawListings: 600,
-    topPrescoreLimit: 200,
+    topPrescoreLimit: 300,
     includeDiscountedVariant: true,
   },
 };
@@ -51,17 +48,27 @@ const SOURCES = (process.env.TORIUM_MASSIVE_SOURCES || 'immobiliare')
   .filter(Boolean);
 const MAX_ITEMS_PER_QUERY = Number(process.env.TORIUM_MASSIVE_MAX_ITEMS_PER_QUERY || MODE_DEFAULTS.maxItemsPerQuery);
 const MAX_PAGES_PER_QUERY = Number(process.env.TORIUM_MASSIVE_MAX_PAGES_PER_QUERY || MODE_DEFAULTS.maxPagesPerQuery);
-const MAX_TOTAL_RAW_LISTINGS = Number(process.env.TORIUM_MASSIVE_MAX_TOTAL_RAW_LISTINGS || MODE_DEFAULTS.maxTotalRawListings);
+const DEFAULT_TOTAL_RAW_LISTINGS = MAX_ITEMS_PER_QUERY * Math.max(1, REQUESTED_AREAS.length);
+const MAX_TOTAL_RAW_LISTINGS = Number(process.env.TORIUM_MASSIVE_MAX_TOTAL_RAW_LISTINGS || DEFAULT_TOTAL_RAW_LISTINGS);
 const TOP_PRESCORE_LIMIT = Number(process.env.TORIUM_MASSIVE_TOP_PRESCORE_LIMIT || MODE_DEFAULTS.topPrescoreLimit);
 const MIN_SIZE = Number(process.env.TORIUM_MIN_SIZE || 80);
 const MIN_ROOMS = Number(process.env.TORIUM_MIN_ROOMS || 1);
 const MAX_ROOMS = Number(process.env.TORIUM_MAX_ROOMS || 12);
-const BATHROOMS = Number(process.env.TORIUM_BATHROOMS || 1);
-const CONDITION_CODE = Number(process.env.TORIUM_IMMOBILIARE_CONDITION_CODE || 5);
-const HEATING_CODE = process.env.TORIUM_IMMOBILIARE_HEATING_CODE === 'off' ? null : Number(process.env.TORIUM_IMMOBILIARE_HEATING_CODE || 1);
-const GARAGE_CODE = process.env.TORIUM_IMMOBILIARE_GARAGE_CODE === 'off' ? null : Number(process.env.TORIUM_IMMOBILIARE_GARAGE_CODE || 1);
-const OWNERSHIP_CODE = Number(process.env.TORIUM_IMMOBILIARE_OWNERSHIP_CODE || 1);
-const FURNISHED = process.env.TORIUM_IMMOBILIARE_FURNISHED !== 'false';
+
+function optionalNumberEnv(name, fallback = null) {
+  const value = process.env[name];
+  if (value === undefined || value === null || value === '' || value === 'off') return fallback;
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? numeric : fallback;
+}
+
+const BATHROOMS = optionalNumberEnv('TORIUM_BATHROOMS', null);
+const CONDITION_CODE = optionalNumberEnv('TORIUM_IMMOBILIARE_CONDITION_CODE', null);
+const HEATING_CODE = optionalNumberEnv('TORIUM_IMMOBILIARE_HEATING_CODE', null);
+const GARAGE_CODE = optionalNumberEnv('TORIUM_IMMOBILIARE_GARAGE_CODE', null);
+const OWNERSHIP_CODE = optionalNumberEnv('TORIUM_IMMOBILIARE_OWNERSHIP_CODE', 1);
+const REQUIRE_LIFT = process.env.TORIUM_IMMOBILIARE_REQUIRE_LIFT === 'true';
+const FURNISHED = process.env.TORIUM_IMMOBILIARE_FURNISHED === 'true';
 const EXCLUDE_AUCTIONS = process.env.TORIUM_IMMOBILIARE_EXCLUDE_AUCTIONS === 'true';
 const INCLUDE_RENOVATION_VARIANT = process.env.TORIUM_MASSIVE_INCLUDE_RENOVATION_VARIANT !== 'false';
 const INCLUDE_DISCOUNTED_VARIANT = process.env.TORIUM_MASSIVE_INCLUDE_DISCOUNTED_VARIANT === 'true' || MODE_DEFAULTS.includeDiscountedVariant;
@@ -112,6 +119,7 @@ function buildImmobiliareUrlPayload(area) {
     heatingCode: HEATING_CODE,
     garageCode: GARAGE_CODE,
     ownershipCode: OWNERSHIP_CODE,
+    requireLift: REQUIRE_LIFT,
     furnished: FURNISHED,
     excludeAuctions: EXCLUDE_AUCTIONS,
   });
@@ -247,7 +255,8 @@ function buildResultLinks(items) {
     price_by_area: item.price_by_area,
     size_mq: item.size_mq,
     source_channel: item.source_channel,
-    area: item.query_area || item.area_label,
+    query_area: item.query_area,
+    area: item.area_label || item.district || item.neighborhood || null,
     excluded: item.pre_triage_excluded,
   }));
 }
@@ -269,6 +278,16 @@ async function main() {
     max_items_per_query: MAX_ITEMS_PER_QUERY,
     max_pages_per_query: MAX_PAGES_PER_QUERY,
     max_total_raw_listings: MAX_TOTAL_RAW_LISTINGS,
+    filters: {
+      min_size: MIN_SIZE,
+      condition_code: CONDITION_CODE,
+      bathrooms: BATHROOMS,
+      ownership_code: OWNERSHIP_CODE,
+      heating_code: HEATING_CODE,
+      garage_code: GARAGE_CODE,
+      require_lift: REQUIRE_LIFT,
+      furnished: FURNISHED,
+    },
     planned_queries: queries.map((query) => ({
       actor: query.actor,
       area: query.query_area,
