@@ -5,6 +5,7 @@ const rootDir = process.cwd();
 const allowedPrefixes = ['triage-outputs/', 'outputs/triage/'];
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const SOURCE_LISTINGS_LIMIT = Number(process.env.TORIUM_VIEWER_SOURCE_LIMIT || 1000);
 
 function normalizeId(value) {
   return String(value || '').replaceAll('\\', '/').replace(/^\/+/, '');
@@ -30,11 +31,15 @@ async function supabaseGet(pathname) {
 
 function sourceListingToResult(source, index) {
   const listing = source.raw_listing && typeof source.raw_listing === 'object' ? source.raw_listing : {};
+  const realArea = source.district || source.neighborhood || source.area_label || listing.district || listing.neighborhood || listing.area_label || null;
+
   return {
     listing_index: index,
     title: source.title,
     url: source.source_url,
     idealista_url: source.source_channel === 'idealista' ? source.source_url : null,
+    query_area: source.query_area,
+    listing_area: realArea,
     ranking_score: source.door_score,
     door_engine: {
       doorScore: source.door_score,
@@ -49,7 +54,8 @@ function sourceListingToResult(source, index) {
       valuation_confidence: null,
       positive_signals: [
         source.source_channel ? `source:${source.source_channel}` : null,
-        source.query_area ? `area:${source.query_area}` : null,
+        source.query_area ? `query_area:${source.query_area}` : null,
+        realArea ? `listing_area:${realArea}` : null,
         source.price_by_area ? `price_m2:${source.price_by_area}` : null,
       ].filter(Boolean),
       red_flags: source.pre_triage_exclusion_reason ? source.pre_triage_exclusion_reason.split(',').filter(Boolean) : [],
@@ -62,6 +68,8 @@ function sourceListingToResult(source, index) {
       propertyCode: source.source_listing_id ?? listing.propertyCode,
       url: source.source_url ?? listing.url,
       source_channel: source.source_channel,
+      query_area: source.query_area,
+      listing_area: realArea,
       suggestedTexts: { title: source.title ?? listing?.suggestedTexts?.title },
       title: source.title ?? listing.title,
       address: source.address ?? listing.address,
@@ -69,7 +77,7 @@ function sourceListingToResult(source, index) {
       city: source.city ?? listing.city,
       district: source.district ?? listing.district,
       neighborhood: source.neighborhood ?? listing.neighborhood,
-      area_label: source.area_label,
+      area_label: realArea,
       price: source.price_eur ?? listing.price,
       priceByArea: source.price_by_area ?? listing.priceByArea,
       size: source.size_mq ?? listing.size,
@@ -94,7 +102,7 @@ async function readSupabaseOutput(id) {
   const properties = await supabaseGet(`triage_properties?run_id=eq.${encodeURIComponent(runId)}&select=*&order=rank.asc`);
   const sourceListings = properties.length
     ? []
-    : await supabaseGet(`triage_source_listings?run_id=eq.${encodeURIComponent(runId)}&select=*&order=door_score.desc.nullslast,price_by_area.asc.nullslast&limit=200`);
+    : await supabaseGet(`triage_source_listings?run_id=eq.${encodeURIComponent(runId)}&select=*&order=door_score.desc.nullslast,price_by_area.asc.nullslast&limit=${SOURCE_LISTINGS_LIMIT}`);
 
   const results = properties.length
     ? properties.map((property) => property.raw_result).filter(Boolean)
