@@ -8,7 +8,7 @@
     :root { --bg:#f4f0e8; --card:#fffaf2; --line:#ded3c2; --ink:#171717; --muted:#70685c; --good:#0f6b3d; --warn:#9b5c00; --bad:#9b1c1c; --blue:#064e7a; }
     * { box-sizing: border-box; }
     body { margin:0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background:var(--bg); color:var(--ink); }
-    .app { min-height:100vh; display:grid; grid-template-columns:390px 1fr; }
+    .app { min-height:100vh; display:grid; grid-template-columns:410px 1fr; }
     aside { background:var(--card); border-right:1px solid var(--line); padding:18px; overflow:auto; max-height:100vh; position:sticky; top:0; }
     main { padding:24px; overflow:auto; }
     h1 { margin:0; font-size:20px; letter-spacing:-.03em; }
@@ -20,11 +20,11 @@
     .topbar, .box { padding:12px; margin:12px 0; }
     .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
     .between { justify-content:space-between; }
-    button, select, input[type=file]::file-selector-button, input[type=text] { border:1px solid var(--line); background:#fff; color:var(--ink); border-radius:12px; padding:9px 10px; font:inherit; }
+    button, select, input[type=file]::file-selector-button, input[type=text], input[type=number] { border:1px solid var(--line); background:#fff; color:var(--ink); border-radius:12px; padding:9px 10px; font:inherit; }
     button, select, input[type=file]::file-selector-button { cursor:pointer; }
     button.primary { background:#151515; color:white; border-color:#151515; }
     button.ghost { background:#fffaf2; }
-    select, input[type=text] { width:100%; margin-top:8px; }
+    select, input[type=text], input[type=number] { width:100%; margin-top:6px; }
     label { font-size:11px; color:var(--muted); display:block; margin-top:10px; }
     .stats { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
     .stat { background:#f9f3e9; border:1px solid #eadfce; border-radius:14px; padding:10px; }
@@ -32,6 +32,9 @@
     .stat span { font-size:12px; color:var(--muted); }
     .filters { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
     .filters .wide { grid-column:1 / -1; }
+    .checkrow { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+    .check { display:flex; gap:7px; align-items:center; color:var(--ink); border:1px solid var(--line); border-radius:999px; padding:7px 9px; background:#fffaf2; font-size:12px; margin:0; }
+    .check input { margin:0; }
     .list { display:grid; gap:10px; }
     .item { padding:12px; cursor:pointer; transition:transform .12s ease, outline .12s ease; }
     .item:hover { transform:translateY(-1px); }
@@ -76,12 +79,14 @@
     <main id="main"><div class="empty">Loading outputs…</div></main>
   </div>
 <script>
-const state={outputs:[],output:null,allResults:[],results:[],i:0,filters:{source:'all',area:'all',action:'all',q:''}};
+const state={outputs:[],output:null,allResults:[],results:[],i:0,filters:{}};
+const defaultFilters={source:'all',area:'all',action:'all',sort:'score_desc',q:'',minScore:'',minSize:'',maxPriceM2:'',maxPrice:'',onlyPlan:false,onlyLift:false,hideFiltered:true};
 const $=id=>document.getElementById(id);
 const money=new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR',maximumFractionDigits:0});
 const num=new Intl.NumberFormat('it-IT');
 const fm=v=>Number.isFinite(Number(v))?money.format(Number(v)):'—';
 const fn=(v,s='')=>Number.isFinite(Number(v))?num.format(Number(v))+s:'—';
+const n=v=>Number.isFinite(Number(v))?Number(v):null;
 const esc=v=>String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 const rawTitle=r=>r?.title||r?.listing?.suggestedTexts?.title||r?.listing?.address||'Untitled';
 const title=r=>esc(rawTitle(r));
@@ -98,6 +103,7 @@ const actionClass=a=>String(a).includes('discard')||String(a).includes('filtered
 const isMassive=o=>Number(o?.raw_source_count||0)>0 && Number(o?.gpt_analyzed_count||0)===0;
 function outputResults(o){return Array.isArray(o?.results)&&o.results.length?o.results:(Array.isArray(o?.result_links)?o.result_links:[])}
 function unique(values){return [...new Set(values.filter(Boolean).map(String))].sort((a,b)=>a.localeCompare(b));}
+function checked(v){return v?'checked':''}
 async function loadOutputs(){
   const data=await fetch('/api/outputs').then(r=>r.json());
   state.outputs=data.outputs||[];
@@ -106,54 +112,91 @@ async function loadOutputs(){
 }
 async function loadById(id){ const o=await fetch('/api/output?file='+encodeURIComponent(id)).then(r=>r.json()); setOutput(o); $('outputs').value=id; }
 function setOutput(o){ state.output=o; state.allResults=outputResults(o); state.i=0; resetFilters(); applyFilters(); }
-function resetFilters(){ state.filters={source:'all',area:'all',action:'all',q:''}; }
+function resetFilters(){ state.filters={...defaultFilters}; }
+function passesNumericFilter(value, limit, direction){
+  if(limit===''||limit===null||limit===undefined) return true;
+  const v=n(value), l=n(limit);
+  if(v===null||l===null) return false;
+  return direction==='min'?v>=l:v<=l;
+}
+function sortResults(items){
+  const f=state.filters;
+  const arr=[...items];
+  const desc=(getter)=>arr.sort((a,b)=>(n(getter(b))??-Infinity)-(n(getter(a))??-Infinity));
+  const asc=(getter)=>arr.sort((a,b)=>(n(getter(a))??Infinity)-(n(getter(b))??Infinity));
+  if(f.sort==='score_desc') desc(score);
+  if(f.sort==='price_m2_asc') asc(priceM2);
+  if(f.sort==='size_desc') desc(size);
+  if(f.sort==='price_asc') asc(price);
+  if(f.sort==='new_units_desc') desc(r=>r?.door_engine?.newUnitsCreated);
+  return arr;
+}
 function applyFilters(){
   const f=state.filters;
-  state.results=state.allResults.filter(r=>{
+  const filtered=state.allResults.filter(r=>{
     const l=listing(r);
-    const hay=[rawTitle(r),l.address,l.city,l.district,l.neighborhood,area(r),source(r),action(r)].filter(Boolean).join(' ').toLowerCase();
+    const a=action(r);
+    const hay=[rawTitle(r),l.address,l.city,l.municipality,l.district,l.neighborhood,area(r),source(r),a,l.status,l.propertyType].filter(Boolean).join(' ').toLowerCase();
     if(f.source!=='all' && source(r)!==f.source) return false;
     if(f.area!=='all' && area(r)!==f.area) return false;
-    if(f.action!=='all' && action(r)!==f.action) return false;
+    if(f.action!=='all' && a!==f.action) return false;
+    if(f.hideFiltered && actionClass(a)==='bad') return false;
+    if(f.onlyPlan && !l.hasPlan) return false;
+    if(f.onlyLift && !l.hasLift) return false;
     if(f.q && !hay.includes(f.q.toLowerCase())) return false;
+    if(!passesNumericFilter(score(r),f.minScore,'min')) return false;
+    if(!passesNumericFilter(size(r),f.minSize,'min')) return false;
+    if(!passesNumericFilter(priceM2(r),f.maxPriceM2,'max')) return false;
+    if(!passesNumericFilter(price(r),f.maxPrice,'max')) return false;
     return true;
   });
+  state.results=sortResults(filtered);
   if(state.i>=state.results.length) state.i=0;
   render();
 }
 function render(){ renderSummary(); renderControls(); renderList(); renderDetail(); }
 function renderSummary(){
   const o=state.output||{};
-  $('summary').innerHTML=`<div class="muted">${esc(o.search_name||'')} · ${esc(o.city||'')}</div><div class="stats"><div class="stat"><b>${fn(o.raw_source_count??o.scraped_count)}</b><span>${o.raw_source_count?'raw source':'scraped'}</span></div><div class="stat"><b>${fn(o.eligible_count)}</b><span>eligible</span></div><div class="stat"><b>${fn(o.filtered_out_count)}</b><span>filtered</span></div><div class="stat"><b>${fn(o.pre_scored_count??o.gpt_analyzed_count)}</b><span>${isMassive(o)?'pre-score':'GPT'}</span></div></div>${isMassive(o)?'<div class="notice" style="margin-top:10px">Massive pre-score mode: GPT non ancora eseguito. Lista ordinata da Door Score + prezzo/mq.</div>':''}`;
+  $('summary').innerHTML=`<div class="muted">${esc(o.search_name||'')} · ${esc(o.city||'')}</div><div class="stats"><div class="stat"><b>${fn(o.raw_source_count??o.scraped_count)}</b><span>${o.raw_source_count?'raw source':'scraped'}</span></div><div class="stat"><b>${fn(o.eligible_count)}</b><span>eligible</span></div><div class="stat"><b>${fn(o.filtered_out_count)}</b><span>filtered</span></div><div class="stat"><b>${fn(o.pre_scored_count??o.gpt_analyzed_count)}</b><span>${isMassive(o)?'pre-score':'GPT'}</span></div></div>${isMassive(o)?'<div class="notice" style="margin-top:10px">Massive pre-score mode: GPT non ancora eseguito. Lista ordinata/filtrabile da Door Score, prezzo/mq, metratura e segnali.</div>':''}`;
 }
 function renderControls(){
   const sources=unique(state.allResults.map(source));
   const areas=unique(state.allResults.map(area));
   const actions=unique(state.allResults.map(action));
   const opt=(items,current)=>`<option value="all">All</option>`+items.map(x=>`<option value="${esc(x)}" ${x===current?'selected':''}>${esc(x)}</option>`).join('');
-  $('controls').innerHTML=`<div class="muted">${fn(state.results.length)} visible / ${fn(state.allResults.length)} total</div><div class="filters"><label>Source<select id="sourceFilter">${opt(sources,state.filters.source)}</select></label><label>Area<select id="areaFilter">${opt(areas,state.filters.area)}</select></label><label class="wide">Action<select id="actionFilter">${opt(actions,state.filters.action)}</select></label><label class="wide">Search<input id="qFilter" type="text" placeholder="address, zona, source…" value="${esc(state.filters.q)}"></label></div><br><button id="clearFilters" class="ghost">Clear filters</button>`;
+  const sortOptions={score_desc:'Score ↓',price_m2_asc:'€/mq ↑',size_desc:'Mq ↓',price_asc:'Prezzo ↑',new_units_desc:'New units ↓'};
+  const sortOpt=Object.entries(sortOptions).map(([k,v])=>`<option value="${k}" ${state.filters.sort===k?'selected':''}>${v}</option>`).join('');
+  $('controls').innerHTML=`<div class="muted">${fn(state.results.length)} visible / ${fn(state.allResults.length)} total</div><div class="filters"><label>Source<select id="sourceFilter">${opt(sources,state.filters.source)}</select></label><label>Area<select id="areaFilter">${opt(areas,state.filters.area)}</select></label><label>Action<select id="actionFilter">${opt(actions,state.filters.action)}</select></label><label>Sort<select id="sortFilter">${sortOpt}</select></label><label class="wide">Search<input id="qFilter" type="text" placeholder="address, zona, status…" value="${esc(state.filters.q)}"></label><label>Min score<input id="minScoreFilter" type="number" inputmode="numeric" placeholder="es. 50" value="${esc(state.filters.minScore)}"></label><label>Min mq<input id="minSizeFilter" type="number" inputmode="numeric" placeholder="es. 80" value="${esc(state.filters.minSize)}"></label><label>Max €/mq<input id="maxPriceM2Filter" type="number" inputmode="numeric" placeholder="es. 4000" value="${esc(state.filters.maxPriceM2)}"></label><label>Max price<input id="maxPriceFilter" type="number" inputmode="numeric" placeholder="es. 500000" value="${esc(state.filters.maxPrice)}"></label></div><div class="checkrow"><label class="check"><input id="onlyPlanFilter" type="checkbox" ${checked(state.filters.onlyPlan)}> Plan only</label><label class="check"><input id="onlyLiftFilter" type="checkbox" ${checked(state.filters.onlyLift)}> Lift only</label><label class="check"><input id="hideFilteredFilter" type="checkbox" ${checked(state.filters.hideFiltered)}> Hide filtered</label></div><br><button id="clearFilters" class="ghost">Clear filters</button>`;
   $('sourceFilter').onchange=e=>{state.filters.source=e.target.value; state.i=0; applyFilters();};
   $('areaFilter').onchange=e=>{state.filters.area=e.target.value; state.i=0; applyFilters();};
   $('actionFilter').onchange=e=>{state.filters.action=e.target.value; state.i=0; applyFilters();};
+  $('sortFilter').onchange=e=>{state.filters.sort=e.target.value; state.i=0; applyFilters();};
   $('qFilter').oninput=e=>{state.filters.q=e.target.value; state.i=0; applyFilters();};
+  $('minScoreFilter').oninput=e=>{state.filters.minScore=e.target.value; state.i=0; applyFilters();};
+  $('minSizeFilter').oninput=e=>{state.filters.minSize=e.target.value; state.i=0; applyFilters();};
+  $('maxPriceM2Filter').oninput=e=>{state.filters.maxPriceM2=e.target.value; state.i=0; applyFilters();};
+  $('maxPriceFilter').oninput=e=>{state.filters.maxPrice=e.target.value; state.i=0; applyFilters();};
+  $('onlyPlanFilter').onchange=e=>{state.filters.onlyPlan=e.target.checked; state.i=0; applyFilters();};
+  $('onlyLiftFilter').onchange=e=>{state.filters.onlyLift=e.target.checked; state.i=0; applyFilters();};
+  $('hideFilteredFilter').onchange=e=>{state.filters.hideFiltered=e.target.checked; state.i=0; applyFilters();};
   $('clearFilters').onclick=()=>{resetFilters(); applyFilters();};
 }
 function renderList(){
-  $('list').innerHTML=state.results.map((r,i)=>`<div class="item ${i===state.i?'active':''}" onclick="pick(${i})"><div class="item-top"><div><h3>${i+1}. ${title(r)}</h3><div class="chips"><span class="chip blue">${esc(source(r))}</span><span class="chip">${esc(area(r))}</span><span class="chip">${fm(price(r))}</span><span class="chip">${fn(size(r),' mq')}</span><span class="chip">${fn(priceM2(r),' €/mq')}</span><span class="chip ${actionClass(action(r))}">${esc(action(r))}</span></div></div><div class="score">${fn(score(r))}</div></div></div>`).join('');
+  $('list').innerHTML=state.results.map((r,i)=>`<div class="item ${i===state.i?'active':''}" onclick="pick(${i})"><div class="item-top"><div><h3>${i+1}. ${title(r)}</h3><div class="chips"><span class="chip blue">${esc(source(r))}</span><span class="chip">${esc(area(r))}</span><span class="chip">${fm(price(r))}</span><span class="chip">${fn(size(r),' mq')}</span><span class="chip">${fn(priceM2(r),' €/mq')}</span><span class="chip">${listing(r).hasLift?'lift':'no lift'}</span><span class="chip">${listing(r).hasPlan?'plan':'no plan'}</span><span class="chip ${actionClass(action(r))}">${esc(action(r))}</span></div></div><div class="score">${fn(score(r))}</div></div></div>`).join('');
 }
 function arr(name,items){return Array.isArray(items)&&items.length?`<section class="block"><h3>${esc(name)}</h3><ul>${items.map(x=>`<li>${esc(String(x))}</li>`).join('')}</ul></section>`:''}
 function units(items){return Array.isArray(items)&&items.length?`<section class="block"><h3>Final unit plan</h3>${items.map((u,i)=>`<div class="unit"><b>${i+1}. ${esc(u.unit_type||'unit')} · ${fn(u.estimated_size_mq,' mq')}</b><div class="chips"><span class="chip">Low ${fm(u.sale_value_low_eur)}</span><span class="chip good">Base ${fm(u.sale_value_base_eur)}</span><span class="chip">High ${fm(u.sale_value_high_eur)}</span></div><p>${esc(u.valuation_reasoning||'')}</p></div>`).join('')}</section>`:''}
 function queryBlock(o){
   const qs=Array.isArray(o?.query_payloads)?o.query_payloads:[];
   if(!qs.length) return '';
-  return `<section class="block"><h3>Source queries</h3><ul>${qs.slice(0,8).map(q=>`<li><b>${esc(q.query_area||q.area||'all')}</b> · ${esc(q.actor||q.source_channel||'')} · returned ${fn(q.returned_count)}${q.payload?.startUrl?`<br><a href="${esc(q.payload.startUrl)}" target="_blank">Open search URL ↗</a>`:''}</li>`).join('')}</ul></section>`;
+  return `<section class="block"><h3>Source queries</h3><ul>${qs.slice(0,10).map(q=>`<li><b>${esc(q.query_area||q.area||'all')}</b> · ${esc(q.actor||q.source_channel||'')} · returned ${fn(q.returned_count)}${q.payload?.startUrl?`<br><a href="${esc(q.payload.startUrl)}" target="_blank">Open search URL ↗</a>`:''}</li>`).join('')}</ul></section>`;
 }
 function renderDetail(){
   const r=state.results[state.i]; if(!r){$('main').innerHTML='<div class="empty">No results.</div>';return}
   const o=state.output||{}, a=r.gpt_analysis||{}, s=r.spread||{}, l=listing(r), u=url(r);
   const thumb=l.thumbnail||l.thumbnail_url;
   const openLabel=source(r)==='idealista'?'Open Idealista ↗':source(r)==='immobiliare'?'Open Immobiliare ↗':'Open listing ↗';
-  $('main').innerHTML=`${isMassive(o)?'<div class="notice"><b>Pre-score run.</b> Questi sono candidati raw normalizzati da Immobiliare/Idealista. Il GPT non ha ancora fatto valutazione tecnica; usa Door Score, prezzo/mq, metratura e red flags.</div>':''}<div class="hero"><div><div class="muted">Result ${state.i+1}/${state.results.length}</div><h2>${title(r)}</h2><div class="chips"><span class="chip blue">${esc(source(r))}</span><span class="chip">${esc(area(r))}</span><span class="chip ${actionClass(action(r))}">${esc(action(r))}</span><span class="chip">Fractioning ${esc(a.fractioning_confidence||'—')}</span><span class="chip">Valuation ${esc(a.valuation_confidence||'—')}</span></div></div>${u?`<a href="${esc(u)}" target="_blank"><button class="primary">${openLabel}</button></a>`:''}</div>${thumb?`<img class="thumbnail" src="${esc(thumb)}" alt="listing thumbnail">`:''}<div class="metrics"><div class="metric"><span>Price</span><b>${fm(l.price)}</b></div><div class="metric"><span>Size</span><b>${fn(l.size,' mq')}</b></div><div class="metric"><span>Price / mq</span><b>${fn(l.priceByArea??r.price_by_area,' €/mq')}</b></div><div class="metric"><span>Score</span><b>${fn(score(r))}</b></div><div class="metric"><span>Door score</span><b>${fn(r.door_engine?.doorScore)}</b></div><div class="metric"><span>Final units</span><b>${fn(r.door_engine?.estimatedFinalUnits)}</b></div><div class="metric"><span>New units</span><b>${fn(r.door_engine?.newUnitsCreated)}</b></div><div class="metric"><span>Project cost</span><b>${fm(s.project_cost_eur??r.door_engine?.estimatedProjectCost)}</b></div><div class="metric"><span>Floor</span><b>${esc(l.floor??'—')}</b></div><div class="metric"><span>Rooms</span><b>${esc(l.rooms??'—')}</b></div><div class="metric"><span>Bathrooms</span><b>${esc(l.bathrooms??r.door_engine?.basics?.bathrooms??'—')}</b></div><div class="metric"><span>Lift / Plan</span><b>${l.hasLift?'Lift':'—'} · ${l.hasPlan?'Plan':'—'}</b></div></div><div class="grid">${units(a.final_unit_plan)}${arr('Positive signals',a.positive_signals)}${arr('Red flags',a.red_flags)}${arr('Missing information',a.missing_information)}${arr('Due diligence questions',a.human_due_diligence_questions)}<section class="block"><h3>Door engine</h3><div class="chips"><span class="chip">Door ${fn(r.door_engine?.doorScore)}</span><span class="chip">Final units ${fn(r.door_engine?.estimatedFinalUnits)}</span><span class="chip">New units ${fn(r.door_engine?.newUnitsCreated)}</span><span class="chip">Cost ${fm(r.door_engine?.estimatedProjectCost)}</span></div>${arr('',r.door_engine?.doorScoreReasons).replace('<h3></h3>','')}</section>${queryBlock(o)}<section class="block"><h3>Raw snapshot</h3><pre>${esc(JSON.stringify({source:source(r),area:area(r),address:l.address,city:l.city||l.municipality,district:l.district,neighborhood:l.neighborhood,price:l.price,priceByArea:l.priceByArea,size:l.size,rooms:l.rooms,bathrooms:l.bathrooms,floor:l.floor,status:l.status,hasLift:l.hasLift,hasPlan:l.hasPlan,url:u},null,2))}</pre></section></div>`;
+  $('main').innerHTML=`${isMassive(o)?'<div class="notice"><b>Pre-score run.</b> Questi sono candidati raw normalizzati da Immobiliare. GPT non ancora eseguito; usa Door Score, prezzo/mq, metratura e red flags.</div>':''}<div class="hero"><div><div class="muted">Result ${state.i+1}/${state.results.length}</div><h2>${title(r)}</h2><div class="chips"><span class="chip blue">${esc(source(r))}</span><span class="chip">${esc(area(r))}</span><span class="chip ${actionClass(action(r))}">${esc(action(r))}</span><span class="chip">Fractioning ${esc(a.fractioning_confidence||'—')}</span><span class="chip">Valuation ${esc(a.valuation_confidence||'—')}</span></div></div>${u?`<a href="${esc(u)}" target="_blank"><button class="primary">${openLabel}</button></a>`:''}</div>${thumb?`<img class="thumbnail" src="${esc(thumb)}" alt="listing thumbnail">`:''}<div class="metrics"><div class="metric"><span>Price</span><b>${fm(l.price)}</b></div><div class="metric"><span>Size</span><b>${fn(l.size,' mq')}</b></div><div class="metric"><span>Price / mq</span><b>${fn(l.priceByArea??r.price_by_area,' €/mq')}</b></div><div class="metric"><span>Score</span><b>${fn(score(r))}</b></div><div class="metric"><span>Door score</span><b>${fn(r.door_engine?.doorScore)}</b></div><div class="metric"><span>Final units</span><b>${fn(r.door_engine?.estimatedFinalUnits)}</b></div><div class="metric"><span>New units</span><b>${fn(r.door_engine?.newUnitsCreated)}</b></div><div class="metric"><span>Project cost</span><b>${fm(s.project_cost_eur??r.door_engine?.estimatedProjectCost)}</b></div><div class="metric"><span>Floor</span><b>${esc(l.floor??'—')}</b></div><div class="metric"><span>Rooms</span><b>${esc(l.rooms??'—')}</b></div><div class="metric"><span>Bathrooms</span><b>${esc(l.bathrooms??r.door_engine?.basics?.bathrooms??'—')}</b></div><div class="metric"><span>Lift / Plan</span><b>${l.hasLift?'Lift':'—'} · ${l.hasPlan?'Plan':'—'}</b></div></div><div class="grid">${units(a.final_unit_plan)}${arr('Positive signals',a.positive_signals)}${arr('Red flags',a.red_flags)}${arr('Missing information',a.missing_information)}${arr('Due diligence questions',a.human_due_diligence_questions)}<section class="block"><h3>Door engine</h3><div class="chips"><span class="chip">Door ${fn(r.door_engine?.doorScore)}</span><span class="chip">Final units ${fn(r.door_engine?.estimatedFinalUnits)}</span><span class="chip">New units ${fn(r.door_engine?.newUnitsCreated)}</span><span class="chip">Cost ${fm(r.door_engine?.estimatedProjectCost)}</span></div>${arr('',r.door_engine?.doorScoreReasons).replace('<h3></h3>','')}</section>${queryBlock(o)}<section class="block"><h3>Raw snapshot</h3><pre>${esc(JSON.stringify({source:source(r),area:area(r),address:l.address,city:l.city||l.municipality,district:l.district,neighborhood:l.neighborhood,price:l.price,priceByArea:l.priceByArea,size:l.size,rooms:l.rooms,bathrooms:l.bathrooms,floor:l.floor,status:l.status,propertyType:l.propertyType,hasLift:l.hasLift,hasPlan:l.hasPlan,url:u},null,2))}</pre></section></div>`;
 }
 function pick(i){state.i=i;render()}
 function move(d){if(!state.results.length)return; state.i=(state.i+d+state.results.length)%state.results.length; render()}
