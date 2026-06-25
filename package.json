@@ -17,6 +17,7 @@
     "triage:idealista:fractioning": "node pipelines/triage-idealista-filtered.js largeHomesFractioningMilan",
     "triage:idealista:homes": "node pipelines/triage-idealista-filtered.js residentialRenovationMilan",
     "triage:massive": "node pipelines/triage-multisource-massive.js milanoFractioningMassive",
+    "triage:gpt:latest": "node pipelines/triage-gpt-from-supabase.js latest",
     "viewer:triage": "node viewer/server.js"
   },
   "dependencies": {
