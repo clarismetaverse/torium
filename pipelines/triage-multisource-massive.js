@@ -258,6 +258,9 @@ function buildResultLinks(items) {
     query_area: item.query_area,
     area: item.area_label || item.district || item.neighborhood || null,
     excluded: item.pre_triage_excluded,
+    condition: item.property_condition,
+    features: item.features,
+    quality_flags: item.quality_flags,
   }));
 }
 
@@ -343,17 +346,12 @@ async function main() {
   }
 
   const deduped = dedupeListings(collected);
-  const filteredOut = deduped
+  const sourceFilteredOut = collected
     .filter((item) => item.pre_triage_excluded)
-    .map((item, index) => ({
-      index,
-      title: item.title,
-      url: item.source_url,
-      exclusion: item.exclusion,
-    }));
-
-  const eligible = deduped.filter((item) => !item.pre_triage_excluded);
-  const preScored = eligible
+    .map((item, index) => ({ index, title: item.title, url: item.source_url, exclusion: item.exclusion }));
+  const sourceEligible = collected.filter((item) => !item.pre_triage_excluded);
+  const dedupedEligible = deduped.filter((item) => !item.pre_triage_excluded);
+  const preScored = dedupedEligible
     .sort((a, b) => (b.door_score ?? 0) - (a.door_score ?? 0) || (a.price_by_area ?? 999999) - (b.price_by_area ?? 999999));
 
   const shortlist = preScored.slice(0, TOP_PRESCORE_LIMIT);
@@ -368,16 +366,16 @@ async function main() {
     raw_source_count: collected.length,
     scraped_count: collected.length,
     deduped_count: deduped.length,
-    eligible_count: eligible.length,
-    filtered_out_count: filteredOut.length,
-    filtered_out_summary: summarizeExclusions(filteredOut),
+    eligible_count: sourceEligible.length,
+    filtered_out_count: sourceFilteredOut.length,
+    filtered_out_summary: summarizeExclusions(sourceFilteredOut),
     pre_scored_count: shortlist.length,
     gpt_candidate_count: 0,
     gpt_analyzed_count: 0,
     result_links: buildResultLinks(shortlist),
   };
 
-  await syncSourceListingsRunToSupabase(output, deduped);
+  await syncSourceListingsRunToSupabase(output, collected);
 
   console.log(JSON.stringify({
     run_id: output.run_id,
