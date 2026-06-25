@@ -28,6 +28,63 @@ async function supabaseGet(pathname) {
   return response.json();
 }
 
+function sourceListingToResult(source, index) {
+  const listing = source.raw_listing && typeof source.raw_listing === 'object' ? source.raw_listing : {};
+  return {
+    listing_index: index,
+    title: source.title,
+    url: source.source_url,
+    idealista_url: source.source_channel === 'idealista' ? source.source_url : null,
+    ranking_score: source.door_score,
+    door_engine: {
+      doorScore: source.door_score,
+      estimatedFinalUnits: source.estimated_final_units,
+      newUnitsCreated: source.new_units_created,
+      estimatedProjectCost: source.estimated_project_cost_eur,
+    },
+    spread: {},
+    gpt_analysis: {
+      recommended_action: source.pre_triage_excluded ? 'filtered_out' : 'pre_score_candidate',
+      fractioning_confidence: null,
+      valuation_confidence: null,
+      positive_signals: [
+        source.source_channel ? `source:${source.source_channel}` : null,
+        source.query_area ? `area:${source.query_area}` : null,
+        source.price_by_area ? `price_m2:${source.price_by_area}` : null,
+      ].filter(Boolean),
+      red_flags: source.pre_triage_exclusion_reason ? source.pre_triage_exclusion_reason.split(',').filter(Boolean) : [],
+      missing_information: ['GPT analysis not run yet; this is a massive pre-score candidate.'],
+      human_due_diligence_questions: [],
+      final_unit_plan: [],
+    },
+    listing: {
+      ...listing,
+      propertyCode: source.source_listing_id ?? listing.propertyCode,
+      url: source.source_url ?? listing.url,
+      source_channel: source.source_channel,
+      suggestedTexts: { title: source.title ?? listing?.suggestedTexts?.title },
+      title: source.title ?? listing.title,
+      address: source.address ?? listing.address,
+      municipality: source.city ?? listing.municipality,
+      city: source.city ?? listing.city,
+      district: source.district ?? listing.district,
+      neighborhood: source.neighborhood ?? listing.neighborhood,
+      area_label: source.area_label,
+      price: source.price_eur ?? listing.price,
+      priceByArea: source.price_by_area ?? listing.priceByArea,
+      size: source.size_mq ?? listing.size,
+      rooms: source.rooms ?? listing.rooms,
+      bathrooms: source.bathrooms ?? listing.bathrooms,
+      floor: source.floor ?? listing.floor,
+      hasLift: source.has_lift ?? listing.hasLift,
+      hasPlan: source.has_plan ?? listing.hasPlan,
+      status: source.property_condition ?? listing.status,
+      propertyType: source.property_type ?? listing.propertyType,
+      thumbnail: source.thumbnail_url ?? listing.thumbnail,
+    },
+  };
+}
+
 async function readSupabaseOutput(id) {
   const runId = id.replace(/^supabase:/, '');
   const runs = await supabaseGet(`triage_runs?run_id=eq.${encodeURIComponent(runId)}&select=*`);
@@ -35,11 +92,19 @@ async function readSupabaseOutput(id) {
   if (!run) throw new Error(`Supabase run not found: ${runId}`);
 
   const properties = await supabaseGet(`triage_properties?run_id=eq.${encodeURIComponent(runId)}&select=*&order=rank.asc`);
+  const sourceListings = properties.length
+    ? []
+    : await supabaseGet(`triage_source_listings?run_id=eq.${encodeURIComponent(runId)}&select=*&order=door_score.desc.nullslast,price_by_area.asc.nullslast&limit=200`);
+
+  const results = properties.length
+    ? properties.map((property) => property.raw_result).filter(Boolean)
+    : sourceListings.map((source, index) => sourceListingToResult(source, index));
+
   if (run.raw_output && typeof run.raw_output === 'object') {
     return {
       ...run.raw_output,
       result_links: run.result_links ?? run.raw_output.result_links ?? [],
-      results: properties.map((property) => property.raw_result).filter(Boolean),
+      results,
     };
   }
 
@@ -53,7 +118,7 @@ async function readSupabaseOutput(id) {
     filtered_out_summary: run.filtered_out_summary,
     gpt_analyzed_count: run.gpt_analyzed_count,
     result_links: run.result_links ?? [],
-    results: properties.map((property) => property.raw_result).filter(Boolean),
+    results,
   };
 }
 
