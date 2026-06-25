@@ -9,6 +9,7 @@
     "scrape:idealista:fractioning": "node scrapers/idealista/client.js largeHomesFractioningMilan",
     "scrape:idealista:buildings": "node scrapers/idealista/client.js buildingsMilan",
     "scrape:immobiliare:fractioning": "node scrapers/immobiliare/client.js milanoFractioningRenovation",
+    "scrape:immobiliare:url": "node scrapers/immobiliare-url/client.js",
     "analyze:idealista:homes": "node pipelines/analyze-idealista.js residentialRenovationMilan 0",
     "analyze:idealista:premises": "node pipelines/analyze-idealista.js groundFloorPremisesMilan 0",
     "analyze:idealista:fractioning": "node pipelines/analyze-idealista.js largeHomesFractioningMilan 0",
