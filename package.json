@@ -8,12 +8,14 @@
     "scrape:idealista:premises": "node scrapers/idealista/client.js groundFloorPremisesMilan",
     "scrape:idealista:fractioning": "node scrapers/idealista/client.js largeHomesFractioningMilan",
     "scrape:idealista:buildings": "node scrapers/idealista/client.js buildingsMilan",
+    "scrape:immobiliare:fractioning": "node scrapers/immobiliare/client.js milanoFractioningRenovation",
     "analyze:idealista:homes": "node pipelines/analyze-idealista.js residentialRenovationMilan 0",
     "analyze:idealista:premises": "node pipelines/analyze-idealista.js groundFloorPremisesMilan 0",
     "analyze:idealista:fractioning": "node pipelines/analyze-idealista.js largeHomesFractioningMilan 0",
     "analyze:idealista:buildings": "node pipelines/analyze-idealista.js buildingsMilan 0",
     "triage:idealista:fractioning": "node pipelines/triage-idealista-filtered.js largeHomesFractioningMilan",
     "triage:idealista:homes": "node pipelines/triage-idealista-filtered.js residentialRenovationMilan",
+    "triage:massive": "node pipelines/triage-multisource-massive.js milanoFractioningMassive",
     "viewer:triage": "node viewer/server.js"
   },
   "dependencies": {
