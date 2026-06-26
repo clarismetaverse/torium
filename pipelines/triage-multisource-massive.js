@@ -11,6 +11,12 @@ import fs from 'node:fs/promises';
 const APIFY_TOKEN = process.env.APIFY_TOKEN;
 const DEFAULT_CITY = process.env.TORIUM_CITY || 'Milano';
 const RUN_MODE = (process.env.TORIUM_RUN_MODE || 'scout').toLowerCase();
+const IDEALISTA_ACTOR_ID = process.env.TORIUM_IDEALISTA_ACTOR_ID || 'igolaizola~idealista-scraper';
+const IDEALISTA_DATASET_ID = process.env.TORIUM_IDEALISTA_DATASET_ID || null;
+const IDEALISTA_RUN_ID = process.env.TORIUM_IDEALISTA_RUN_ID || null;
+const APIFY_MAX_WAIT_SECONDS = Number(process.env.TORIUM_APIFY_MAX_WAIT_SECONDS || 1800);
+const APIFY_POLL_INTERVAL_SECONDS = Number(process.env.TORIUM_APIFY_POLL_INTERVAL_SECONDS || 10);
+const APIFY_DATASET_PAGE_SIZE = Number(process.env.TORIUM_APIFY_DATASET_PAGE_SIZE || 1000);
 
 const RUN_MODE_DEFAULTS = {
   scout: {
@@ -87,6 +93,72 @@ function compactObject(input) {
 
 function nowRunId(searchName) {
   return `${Date.now()}-${searchName}`;
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function apifyUrl(pathname, params = {}) {
+  return `https://api.apify.com/v2/${pathname.replace(/^\/+/, '')}?${new URLSearchParams({ token: APIFY_TOKEN, ...params })}`;
+}
+
+async function apifyFetchJson(pathname, options = {}, params = {}) {
+  const response = await fetch(apifyUrl(pathname, params), options);
+  const body = await response.text();
+  if (!response.ok) throw new Error(`Apify request failed: ${response.status}\n${body}`);
+  return body ? JSON.parse(body) : null;
+}
+
+async function fetchApifyDatasetItems(datasetId, maxItems = MAX_TOTAL_RAW_LISTINGS) {
+  const items = [];
+  let offset = 0;
+  while (items.length < maxItems) {
+    const limit = Math.min(APIFY_DATASET_PAGE_SIZE, maxItems - items.length);
+    const page = await apifyFetchJson(`datasets/${datasetId}/items`, {}, {
+      clean: 'true',
+      format: 'json',
+      offset: String(offset),
+      limit: String(limit),
+    });
+    const pageItems = Array.isArray(page) ? page : [];
+    items.push(...pageItems);
+    if (pageItems.length < limit) break;
+    offset += pageItems.length;
+  }
+  return items;
+}
+
+async function fetchApifyRun(runId) {
+  const response = await apifyFetchJson(`actor-runs/${runId}`);
+  return response?.data ?? response;
+}
+
+async function pollApifyRun(runId) {
+  const started = Date.now();
+  while (true) {
+    const run = await fetchApifyRun(runId);
+    const status = run?.status;
+    if (status === 'SUCCEEDED') return run;
+    if (['FAILED', 'TIMED-OUT', 'ABORTED'].includes(status)) {
+      throw new Error(`Apify actor run ${runId} ended with status ${status}`);
+    }
+    const elapsedSeconds = Math.round((Date.now() - started) / 1000);
+    if (elapsedSeconds > APIFY_MAX_WAIT_SECONDS) {
+      throw new Error(`Apify actor run ${runId} did not finish within ${APIFY_MAX_WAIT_SECONDS}s. Re-run with TORIUM_IDEALISTA_RUN_ID=${runId} after it succeeds.`);
+    }
+    console.log(`Waiting for Apify run ${runId}: ${status || 'UNKNOWN'} (${elapsedSeconds}s)`);
+    await sleep(APIFY_POLL_INTERVAL_SECONDS * 1000);
+  }
+}
+
+async function startApifyActorRun(actorId, input) {
+  const response = await apifyFetchJson(`acts/${actorId}/runs`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  return response?.data ?? response;
 }
 
 function buildImmobiliareStructuredPayload(area, variant) {
@@ -197,14 +269,25 @@ function buildIdealistaQuery() {
 }
 
 async function runIdealistaScraper(input) {
-  const url = `https://api.apify.com/v2/acts/igolaizola~idealista-scraper/run-sync-get-dataset-items?${new URLSearchParams({ token: APIFY_TOKEN })}`;
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(input),
-  });
-  if (!response.ok) throw new Error(`Apify Idealista request failed: ${response.status}\n${await response.text()}`);
-  return response.json();
+  const maxItems = Number(input.maxItems || MAX_TOTAL_RAW_LISTINGS);
+
+  if (IDEALISTA_DATASET_ID) {
+    console.log(`Loading Idealista items from existing Apify dataset: ${IDEALISTA_DATASET_ID}`);
+    return fetchApifyDatasetItems(IDEALISTA_DATASET_ID, maxItems);
+  }
+
+  if (IDEALISTA_RUN_ID) {
+    console.log(`Loading Idealista items from existing Apify run: ${IDEALISTA_RUN_ID}`);
+    const run = await pollApifyRun(IDEALISTA_RUN_ID);
+    return fetchApifyDatasetItems(run.defaultDatasetId, maxItems);
+  }
+
+  console.log(`Starting Idealista actor asynchronously: ${IDEALISTA_ACTOR_ID}`);
+  const run = await startApifyActorRun(IDEALISTA_ACTOR_ID, input);
+  console.log(`Started Idealista Apify run: ${run.id}`);
+  const finishedRun = await pollApifyRun(run.id);
+  console.log(`Idealista Apify run succeeded: ${finishedRun.id}; dataset=${finishedRun.defaultDatasetId}`);
+  return fetchApifyDatasetItems(finishedRun.defaultDatasetId, maxItems);
 }
 
 async function runSourceQuery(query) {
@@ -297,6 +380,7 @@ async function main() {
       startUrl: query.payload.startUrl,
       results_wanted: query.payload.results_wanted,
       max_pages: query.payload.max_pages,
+      maxItems: query.payload.maxItems,
     })),
   }, null, 2));
 
