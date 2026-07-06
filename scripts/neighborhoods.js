@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { MILAN_IDEALISTA_PRIORITY_NEIGHBORHOODS } from '../lib/milan-idealista-locations.js';
 
 const selected = String(process.env.TORIUM_IDEALISTA_LOCATION_IDS || '')
