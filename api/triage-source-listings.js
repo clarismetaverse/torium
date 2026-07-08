@@ -25,20 +25,7 @@ function areaAliases(area) {
 }
 
 function rowAreaText(row) {
-  return normalizeText([
-    row.title,
-    row.address,
-    row.city,
-    row.district,
-    row.neighborhood,
-    row.area_label,
-    row.raw_listing?.title,
-    row.raw_listing?.address,
-    row.raw_listing?.location,
-    row.raw_listing?.district,
-    row.raw_listing?.neighborhood,
-    row.raw_listing?.area,
-  ].filter(Boolean).join(' '));
+  return normalizeText([row.title, row.address, row.city, row.district, row.neighborhood, row.area_label, row.raw_listing?.title, row.raw_listing?.address, row.raw_listing?.location, row.raw_listing?.district, row.raw_listing?.neighborhood, row.raw_listing?.area].filter(Boolean).join(' '));
 }
 
 function matchesQueryArea(row) {
@@ -89,7 +76,7 @@ function extractPhotos(row) {
   const seen = new Set();
   const photos = [];
   const push = (item) => {
-    const url = typeof item === 'string' ? item : item?.url;
+    const url = typeof item === 'string' ? item : item?.url || item?.thumbnail;
     if (!url || seen.has(url)) return;
     seen.add(url);
     photos.push({ url, tag: item?.tag && !String(item.tag).toLowerCase().includes('idealista') ? item.tag : null });
@@ -97,13 +84,31 @@ function extractPhotos(row) {
   push(row.thumbnail_url);
   const images = row.raw_listing?.multimedia?.images;
   if (Array.isArray(images)) images.forEach(push);
-  return photos.slice(0, 24);
+  return photos.slice(0, 32);
+}
+
+function extractFloorPlans(row) {
+  const seen = new Set();
+  const plans = [];
+  const push = (item) => {
+    const url = typeof item === 'string' ? item : item?.url || item?.thumbnail;
+    const tag = String(item?.tag || '').toLowerCase();
+    if (!url || seen.has(url)) return;
+    if (tag && !['plan', 'floorplan', 'floor_plan', 'layout', 'plano'].includes(tag)) return;
+    if (!tag && !String(url).toLowerCase().includes('plan')) return;
+    seen.add(url);
+    plans.push({ url, tag: item?.tag || 'plan' });
+  };
+  const images = row.raw_listing?.multimedia?.images;
+  if (Array.isArray(images)) images.forEach(push);
+  return plans.slice(0, 8);
 }
 
 function redactRow(row) {
   const title = publicTitle(row);
   const description = cleanText(row.raw_listing?.description || row.raw_listing?.notes || row.description);
   const photos = extractPhotos(row);
+  const floorPlans = extractFloorPlans(row);
   const raw = row.raw_listing && typeof row.raw_listing === 'object' ? {
     ...row.raw_listing,
     title,
@@ -113,7 +118,8 @@ function redactRow(row) {
     externalReference: null,
     description,
     photos,
-    multimedia: { images: photos },
+    floor_plans: floorPlans,
+    multimedia: { images: photos, floor_plans: floorPlans },
   } : row.raw_listing;
   return {
     ...row,
@@ -129,6 +135,7 @@ function redactRow(row) {
     risk_features: cleanFlags(row.risk_features),
     description,
     photos,
+    floor_plans: floorPlans,
     share_url: `/?property=${encodeURIComponent(row.id)}`,
     raw_listing: raw,
   };
