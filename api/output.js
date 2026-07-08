@@ -29,6 +29,53 @@ async function supabaseGet(pathname) {
   return response.json();
 }
 
+function publicListingTitle(result) {
+  const listing = result?.listing || result || {};
+  const rawTitle = result?.title || listing?.suggestedTexts?.title || listing?.title || '';
+  const typology = String(rawTitle).split(' in ')[0] || listing.propertyType || 'Immobile';
+  const area = listing.listing_area || listing.area_label || listing.neighborhood || listing.district || result?.listing_area || result?.area || result?.query_area || 'Milano';
+  const size = listing.size || result?.size_mq || result?.size;
+  return [typology, area, size ? `${size} mq` : null].filter(Boolean).join(' · ');
+}
+
+function redactResultForPublic(result) {
+  if (!result || typeof result !== 'object') return result;
+  const listing = result.listing && typeof result.listing === 'object' ? result.listing : {};
+  const redactedTitle = publicListingTitle(result);
+
+  return {
+    ...result,
+    title: redactedTitle,
+    url: null,
+    idealista_url: null,
+    source_url: null,
+    listing: {
+      ...listing,
+      title: redactedTitle,
+      address: null,
+      url: null,
+      propertyCode: null,
+      suggestedTexts: {
+        ...(listing.suggestedTexts || {}),
+        title: redactedTitle,
+      },
+    },
+  };
+}
+
+function redactOutputForPublic(output) {
+  if (!output || typeof output !== 'object') return output;
+  return {
+    ...output,
+    result_links: Array.isArray(output.result_links)
+      ? output.result_links.map((result) => redactResultForPublic(result))
+      : output.result_links,
+    results: Array.isArray(output.results)
+      ? output.results.map((result) => redactResultForPublic(result))
+      : output.results,
+  };
+}
+
 function sourceListingToResult(source, index) {
   const listing = source.raw_listing && typeof source.raw_listing === 'object' ? source.raw_listing : {};
   const realArea = source.district || source.neighborhood || source.area_label || listing.district || listing.neighborhood || listing.area_label || null;
@@ -104,7 +151,7 @@ function sourceListingToResult(source, index) {
   };
 }
 
-async function readSupabaseOutput(id) {
+async function readSupabaseOutput(id, { publicView = false } = {}) {
   const runId = id.replace(/^supabase:/, '');
   const runs = await supabaseGet(`triage_runs?run_id=eq.${encodeURIComponent(runId)}&select=*`);
   const run = runs?.[0];
@@ -119,34 +166,35 @@ async function readSupabaseOutput(id) {
     ? properties.map((property) => property.raw_result).filter(Boolean)
     : sourceListings.map((source, index) => sourceListingToResult(source, index));
 
-  if (run.raw_output && typeof run.raw_output === 'object') {
-    return {
+  const output = run.raw_output && typeof run.raw_output === 'object'
+    ? {
       ...run.raw_output,
       result_links: run.result_links ?? run.raw_output.result_links ?? [],
       results,
+    }
+    : {
+      search_name: run.search_name,
+      city: run.city,
+      investor_profile: run.investor_profile,
+      scraped_count: run.scraped_count,
+      eligible_count: run.eligible_count,
+      filtered_out_count: run.filtered_out_count,
+      filtered_out_summary: run.filtered_out_summary,
+      gpt_analyzed_count: run.gpt_analyzed_count,
+      result_links: run.result_links ?? [],
+      results,
     };
-  }
 
-  return {
-    search_name: run.search_name,
-    city: run.city,
-    investor_profile: run.investor_profile,
-    scraped_count: run.scraped_count,
-    eligible_count: run.eligible_count,
-    filtered_out_count: run.filtered_out_count,
-    filtered_out_summary: run.filtered_out_summary,
-    gpt_analyzed_count: run.gpt_analyzed_count,
-    result_links: run.result_links ?? [],
-    results,
-  };
+  return publicView ? redactOutputForPublic(output) : output;
 }
 
 export default async function handler(request, response) {
   try {
     const id = normalizeId(request.query.file);
+    const publicView = request.query.public === 'true' || request.query.safe === 'true';
 
     if (id.startsWith('supabase:')) {
-      response.status(200).json(await readSupabaseOutput(id));
+      response.status(200).json(await readSupabaseOutput(id, { publicView }));
       return;
     }
 
@@ -163,6 +211,10 @@ export default async function handler(request, response) {
     }
 
     const content = await readFile(fullPath, 'utf8');
+    if (publicView) {
+      response.status(200).json(redactOutputForPublic(JSON.parse(content)));
+      return;
+    }
     response.setHeader('Content-Type', 'application/json; charset=utf-8');
     response.status(200).send(content);
   } catch (error) {
