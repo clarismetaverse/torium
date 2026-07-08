@@ -46,6 +46,21 @@ function publicTitle(result) {
   return [typology, area, size ? `${size} mq` : null].filter(Boolean).join(' · ');
 }
 
+function imageBuckets(result) {
+  return [
+    result?.photos,
+    result?.floor_plans,
+    result?.listing?.photos,
+    result?.listing?.floor_plans,
+    result?.listing?.multimedia?.images,
+    result?.source_row?.photos,
+    result?.source_row?.floor_plans,
+    result?.source_row?.raw_listing?.photos,
+    result?.source_row?.raw_listing?.floor_plans,
+    result?.source_row?.raw_listing?.multimedia?.images,
+  ].filter(Array.isArray);
+}
+
 function extractPhotos(result) {
   const seen = new Set();
   const photos = [];
@@ -53,22 +68,31 @@ function extractPhotos(result) {
     const url = typeof item === 'string' ? item : item?.url || item?.thumbnail;
     if (!url || seen.has(url)) return;
     seen.add(url);
-    photos.push({ url, tag: item?.tag && !String(item.tag).toLowerCase().includes('idealista') ? item.tag : null });
+    const tag = item?.tag && !String(item.tag).toLowerCase().includes('idealista') ? item.tag : null;
+    photos.push({ url, tag });
   };
   push(result?.thumbnail_url);
   push(result?.listing?.thumbnail);
   push(result?.listing?.thumbnail_url);
   push(result?.source_row?.thumbnail_url);
-  const imageSets = [
-    result?.photos,
-    result?.listing?.photos,
-    result?.listing?.multimedia?.images,
-    result?.source_row?.photos,
-    result?.source_row?.raw_listing?.multimedia?.images,
-    result?.source_row?.raw_listing?.multimedia?.virtual3DTours,
-  ];
-  for (const images of imageSets) if (Array.isArray(images)) images.forEach(push);
-  return photos.slice(0, 24);
+  for (const images of imageBuckets(result)) images.forEach(push);
+  return photos.slice(0, 32);
+}
+
+function extractFloorPlans(result) {
+  const seen = new Set();
+  const plans = [];
+  const push = (item) => {
+    const url = typeof item === 'string' ? item : item?.url || item?.thumbnail;
+    const tag = String(item?.tag || '').toLowerCase();
+    if (!url || seen.has(url)) return;
+    if (tag && !['plan', 'floorplan', 'floor_plan', 'layout', 'plano'].includes(tag)) return;
+    if (!tag && !String(url).toLowerCase().includes('plan')) return;
+    seen.add(url);
+    plans.push({ url, tag: item?.tag || 'plan' });
+  };
+  for (const images of imageBuckets(result)) images.forEach(push);
+  return plans.slice(0, 8);
 }
 
 function extractDescription(result) {
@@ -93,7 +117,7 @@ function redactAnalysis(analysis) {
   };
 }
 
-function redactListing(listing, redactedTitle, photos, description) {
+function redactListing(listing, redactedTitle, photos, floorPlans, description) {
   if (!listing || typeof listing !== 'object') return listing;
   return {
     ...listing,
@@ -106,8 +130,41 @@ function redactListing(listing, redactedTitle, photos, description) {
     idealista_url: null,
     description,
     photos,
-    multimedia: { images: photos },
+    floor_plans: floorPlans,
+    multimedia: { images: photos, floor_plans: floorPlans },
     suggestedTexts: { ...(listing.suggestedTexts || {}), title: redactedTitle },
+  };
+}
+
+function redactSourceRow(sourceRow, redactedTitle, photos, floorPlans, description) {
+  if (!sourceRow || typeof sourceRow !== 'object') return sourceRow;
+  return {
+    ...sourceRow,
+    title: redactedTitle,
+    address: null,
+    source_channel: null,
+    source_url: null,
+    source_listing_id: null,
+    canonical_source_key: null,
+    source_fingerprint: null,
+    source_key: null,
+    quality_flags: cleanItems(sourceRow.quality_flags),
+    risk_features: cleanItems(sourceRow.risk_features),
+    description,
+    photos,
+    floor_plans: floorPlans,
+    raw_listing: sourceRow.raw_listing ? {
+      ...sourceRow.raw_listing,
+      title: redactedTitle,
+      address: null,
+      url: null,
+      propertyCode: null,
+      externalReference: null,
+      description,
+      photos,
+      floor_plans: floorPlans,
+      multimedia: { images: photos, floor_plans: floorPlans },
+    } : sourceRow.raw_listing,
   };
 }
 
@@ -115,6 +172,7 @@ function redactResult(result) {
   if (!result || typeof result !== 'object') return result;
   const redactedTitle = publicTitle(result);
   const photos = extractPhotos(result);
+  const floorPlans = extractFloorPlans(result);
   const description = extractDescription(result);
   return {
     ...result,
@@ -128,30 +186,11 @@ function redactResult(result) {
     propertyCode: null,
     description,
     photos,
+    floor_plans: floorPlans,
     share_url: `/?property=${encodeURIComponent(result.listing_index ?? result.id ?? redactedTitle)}`,
     gpt_analysis: redactAnalysis(result.gpt_analysis),
-    listing: redactListing(result.listing, redactedTitle, photos, description),
-    source_row: result.source_row ? {
-      ...result.source_row,
-      title: redactedTitle,
-      address: null,
-      source_channel: null,
-      source_url: null,
-      source_listing_id: null,
-      description,
-      photos,
-      raw_listing: result.source_row.raw_listing ? {
-        ...result.source_row.raw_listing,
-        title: redactedTitle,
-        address: null,
-        url: null,
-        propertyCode: null,
-        externalReference: null,
-        description,
-        photos,
-        multimedia: { images: photos },
-      } : result.source_row.raw_listing,
-    } : result.source_row,
+    listing: redactListing(result.listing, redactedTitle, photos, floorPlans, description),
+    source_row: redactSourceRow(result.source_row, redactedTitle, photos, floorPlans, description),
   };
 }
 
@@ -239,6 +278,7 @@ function sourceListingToResult(source, index) {
     },
   };
   result.photos = extractPhotos(result);
+  result.floor_plans = extractFloorPlans(result);
   result.description = extractDescription(result);
   return result;
 }
@@ -251,7 +291,6 @@ async function readSupabaseOutput(id, { publicView = true } = {}) {
 
   const properties = await supabaseGet(`triage_properties?run_id=eq.${encodeURIComponent(runId)}&select=*&order=rank.asc`);
   const sourceListings = properties.length ? [] : await supabaseGet(`triage_source_listings?run_id=eq.${encodeURIComponent(runId)}&select=*&order=door_score.desc.nullslast,price_by_area.asc.nullslast&limit=${SOURCE_LISTINGS_LIMIT}`);
-
   const results = properties.length ? properties.map((property) => property.raw_result || property).filter(Boolean) : sourceListings.map((source, index) => sourceListingToResult(source, index));
 
   const output = run.raw_output && typeof run.raw_output === 'object'
