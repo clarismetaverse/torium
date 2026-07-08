@@ -71,17 +71,42 @@ function scoreForCanonicalPick(row) {
 
 function dedupeRows(rows) {
   const byKey = new Map();
-
   for (const row of rows) {
     const key = canonicalKey(row);
     const current = byKey.get(key);
-    if (!current || scoreForCanonicalPick(row) > scoreForCanonicalPick(current)) {
-      byKey.set(key, row);
-    }
+    if (!current || scoreForCanonicalPick(row) > scoreForCanonicalPick(current)) byKey.set(key, row);
   }
-
   return Array.from(byKey.values())
     .sort((a, b) => (Number(b.door_score || 0) - Number(a.door_score || 0)) || (Number(a.price_by_area || 999999) - Number(b.price_by_area || 999999)));
+}
+
+function publicTitle(row) {
+  const typology = String(row.title || row.raw_listing?.title || 'Immobile').split(' in ')[0] || 'Immobile';
+  const area = row.neighborhood || row.district || row.area_label || row.query_area || 'Milano';
+  return [typology, area, row.size_mq ? `${row.size_mq} mq` : null].filter(Boolean).join(' · ');
+}
+
+function redactRow(row) {
+  const title = publicTitle(row);
+  const raw = row.raw_listing && typeof row.raw_listing === 'object' ? {
+    ...row.raw_listing,
+    title,
+    address: null,
+    url: null,
+    propertyCode: null,
+    externalReference: null,
+  } : row.raw_listing;
+  return {
+    ...row,
+    title,
+    address: null,
+    source_url: null,
+    source_listing_id: null,
+    canonical_source_key: null,
+    source_fingerprint: null,
+    source_key: null,
+    raw_listing: raw,
+  };
 }
 
 function enrichRows(rows) {
@@ -104,12 +129,13 @@ export default async function handler(request, response) {
     if (!runId) return sendError(response, 404, 'No run found');
 
     const raw = request.query.raw === '1' || request.query.raw === 'true';
+    const internal = request.query.internal === '1' || request.query.internal === 'true';
     const deduped = request.query.deduped === '1' || request.query.deduped === 'true';
     const areaMatchFilter = boolParam(request.query.area_match);
     const fetchLimit = deduped || areaMatchFilter !== null ? 1000 : limit;
     const fetchOffset = deduped || areaMatchFilter !== null ? 0 : offset;
 
-    const select = raw || areaMatchFilter !== null
+    const select = raw || internal || areaMatchFilter !== null
       ? '*'
       : 'id,created_at,run_id,source_channel,source_url,source_listing_id,source_fingerprint,canonical_source_key,query_name,query_area,title,address,city,district,neighborhood,area_label,price_eur,price_by_area,size_mq,rooms,bathrooms,floor,property_condition,property_type,has_lift,has_plan,features,is_new,renovation_features,ignored_features,risk_features,quality_flags,pre_triage_excluded,pre_triage_exclusion_reason,door_score,estimated_final_units,new_units_created,estimated_project_cost_eur,thumbnail_url';
 
@@ -127,7 +153,6 @@ export default async function handler(request, response) {
     const eligible = boolParam(request.query.eligible);
     if (eligible === true) parts.push('pre_triage_excluded=eq.false');
     if (eligible === false) parts.push('pre_triage_excluded=eq.true');
-
     if (request.query.min_score) parts.push(`door_score=gte.${Number(request.query.min_score)}`);
     if (request.query.min_size) parts.push(`size_mq=gte.${Number(request.query.min_size)}`);
     if (request.query.max_price_m2) parts.push(`price_by_area=lte.${Number(request.query.max_price_m2)}`);
@@ -135,16 +160,10 @@ export default async function handler(request, response) {
     let rows = enrichRows(await supabaseGet(`triage_source_listings?${parts.join('&')}`));
     const rawCount = rows.length;
 
-    if (areaMatchFilter !== null) {
-      rows = rows.filter((row) => row.area_match === areaMatchFilter);
-    }
-
-    if (deduped) {
-      rows = dedupeRows(rows);
-    }
+    if (areaMatchFilter !== null) rows = rows.filter((row) => row.area_match === areaMatchFilter);
+    if (deduped) rows = dedupeRows(rows);
 
     const pagedRows = deduped || areaMatchFilter !== null ? rows.slice(offset, offset + limit) : rows;
-
     jsonResponse(response, {
       run_id: runId,
       mode: deduped ? 'deduped' : 'raw',
@@ -153,7 +172,7 @@ export default async function handler(request, response) {
       total_after_filters: rows.length,
       limit,
       offset,
-      rows: pagedRows,
+      rows: internal ? pagedRows : pagedRows.map(redactRow),
     });
   } catch (error) {
     sendError(response, 500, error.message);
