@@ -29,57 +29,58 @@ async function supabaseGet(pathname) {
   return response.json();
 }
 
-function publicListingTitle(result) {
+function publicTitle(result) {
   const listing = result?.listing || result || {};
   const rawTitle = result?.title || listing?.suggestedTexts?.title || listing?.title || '';
-  const typology = String(rawTitle).split(' in ')[0] || listing.propertyType || 'Immobile';
-  const area = listing.listing_area || listing.area_label || listing.neighborhood || listing.district || result?.listing_area || result?.area || result?.query_area || 'Milano';
+  const typology = String(rawTitle).split(' in ')[0] || listing.propertyType || result?.property_type || 'Immobile';
+  const area = listing.listing_area || listing.area_label || listing.neighborhood || listing.district || result?.listing_area || result?.area_label || result?.neighborhood || result?.district || result?.query_area || 'Milano';
   const size = listing.size || result?.size_mq || result?.size;
   return [typology, area, size ? `${size} mq` : null].filter(Boolean).join(' · ');
 }
 
-function redactResultForPublic(result) {
-  if (!result || typeof result !== 'object') return result;
-  const listing = result.listing && typeof result.listing === 'object' ? result.listing : {};
-  const redactedTitle = publicListingTitle(result);
-
+function redactListing(listing, redactedTitle) {
+  if (!listing || typeof listing !== 'object') return listing;
   return {
-    ...result,
+    ...listing,
     title: redactedTitle,
+    address: null,
     url: null,
-    idealista_url: null,
+    propertyCode: null,
     source_url: null,
-    listing: {
-      ...listing,
-      title: redactedTitle,
-      address: null,
-      url: null,
-      propertyCode: null,
-      suggestedTexts: {
-        ...(listing.suggestedTexts || {}),
-        title: redactedTitle,
-      },
-    },
+    sourceUrl: null,
+    idealista_url: null,
+    suggestedTexts: { ...(listing.suggestedTexts || {}), title: redactedTitle },
   };
 }
 
-function redactOutputForPublic(output) {
+function redactResult(result) {
+  if (!result || typeof result !== 'object') return result;
+  const redactedTitle = publicTitle(result);
+  return {
+    ...result,
+    title: redactedTitle,
+    address: null,
+    url: null,
+    idealista_url: null,
+    source_url: null,
+    source_listing_id: null,
+    propertyCode: null,
+    listing: redactListing(result.listing, redactedTitle),
+  };
+}
+
+function redactOutput(output) {
   if (!output || typeof output !== 'object') return output;
   return {
     ...output,
-    result_links: Array.isArray(output.result_links)
-      ? output.result_links.map((result) => redactResultForPublic(result))
-      : output.result_links,
-    results: Array.isArray(output.results)
-      ? output.results.map((result) => redactResultForPublic(result))
-      : output.results,
+    result_links: Array.isArray(output.result_links) ? output.result_links.map(redactResult) : output.result_links,
+    results: Array.isArray(output.results) ? output.results.map(redactResult) : output.results,
   };
 }
 
 function sourceListingToResult(source, index) {
   const listing = source.raw_listing && typeof source.raw_listing === 'object' ? source.raw_listing : {};
   const realArea = source.district || source.neighborhood || source.area_label || listing.district || listing.neighborhood || listing.area_label || null;
-
   return {
     listing_index: index,
     title: source.title,
@@ -151,7 +152,7 @@ function sourceListingToResult(source, index) {
   };
 }
 
-async function readSupabaseOutput(id, { publicView = false } = {}) {
+async function readSupabaseOutput(id, { publicView = true } = {}) {
   const runId = id.replace(/^supabase:/, '');
   const runs = await supabaseGet(`triage_runs?run_id=eq.${encodeURIComponent(runId)}&select=*`);
   const run = runs?.[0];
@@ -163,15 +164,11 @@ async function readSupabaseOutput(id, { publicView = false } = {}) {
     : await supabaseGet(`triage_source_listings?run_id=eq.${encodeURIComponent(runId)}&select=*&order=door_score.desc.nullslast,price_by_area.asc.nullslast&limit=${SOURCE_LISTINGS_LIMIT}`);
 
   const results = properties.length
-    ? properties.map((property) => property.raw_result).filter(Boolean)
+    ? properties.map((property) => property.raw_result || property).filter(Boolean)
     : sourceListings.map((source, index) => sourceListingToResult(source, index));
 
   const output = run.raw_output && typeof run.raw_output === 'object'
-    ? {
-      ...run.raw_output,
-      result_links: run.result_links ?? run.raw_output.result_links ?? [],
-      results,
-    }
+    ? { ...run.raw_output, result_links: run.result_links ?? run.raw_output.result_links ?? [], results }
     : {
       search_name: run.search_name,
       city: run.city,
@@ -185,13 +182,13 @@ async function readSupabaseOutput(id, { publicView = false } = {}) {
       results,
     };
 
-  return publicView ? redactOutputForPublic(output) : output;
+  return publicView ? redactOutput(output) : output;
 }
 
 export default async function handler(request, response) {
   try {
     const id = normalizeId(request.query.file);
-    const publicView = request.query.public === 'true' || request.query.safe === 'true';
+    const publicView = !(request.query.internal === 'true' || request.query.internal === '1');
 
     if (id.startsWith('supabase:')) {
       response.status(200).json(await readSupabaseOutput(id, { publicView }));
@@ -212,7 +209,7 @@ export default async function handler(request, response) {
 
     const content = await readFile(fullPath, 'utf8');
     if (publicView) {
-      response.status(200).json(redactOutputForPublic(JSON.parse(content)));
+      response.status(200).json(redactOutput(JSON.parse(content)));
       return;
     }
     response.setHeader('Content-Type', 'application/json; charset=utf-8');
