@@ -69,6 +69,11 @@ const server = http.createServer(async (request, response) => {
       return;
     }
 
+    if (url.pathname === '/public' || url.pathname === '/public.html') {
+      await sendStatic(response, path.join(ROOT, 'public.html'), 'text/html; charset=utf-8');
+      return;
+    }
+
     if (url.pathname === '/api/outputs') {
       await sendJson(response, { outputs: await listJsonFiles() });
       return;
@@ -95,4 +100,5 @@ const server = http.createServer(async (request, response) => {
 
 server.listen(PORT, () => {
   console.log(`TORIUM triage viewer running at http://localhost:${PORT}`);
+  console.log(`TORIUM public viewer running at http://localhost:${PORT}/public`);
 });
