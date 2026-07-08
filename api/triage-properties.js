@@ -18,6 +18,10 @@ function cleanItems(items) {
   return (Array.isArray(items) ? items : []).filter((item) => !String(item).toLowerCase().includes('idealista'));
 }
 
+function imageBuckets(raw) {
+  return [raw.photos, raw.floor_plans, raw.listing?.photos, raw.listing?.floor_plans, raw.listing?.multimedia?.images, raw.source_row?.photos, raw.source_row?.floor_plans, raw.source_row?.raw_listing?.multimedia?.images].filter(Array.isArray);
+}
+
 function extractPhotos(row) {
   const raw = row.raw_result && typeof row.raw_result === 'object' ? row.raw_result : {};
   const seen = new Set();
@@ -32,9 +36,25 @@ function extractPhotos(row) {
   push(raw.thumbnail_url);
   push(raw.listing?.thumbnail);
   push(raw.source_row?.thumbnail_url);
-  const imageSets = [raw.photos, raw.listing?.photos, raw.listing?.multimedia?.images, raw.source_row?.photos, raw.source_row?.raw_listing?.multimedia?.images];
-  for (const images of imageSets) if (Array.isArray(images)) images.forEach(push);
-  return photos.slice(0, 24);
+  for (const images of imageBuckets(raw)) images.forEach(push);
+  return photos.slice(0, 32);
+}
+
+function extractFloorPlans(row) {
+  const raw = row.raw_result && typeof row.raw_result === 'object' ? row.raw_result : {};
+  const seen = new Set();
+  const plans = [];
+  const push = (item) => {
+    const url = typeof item === 'string' ? item : item?.url || item?.thumbnail;
+    const tag = String(item?.tag || '').toLowerCase();
+    if (!url || seen.has(url)) return;
+    if (tag && !['plan', 'floorplan', 'floor_plan', 'layout', 'plano'].includes(tag)) return;
+    if (!tag && !String(url).toLowerCase().includes('plan')) return;
+    seen.add(url);
+    plans.push({ url, tag: item?.tag || 'plan' });
+  };
+  for (const images of imageBuckets(raw)) images.forEach(push);
+  return plans.slice(0, 8);
 }
 
 function extractDescription(row) {
@@ -42,7 +62,7 @@ function extractDescription(row) {
   return cleanText(raw.description || raw.listing?.description || raw.source_row?.description || raw.source_row?.raw_listing?.description || null);
 }
 
-function redactRaw(raw, title, photos, description) {
+function redactRaw(raw, title, photos, floorPlans, description) {
   if (!raw || typeof raw !== 'object') return raw;
   return {
     ...raw,
@@ -55,6 +75,7 @@ function redactRaw(raw, title, photos, description) {
     source_listing_id: null,
     description,
     photos,
+    floor_plans: floorPlans,
     share_url: `/?property=${encodeURIComponent(raw.listing_index ?? title)}`,
     gpt_analysis: raw.gpt_analysis ? {
       ...raw.gpt_analysis,
@@ -71,7 +92,8 @@ function redactRaw(raw, title, photos, description) {
       propertyCode: null,
       description,
       photos,
-      multimedia: { images: photos },
+      floor_plans: floorPlans,
+      multimedia: { images: photos, floor_plans: floorPlans },
       suggestedTexts: { ...(raw.listing.suggestedTexts || {}), title },
     } : raw.listing,
     source_row: raw.source_row && typeof raw.source_row === 'object' ? {
@@ -83,6 +105,7 @@ function redactRaw(raw, title, photos, description) {
       source_listing_id: null,
       description,
       photos,
+      floor_plans: floorPlans,
       raw_listing: raw.source_row.raw_listing && typeof raw.source_row.raw_listing === 'object' ? {
         ...raw.source_row.raw_listing,
         title,
@@ -92,7 +115,8 @@ function redactRaw(raw, title, photos, description) {
         externalReference: null,
         description,
         photos,
-        multimedia: { images: photos },
+        floor_plans: floorPlans,
+        multimedia: { images: photos, floor_plans: floorPlans },
       } : raw.source_row.raw_listing,
     } : raw.source_row,
   };
@@ -101,6 +125,7 @@ function redactRaw(raw, title, photos, description) {
 function redactRow(row) {
   const title = redactedTitle(row);
   const photos = extractPhotos(row);
+  const floorPlans = extractFloorPlans(row);
   const description = extractDescription(row);
   return {
     ...row,
@@ -115,8 +140,9 @@ function redactRow(row) {
     human_due_diligence_questions: cleanItems(row.human_due_diligence_questions),
     description,
     photos,
+    floor_plans: floorPlans,
     share_url: `/?property=${encodeURIComponent(row.id)}`,
-    raw_result: redactRaw(row.raw_result, title, photos, description),
+    raw_result: redactRaw(row.raw_result, title, photos, floorPlans, description),
   };
 }
 
