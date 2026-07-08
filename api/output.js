@@ -29,6 +29,14 @@ async function supabaseGet(pathname) {
   return response.json();
 }
 
+function cleanText(value) {
+  return String(value || '').replace(/\s+/g, ' ').trim() || null;
+}
+
+function cleanItems(items) {
+  return (Array.isArray(items) ? items : []).filter((item) => !String(item).toLowerCase().includes('idealista'));
+}
+
 function publicTitle(result) {
   const listing = result?.listing || result || {};
   const rawTitle = result?.title || listing?.suggestedTexts?.title || listing?.title || '';
@@ -38,7 +46,54 @@ function publicTitle(result) {
   return [typology, area, size ? `${size} mq` : null].filter(Boolean).join(' · ');
 }
 
-function redactListing(listing, redactedTitle) {
+function extractPhotos(result) {
+  const seen = new Set();
+  const photos = [];
+  const push = (item) => {
+    const url = typeof item === 'string' ? item : item?.url || item?.thumbnail;
+    if (!url || seen.has(url)) return;
+    seen.add(url);
+    photos.push({ url, tag: item?.tag && !String(item.tag).toLowerCase().includes('idealista') ? item.tag : null });
+  };
+  push(result?.thumbnail_url);
+  push(result?.listing?.thumbnail);
+  push(result?.listing?.thumbnail_url);
+  push(result?.source_row?.thumbnail_url);
+  const imageSets = [
+    result?.photos,
+    result?.listing?.photos,
+    result?.listing?.multimedia?.images,
+    result?.source_row?.photos,
+    result?.source_row?.raw_listing?.multimedia?.images,
+    result?.source_row?.raw_listing?.multimedia?.virtual3DTours,
+  ];
+  for (const images of imageSets) if (Array.isArray(images)) images.forEach(push);
+  return photos.slice(0, 24);
+}
+
+function extractDescription(result) {
+  return cleanText(
+    result?.description ||
+    result?.listing?.description ||
+    result?.source_row?.description ||
+    result?.source_row?.raw_listing?.description ||
+    result?.source_row?.raw_listing?.notes ||
+    null
+  );
+}
+
+function redactAnalysis(analysis) {
+  if (!analysis || typeof analysis !== 'object') return analysis;
+  return {
+    ...analysis,
+    positive_signals: cleanItems(analysis.positive_signals),
+    red_flags: cleanItems(analysis.red_flags),
+    missing_information: cleanItems(analysis.missing_information),
+    human_due_diligence_questions: cleanItems(analysis.human_due_diligence_questions),
+  };
+}
+
+function redactListing(listing, redactedTitle, photos, description) {
   if (!listing || typeof listing !== 'object') return listing;
   return {
     ...listing,
@@ -49,6 +104,9 @@ function redactListing(listing, redactedTitle) {
     source_url: null,
     sourceUrl: null,
     idealista_url: null,
+    description,
+    photos,
+    multimedia: { images: photos },
     suggestedTexts: { ...(listing.suggestedTexts || {}), title: redactedTitle },
   };
 }
@@ -56,6 +114,8 @@ function redactListing(listing, redactedTitle) {
 function redactResult(result) {
   if (!result || typeof result !== 'object') return result;
   const redactedTitle = publicTitle(result);
+  const photos = extractPhotos(result);
+  const description = extractDescription(result);
   return {
     ...result,
     title: redactedTitle,
@@ -63,9 +123,35 @@ function redactResult(result) {
     url: null,
     idealista_url: null,
     source_url: null,
+    source_channel: null,
     source_listing_id: null,
     propertyCode: null,
-    listing: redactListing(result.listing, redactedTitle),
+    description,
+    photos,
+    share_url: `/?property=${encodeURIComponent(result.listing_index ?? result.id ?? redactedTitle)}`,
+    gpt_analysis: redactAnalysis(result.gpt_analysis),
+    listing: redactListing(result.listing, redactedTitle, photos, description),
+    source_row: result.source_row ? {
+      ...result.source_row,
+      title: redactedTitle,
+      address: null,
+      source_channel: null,
+      source_url: null,
+      source_listing_id: null,
+      description,
+      photos,
+      raw_listing: result.source_row.raw_listing ? {
+        ...result.source_row.raw_listing,
+        title: redactedTitle,
+        address: null,
+        url: null,
+        propertyCode: null,
+        externalReference: null,
+        description,
+        photos,
+        multimedia: { images: photos },
+      } : result.source_row.raw_listing,
+    } : result.source_row,
   };
 }
 
@@ -81,7 +167,7 @@ function redactOutput(output) {
 function sourceListingToResult(source, index) {
   const listing = source.raw_listing && typeof source.raw_listing === 'object' ? source.raw_listing : {};
   const realArea = source.district || source.neighborhood || source.area_label || listing.district || listing.neighborhood || listing.area_label || null;
-  return {
+  const result = {
     listing_index: index,
     title: source.title,
     url: source.source_url,
@@ -89,6 +175,7 @@ function sourceListingToResult(source, index) {
     query_area: source.query_area,
     listing_area: realArea,
     ranking_score: source.door_score,
+    source_row: source,
     door_engine: {
       doorScore: source.door_score,
       estimatedFinalUnits: source.estimated_final_units,
@@ -148,8 +235,12 @@ function sourceListingToResult(source, index) {
       risk_features: source.risk_features ?? listing.risk_features ?? [],
       quality_flags: source.quality_flags ?? listing.quality_flags ?? [],
       thumbnail: source.thumbnail_url ?? listing.thumbnail,
+      description: listing.description ?? source.raw_listing?.description ?? null,
     },
   };
+  result.photos = extractPhotos(result);
+  result.description = extractDescription(result);
+  return result;
 }
 
 async function readSupabaseOutput(id, { publicView = true } = {}) {
@@ -159,13 +250,9 @@ async function readSupabaseOutput(id, { publicView = true } = {}) {
   if (!run) throw new Error(`Supabase run not found: ${runId}`);
 
   const properties = await supabaseGet(`triage_properties?run_id=eq.${encodeURIComponent(runId)}&select=*&order=rank.asc`);
-  const sourceListings = properties.length
-    ? []
-    : await supabaseGet(`triage_source_listings?run_id=eq.${encodeURIComponent(runId)}&select=*&order=door_score.desc.nullslast,price_by_area.asc.nullslast&limit=${SOURCE_LISTINGS_LIMIT}`);
+  const sourceListings = properties.length ? [] : await supabaseGet(`triage_source_listings?run_id=eq.${encodeURIComponent(runId)}&select=*&order=door_score.desc.nullslast,price_by_area.asc.nullslast&limit=${SOURCE_LISTINGS_LIMIT}`);
 
-  const results = properties.length
-    ? properties.map((property) => property.raw_result || property).filter(Boolean)
-    : sourceListings.map((source, index) => sourceListingToResult(source, index));
+  const results = properties.length ? properties.map((property) => property.raw_result || property).filter(Boolean) : sourceListings.map((source, index) => sourceListingToResult(source, index));
 
   const output = run.raw_output && typeof run.raw_output === 'object'
     ? { ...run.raw_output, result_links: run.result_links ?? run.raw_output.result_links ?? [], results }
