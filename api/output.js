@@ -128,6 +128,8 @@ function redactListing(listing, redactedTitle, photos, floorPlans, description) 
     source_url: null,
     sourceUrl: null,
     idealista_url: null,
+    contactInfo: null,
+    agency: null,
     description,
     photos,
     floor_plans: floorPlans,
@@ -160,6 +162,8 @@ function redactSourceRow(sourceRow, redactedTitle, photos, floorPlans, descripti
       url: null,
       propertyCode: null,
       externalReference: null,
+      contactInfo: null,
+      agency: null,
       description,
       photos,
       floor_plans: floorPlans,
@@ -184,6 +188,8 @@ function redactResult(result) {
     source_channel: null,
     source_listing_id: null,
     propertyCode: null,
+    contactInfo: null,
+    agency: null,
     description,
     photos,
     floor_plans: floorPlans,
@@ -196,8 +202,11 @@ function redactResult(result) {
 
 function redactOutput(output) {
   if (!output || typeof output !== 'object') return output;
+  // filtered_out holds raw scraped listings (URLs, addresses, source tags) that the
+  // public viewer never renders; it only uses filtered_out_count. Drop the raw array.
+  const { filtered_out, ...rest } = output;
   return {
-    ...output,
+    ...rest,
     result_links: Array.isArray(output.result_links) ? output.result_links.map(redactResult) : output.result_links,
     results: Array.isArray(output.results) ? output.results.map(redactResult) : output.results,
   };
