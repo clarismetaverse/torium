@@ -37,6 +37,48 @@ function cleanItems(items) {
   return (Array.isArray(items) ? items : []).filter((item) => !String(item).toLowerCase().includes('idealista'));
 }
 
+// --- Public payload defense-in-depth sanitizer -----------------------------
+// Keys whose string values are real image assets and must be preserved so the
+// public gallery/floor plans keep working (their host may be a source CDN).
+const PUBLIC_IMAGE_KEYS = new Set(['url', 'thumbnail', 'thumbnail_url', 'src', 'image']);
+// Source/listing identifier keys that must never reach the public viewer.
+const PUBLIC_DENY_KEYS = new Set([
+  'address', 'source_url', 'sourceurl', 'idealista_url', 'source_platform_name',
+  'source_channel', 'source_key', 'canonical_source_key', 'source_fingerprint',
+  'source_listing_id', 'externalreference', 'propertycode', 'agency', 'agencylogo',
+  'contactinfo', 'micrositeshortname',
+]);
+// Brand token to strip anywhere it appears (only unambiguous platform brands;
+// deliberately NOT "immobiliare", which is also the Italian word for real estate).
+const PLATFORM_TOKEN = 'idealista';
+
+function sanitizePublicDeep(node, key) {
+  if (node === null || node === undefined) return node;
+  if (typeof node === 'string') {
+    const k = String(key).toLowerCase();
+    if (PUBLIC_DENY_KEYS.has(k)) return null;
+    if (PUBLIC_IMAGE_KEYS.has(k)) return node;
+    return node.toLowerCase().includes(PLATFORM_TOKEN) ? null : node;
+  }
+  if (Array.isArray(node)) {
+    const out = [];
+    for (const item of node) {
+      if (typeof item === 'string') {
+        if (!item.toLowerCase().includes(PLATFORM_TOKEN)) out.push(item);
+        continue;
+      }
+      out.push(sanitizePublicDeep(item, key));
+    }
+    return out;
+  }
+  if (typeof node === 'object') {
+    const out = {};
+    for (const k of Object.keys(node)) out[k] = sanitizePublicDeep(node[k], k);
+    return out;
+  }
+  return node;
+}
+
 function publicTitle(result) {
   const listing = result?.listing || result || {};
   const rawTitle = result?.title || listing?.suggestedTexts?.title || listing?.title || '';
@@ -205,11 +247,14 @@ function redactOutput(output) {
   // filtered_out holds raw scraped listings (URLs, addresses, source tags) that the
   // public viewer never renders; it only uses filtered_out_count. Drop the raw array.
   const { filtered_out, ...rest } = output;
-  return {
+  const redacted = {
     ...rest,
     result_links: Array.isArray(output.result_links) ? output.result_links.map(redactResult) : output.result_links,
     results: Array.isArray(output.results) ? output.results.map(redactResult) : output.results,
   };
+  // Final safety net across the entire public payload (covers Supabase-shaped
+  // rows whose identifier fields differ from the file-based schema).
+  return sanitizePublicDeep(redacted, 'root');
 }
 
 function sourceListingToResult(source, index) {

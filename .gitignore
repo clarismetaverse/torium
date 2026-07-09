@@ -14,3 +14,5 @@ yarn-error.log*
 data/raw/*.json
 data/processed/*.json
 outputs/**/*.json
+.vercel
+.env*
