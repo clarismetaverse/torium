@@ -2,6 +2,7 @@
   "cleanUrls": true,
   "outputDirectory": "public",
   "rewrites": [
-    { "source": "/property/:property", "destination": "/" }
+    { "source": "/", "destination": "/home" },
+    { "source": "/property/:property", "destination": "/index?property=:property" }
   ]
 }
