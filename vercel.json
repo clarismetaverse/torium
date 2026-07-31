@@ -1,8 +1,10 @@
 {
   "cleanUrls": true,
   "outputDirectory": "public",
+  "redirects": [
+    { "source": "/", "destination": "/home", "permanent": false }
+  ],
   "rewrites": [
-    { "source": "/", "destination": "/home" },
     { "source": "/property/:property", "destination": "/index?property=:property" }
   ]
 }
