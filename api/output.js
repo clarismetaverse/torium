@@ -344,7 +344,10 @@ async function readSupabaseOutput(id, { publicView = true } = {}) {
   if (!run) throw new Error(`Supabase run not found: ${runId}`);
 
   const properties = await supabaseGet(`triage_properties?run_id=eq.${encodeURIComponent(runId)}&select=*&order=rank.asc`);
-  const sourceListings = properties.length ? [] : await supabaseGet(`triage_source_listings?run_id=eq.${encodeURIComponent(runId)}&select=*&order=door_score.desc.nullslast,price_by_area.asc.nullslast&limit=${SOURCE_LISTINGS_LIMIT}`);
+  const sourceOrder = run.search_strategy === 'neutral_fractionability'
+    ? 'door_score.desc.nullslast'
+    : 'door_score.desc.nullslast,price_by_area.asc.nullslast';
+  const sourceListings = properties.length ? [] : await supabaseGet(`triage_source_listings?run_id=eq.${encodeURIComponent(runId)}&pre_triage_excluded=eq.false&select=*&order=${sourceOrder}&limit=${SOURCE_LISTINGS_LIMIT}`);
   const results = properties.length ? properties.map((property) => property.raw_result || property).filter(Boolean) : sourceListings.map((source, index) => sourceListingToResult(source, index));
 
   const output = run.raw_output && typeof run.raw_output === 'object'
@@ -353,6 +356,8 @@ async function readSupabaseOutput(id, { publicView = true } = {}) {
       search_name: run.search_name,
       city: run.city,
       investor_profile: run.investor_profile,
+      search_strategy: run.search_strategy,
+      scoring_mode: run.scoring_mode,
       scraped_count: run.scraped_count,
       eligible_count: run.eligible_count,
       filtered_out_count: run.filtered_out_count,
@@ -361,6 +366,9 @@ async function readSupabaseOutput(id, { publicView = true } = {}) {
       result_links: run.result_links ?? [],
       results,
     };
+
+  output.search_strategy = run.search_strategy ?? output.search_strategy ?? null;
+  output.scoring_mode = run.scoring_mode ?? output.scoring_mode ?? null;
 
   return publicView ? redactOutput(output) : output;
 }
