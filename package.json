@@ -19,7 +19,8 @@
     "triage:massive": "node pipelines/triage-multisource-massive.js milanoFractioningMassive",
     "triage:gpt:latest": "node pipelines/triage-gpt-from-supabase.js latest",
     "viewer:triage": "node viewer/server.js",
-    "triage:idealista:neighborhoods": "node scripts/neighborhoods.js"
+    "triage:idealista:neighborhoods": "node scripts/neighborhoods.js",
+    "test": "node --test"
   },
   "dependencies": {
     "dotenv": "latest"

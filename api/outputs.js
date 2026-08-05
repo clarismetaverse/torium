@@ -32,7 +32,7 @@ async function readDirSafe(dirName) {
 
 async function readSupabaseRuns() {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) return null;
-  const query = 'triage_runs?select=run_id,filename,search_name,city,created_at,top_result_title&order=created_at.desc&limit=50';
+  const query = 'triage_runs?select=run_id,filename,search_name,search_strategy,scoring_mode,city,created_at,top_result_title&order=created_at.desc&limit=50';
   const response = await fetch(`${SUPABASE_URL.replace(/\/$/, '')}/rest/v1/${query}`, {
     headers: {
       apikey: SUPABASE_SERVICE_ROLE_KEY,
@@ -47,6 +47,8 @@ async function readSupabaseRuns() {
     dir: 'supabase/triage_runs',
     modified_at: row.created_at ? Date.parse(row.created_at) : 0,
     search_name: row.search_name,
+    search_strategy: row.search_strategy,
+    scoring_mode: row.scoring_mode,
     city: row.city,
     top_result_title: row.top_result_title,
   }));

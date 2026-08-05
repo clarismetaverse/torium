@@ -6,7 +6,7 @@ export default async function handler(request, response) {
     const raw = request.query.raw === '1' || request.query.raw === 'true';
     const select = raw
       ? '*'
-      : 'run_id,created_at,search_name,city,investor_profile,raw_source_count,scraped_count,eligible_count,filtered_out_count,pre_scored_count,gpt_candidate_count,gpt_analyzed_count,source_channels,requested_areas,query_payloads,result_links,top_result_url,top_result_title,top_result_score,top_result_spread_base_eur,top_result_roi_base_pct';
+      : 'run_id,created_at,search_name,search_strategy,scoring_mode,city,investor_profile,raw_source_count,scraped_count,eligible_count,filtered_out_count,pre_scored_count,gpt_candidate_count,gpt_analyzed_count,source_channels,requested_areas,query_payloads,result_links,top_result_url,top_result_title,top_result_score,top_result_spread_base_eur,top_result_roi_base_pct';
 
     const rows = await supabaseGet(`triage_runs?select=${select}&order=created_at.desc&limit=${limit}`);
     jsonResponse(response, { count: rows.length, rows });

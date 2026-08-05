@@ -6,6 +6,7 @@ import { buildImmobiliareSearchUrl } from '../lib/immobiliare-url-builder.js';
 import { syncSourceListingsRunToSupabase } from '../lib/supabase-source-listings-sync.js';
 import { runImmobiliareScraper } from '../scrapers/immobiliare/client.js';
 import { runImmobiliareUrlScraper } from '../scrapers/immobiliare-url/client.js';
+import { buildStrategySearchName, compareShortlistItems, resolveSearchStrategy } from '../lib/search-strategies.js';
 import fs from 'node:fs/promises';
 
 const APIFY_TOKEN = process.env.APIFY_TOKEN;
@@ -17,6 +18,7 @@ const IDEALISTA_RUN_ID = process.env.TORIUM_IDEALISTA_RUN_ID || null;
 const APIFY_MAX_WAIT_SECONDS = Number(process.env.TORIUM_APIFY_MAX_WAIT_SECONDS || 1800);
 const APIFY_POLL_INTERVAL_SECONDS = Number(process.env.TORIUM_APIFY_POLL_INTERVAL_SECONDS || 10);
 const APIFY_DATASET_PAGE_SIZE = Number(process.env.TORIUM_APIFY_DATASET_PAGE_SIZE || 1000);
+const SEARCH_STRATEGY = resolveSearchStrategy(process.env.TORIUM_SEARCH_STRATEGY);
 
 const RUN_MODE_DEFAULTS = {
   scout: {
@@ -79,7 +81,7 @@ const EXCLUDE_AUCTIONS = process.env.TORIUM_IMMOBILIARE_EXCLUDE_AUCTIONS === 'tr
 const INCLUDE_RENOVATION_VARIANT = process.env.TORIUM_MASSIVE_INCLUDE_RENOVATION_VARIANT !== 'false';
 const INCLUDE_DISCOUNTED_VARIANT = process.env.TORIUM_MASSIVE_INCLUDE_DISCOUNTED_VARIANT === 'true' || MODE_DEFAULTS.includeDiscountedVariant;
 
-if (!APIFY_TOKEN) throw new Error('Missing APIFY_TOKEN in .env');
+if (!APIFY_TOKEN && process.env.TORIUM_DRY_RUN !== 'true') throw new Error('Missing APIFY_TOKEN in .env');
 
 function compactObject(input) {
   return Object.fromEntries(
@@ -260,7 +262,7 @@ function buildIdealistaQuery() {
       propertyType: 'homes',
       location: DEFAULT_CITY,
       minSize: String(MIN_SIZE),
-      sortBy: 'lowestPriceM2',
+      sortBy: SEARCH_STRATEGY.idealistaSortBy,
       maxItems: Math.min(MAX_TOTAL_RAW_LISTINGS, Math.max(MAX_ITEMS_PER_QUERY, 100)),
       fetchDetails: false,
       fetchStats: false,
@@ -299,7 +301,10 @@ async function runSourceQuery(query) {
 
 function enrichWithPreScore(item, investorProfile) {
   const exclusion = getPreTriageExclusion(item.listing);
-  const doorEngine = runDoorEngine(item.listing, investorProfile);
+  const doorEngine = runDoorEngine(item.listing, investorProfile, {
+    includeEconomicSignals: SEARCH_STRATEGY.includeEconomicDoorSignals,
+    scoringMode: SEARCH_STRATEGY.scoringMode,
+  });
 
   return {
     ...item,
@@ -348,7 +353,8 @@ function buildResultLinks(items) {
 }
 
 async function main() {
-  const searchName = process.argv[2] || 'milanoFractioningMassive';
+  const baseSearchName = process.argv[2] || 'milanoFractioningMassive';
+  const searchName = buildStrategySearchName(baseSearchName, SEARCH_STRATEGY);
   const investorProfile = JSON.parse(await fs.readFile('config/investor-profiles/max-doors-20k.json', 'utf8'));
 
   const queries = [];
@@ -358,6 +364,10 @@ async function main() {
 
   console.log(JSON.stringify({
     run_mode: RUN_MODE,
+    search_name: searchName,
+    search_strategy: SEARCH_STRATEGY.id,
+    scoring_mode: SEARCH_STRATEGY.scoringMode,
+    shortlist_tie_breaker: SEARCH_STRATEGY.shortlistTieBreaker,
     sources: SOURCES,
     immobiliare_actor: IMMOBILIARE_ACTOR,
     requested_areas: REQUESTED_AREAS,
@@ -377,10 +387,7 @@ async function main() {
     planned_queries: queries.map((query) => ({
       actor: query.actor,
       area: query.query_area,
-      startUrl: query.payload.startUrl,
-      results_wanted: query.payload.results_wanted,
-      max_pages: query.payload.max_pages,
-      maxItems: query.payload.maxItems,
+      payload: query.payload,
     })),
   }, null, 2));
 
@@ -436,7 +443,7 @@ async function main() {
   const sourceEligible = collected.filter((item) => !item.pre_triage_excluded);
   const dedupedEligible = deduped.filter((item) => !item.pre_triage_excluded);
   const preScored = dedupedEligible
-    .sort((a, b) => (b.door_score ?? 0) - (a.door_score ?? 0) || (a.price_by_area ?? 999999) - (b.price_by_area ?? 999999));
+    .sort((a, b) => compareShortlistItems(a, b, SEARCH_STRATEGY));
 
   const shortlist = preScored.slice(0, TOP_PRESCORE_LIMIT);
   const output = {
@@ -444,6 +451,8 @@ async function main() {
     search_name: searchName,
     city: DEFAULT_CITY,
     investor_profile: investorProfile.id,
+    search_strategy: SEARCH_STRATEGY.id,
+    scoring_mode: SEARCH_STRATEGY.scoringMode,
     source_channels: SOURCES,
     requested_areas: REQUESTED_AREAS,
     query_payloads: queryPayloads,
