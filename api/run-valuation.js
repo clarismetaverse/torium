@@ -46,6 +46,10 @@ export default async function handler(request, response) {
   }
   const requestedLimit = Number(request.body?.limit ?? 20);
   const limit = Math.max(1, Math.min(20, Number.isFinite(requestedLimit) ? requestedLimit : 20));
+  const valuationMode = String(request.body?.mode || 'deterministic').toLowerCase();
+  if (valuationMode !== 'deterministic') {
+    return response.status(400).json({ error: 'Only deterministic valuation is enabled from the frontend' });
+  }
 
   const runtimeOidcToken = Array.isArray(request.headers['x-vercel-oidc-token'])
     ? request.headers['x-vercel-oidc-token'][0]
@@ -53,6 +57,7 @@ export default async function handler(request, response) {
   activeValuation = runValuationFromSupabase({
     runId,
     limit,
+    valuationMode,
     env: runtimeOidcToken
       ? { ...process.env, VERCEL_OIDC_TOKEN: runtimeOidcToken }
       : process.env,

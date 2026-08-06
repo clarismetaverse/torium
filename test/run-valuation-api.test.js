@@ -34,3 +34,20 @@ test('valuation endpoint requires same-origin and a valid PIN', async () => {
     else process.env.TORIUM_RUN_PIN = previousPin;
   }
 });
+
+test('frontend valuation endpoint permits deterministic mode only', async () => {
+  const previousPin = process.env.TORIUM_RUN_PIN;
+  process.env.TORIUM_RUN_PIN = 'test-pin';
+  try {
+    const response = responseRecorder();
+    await handler({
+      method: 'POST',
+      headers: { host: 'torium.example', authorization: 'Bearer test-pin' },
+      body: { run_id: 'valid-run', mode: 'ai' },
+    }, response);
+    assert.equal(response.statusCode, 400);
+  } finally {
+    if (previousPin === undefined) delete process.env.TORIUM_RUN_PIN;
+    else process.env.TORIUM_RUN_PIN = previousPin;
+  }
+});

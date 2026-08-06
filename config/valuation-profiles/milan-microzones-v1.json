@@ -1,0 +1,53 @@
+{
+  "version": "milan_microzone_exit_v1_2026_06",
+  "effective_month": "2026-06",
+  "method": "asking_price_benchmark",
+  "assumptions": {
+    "saleable_area_ratio": 0.92,
+    "low_multiplier": 0.90,
+    "base_multiplier": 1.00,
+    "high_multiplier": 1.10,
+    "round_to_eur": 5000
+  },
+  "microzones": [
+    {
+      "id": "corso-san-gottardo",
+      "name": "Corso San Gottardo / Navigli-Bocconi",
+      "aliases": [
+        "corso-san-gottardo",
+        "corso san gottardo",
+        "gottardo",
+        "navigli - bocconi",
+        "navigli-bocconi"
+      ],
+      "base_exit_eur_mq": 6833,
+      "benchmarks": [
+        {
+          "source": "Immobiliare.it",
+          "period": "2026-06",
+          "area": "Corso San Gottardo",
+          "asking_eur_mq": 6665,
+          "url": "https://www.immobiliare.it/mercato-immobiliare/lombardia/milano/zona-navigli/"
+        },
+        {
+          "source": "idealista/data",
+          "period": "2026-06",
+          "area": "Navigli-Bocconi",
+          "asking_eur_mq": 7000,
+          "url": "https://www.idealista.it/sala-stampa/report-prezzo-immobile/vendita/lombardia/milano-provincia/milano/navigli-bocconi/"
+        }
+      ],
+      "unit_size_bands": [
+        { "max_mq": 45, "unit_type": "bilocale", "multiplier": 1.06 },
+        { "max_mq": 55, "unit_type": "bilocale", "multiplier": 1.04 },
+        { "max_mq": 70, "unit_type": "trilocale", "multiplier": 1.02 },
+        { "max_mq": 9999, "unit_type": "unknown", "multiplier": 1.00 }
+      ],
+      "notes": [
+        "Base exit is the rounded midpoint of two asking-price benchmarks.",
+        "Small-unit multipliers are expert-authored V1 priors and must be calibrated against observed transactions.",
+        "The output is a preliminary scenario, not a professional appraisal or a confirmed sale price."
+      ]
+    }
+  ]
+}

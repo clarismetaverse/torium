@@ -66,9 +66,11 @@ Generated search names are `milanoFractioningMassive-legacy_low_price_m2` and `m
 
 Persisted runs appear automatically in the existing run selector. The frontend shows the strategy and scoring mode and loads only eligible source listings. Legacy runs keep the price/m² tie-break; neutral runs order by Physical Fractionability Score without reintroducing a price/m² tie-break in the API.
 
-The **Calcola valuation & ROI** action values the selected Supabase run and then reloads it. It uses the same server-side PIN protection as run creation. On Vercel it can authenticate to AI Gateway with the deployment OIDC token, so no OpenAI key is exposed to the browser. A local CLI run can still use `OPENAI_API_KEY`.
+The **Calcola valuation & ROI** action values the selected Supabase run and then reloads it. It uses the same server-side PIN protection as run creation. The frontend enables deterministic valuation only; it does not consume AI credits.
 
-AI Gateway authentication does not itself grant model credits. The Vercel team must have AI Gateway billing/verification enabled; otherwise the endpoint returns a clear `402` response and leaves the existing run untouched.
+`milan_microzone_exit_v1_2026_06` currently covers Corso San Gottardo / Navigli-Bocconi. Its base EUR/mq is the rounded midpoint of June 2026 asking-price benchmarks from Immobiliare.it and idealista/data. It applies a 92% saleable-area ratio, an explicit output-unit size multiplier, low/base/high multipliers of 0.90/1.00/1.10, and rounds each projected unit to EUR 5,000. Unsupported microzones fail closed rather than inheriting a city-wide guess. These are versioned preliminary asking-price priors, not transaction evidence or a professional appraisal.
+
+AI valuation remains available from the CLI with `TORIUM_VALUATION_MODE=ai`. On Vercel it can authenticate to AI Gateway with deployment OIDC; locally it can use `OPENAI_API_KEY`. It is not the default and must not replace the deterministic inputs silently.
 
 Valuation is deliberately downstream of ranking. For `neutral_fractionability`, the persisted `ranking_score` remains the physical Door Score, equal-score rows keep candidate order, and exit value, spread, ROI, confidence, and recommended action cannot reorder the shortlist. For `legacy_low_price_m2`, the prior economic composite and price/mÂ² tie-break remain available.
 
