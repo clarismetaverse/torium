@@ -18,7 +18,7 @@ const IDEALISTA_RUN_ID = process.env.TORIUM_IDEALISTA_RUN_ID || null;
 const APIFY_MAX_WAIT_SECONDS = Number(process.env.TORIUM_APIFY_MAX_WAIT_SECONDS || 1800);
 const APIFY_POLL_INTERVAL_SECONDS = Number(process.env.TORIUM_APIFY_POLL_INTERVAL_SECONDS || 10);
 const APIFY_DATASET_PAGE_SIZE = Number(process.env.TORIUM_APIFY_DATASET_PAGE_SIZE || 1000);
-const SEARCH_STRATEGY = resolveSearchStrategy(process.env.TORIUM_SEARCH_STRATEGY);
+let SEARCH_STRATEGY = resolveSearchStrategy(process.env.TORIUM_SEARCH_STRATEGY);
 
 const RUN_MODE_DEFAULTS = {
   scout: {
@@ -50,7 +50,7 @@ const REQUESTED_AREAS = (process.env.TORIUM_MASSIVE_AREAS || MODE_DEFAULTS.areas
   .split(',')
   .map((area) => area.trim())
   .filter(Boolean);
-const SOURCES = (process.env.TORIUM_MASSIVE_SOURCES || 'immobiliare')
+let SOURCES = (process.env.TORIUM_MASSIVE_SOURCES || 'immobiliare')
   .split(',')
   .map((source) => source.trim().toLowerCase())
   .filter(Boolean);
@@ -80,8 +80,6 @@ const FURNISHED = process.env.TORIUM_IMMOBILIARE_FURNISHED === 'true';
 const EXCLUDE_AUCTIONS = process.env.TORIUM_IMMOBILIARE_EXCLUDE_AUCTIONS === 'true';
 const INCLUDE_RENOVATION_VARIANT = process.env.TORIUM_MASSIVE_INCLUDE_RENOVATION_VARIANT !== 'false';
 const INCLUDE_DISCOUNTED_VARIANT = process.env.TORIUM_MASSIVE_INCLUDE_DISCOUNTED_VARIANT === 'true' || MODE_DEFAULTS.includeDiscountedVariant;
-
-if (!APIFY_TOKEN && process.env.TORIUM_DRY_RUN !== 'true') throw new Error('Missing APIFY_TOKEN in .env');
 
 function compactObject(input) {
   return Object.fromEntries(
@@ -352,8 +350,16 @@ function buildResultLinks(items) {
   }));
 }
 
-async function main() {
-  const baseSearchName = process.argv[2] || 'milanoFractioningMassive';
+export async function runMassiveTriage(options = {}) {
+  SEARCH_STRATEGY = resolveSearchStrategy(options.searchStrategy || process.env.TORIUM_SEARCH_STRATEGY);
+  SOURCES = (options.sources || process.env.TORIUM_MASSIVE_SOURCES || 'immobiliare')
+    .split(',')
+    .map((source) => source.trim().toLowerCase())
+    .filter(Boolean);
+
+  if (!APIFY_TOKEN && process.env.TORIUM_DRY_RUN !== 'true') throw new Error('Missing APIFY_TOKEN in .env');
+
+  const baseSearchName = options.baseSearchName || process.argv[2] || 'milanoFractioningMassive';
   const searchName = buildStrategySearchName(baseSearchName, SEARCH_STRATEGY);
   const investorProfile = JSON.parse(await fs.readFile('config/investor-profiles/max-doors-20k.json', 'utf8'));
 
@@ -481,9 +487,13 @@ async function main() {
     pre_scored_count: output.pre_scored_count,
     top_30: output.result_links,
   }, null, 2));
+
+  return output;
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+if (process.argv[1]?.replaceAll('\\', '/').endsWith('pipelines/triage-multisource-massive.js')) {
+  runMassiveTriage().catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
+}

@@ -1,6 +1,9 @@
 {
   "cleanUrls": true,
   "outputDirectory": "public",
+  "functions": {
+    "api/run-triage.js": { "maxDuration": 300 }
+  },
   "redirects": [
     { "source": "/", "destination": "/home", "permanent": false }
   ],
