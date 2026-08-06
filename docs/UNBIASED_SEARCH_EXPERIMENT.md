@@ -16,6 +16,8 @@ Set `TORIUM_SEARCH_STRATEGY` to one of:
 
 The actor's published input schema supports `mostRecent`, `relevance`, and `lowestPriceM2`; its declared default is `mostRecent`. The neutral mode sets `mostRecent` explicitly so runs remain auditable if the actor default changes.
 
+Known Milan areas are sent to the actor as exact Idealista Location IDs (for example, Gottardo is `0-EU-IT-MI-01-001-135-05-004`). This avoids drawing only the newest city-wide listings and then losing the whole batch in a post-fetch text filter. Unknown areas retain the broad-Milan fallback and post-fetch validation.
+
 The current hard pre-triage filters remain shared by both strategies, including exclusion of renovated/new listings. They are intentionally outside the scope of this experiment.
 
 ## Before the first persisted run
