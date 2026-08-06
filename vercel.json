@@ -2,7 +2,8 @@
   "cleanUrls": true,
   "outputDirectory": "public",
   "functions": {
-    "api/run-triage.js": { "maxDuration": 300 }
+    "api/run-triage.js": { "maxDuration": 300 },
+    "api/run-valuation.js": { "maxDuration": 300 }
   },
   "redirects": [
     { "source": "/", "destination": "/home", "permanent": false }

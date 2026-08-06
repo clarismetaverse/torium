@@ -66,6 +66,19 @@ Generated search names are `milanoFractioningMassive-legacy_low_price_m2` and `m
 
 Persisted runs appear automatically in the existing run selector. The frontend shows the strategy and scoring mode and loads only eligible source listings. Legacy runs keep the price/m² tie-break; neutral runs order by Physical Fractionability Score without reintroducing a price/m² tie-break in the API.
 
+The **Calcola valuation & ROI** action values the selected Supabase run and then reloads it. It uses the same server-side PIN protection as run creation. On Vercel it can authenticate to AI Gateway with the deployment OIDC token, so no OpenAI key is exposed to the browser. A local CLI run can still use `OPENAI_API_KEY`.
+
+AI Gateway authentication does not itself grant model credits. The Vercel team must have AI Gateway billing/verification enabled; otherwise the endpoint returns a clear `402` response and leaves the existing run untouched.
+
+Valuation is deliberately downstream of ranking. For `neutral_fractionability`, the persisted `ranking_score` remains the physical Door Score, equal-score rows keep candidate order, and exit value, spread, ROI, confidence, and recommended action cannot reorder the shortlist. For `legacy_low_price_m2`, the prior economic composite and price/mÂ² tie-break remain available.
+
+CLI valuation:
+
+```powershell
+$env:TORIUM_GPT_TRIAGE_LIMIT='20'
+npm run triage:gpt:latest -- 1785975759601-milanoFractioningMassive-neutral_fractionability
+```
+
 ## Supabase validation
 
 The homepage also exposes **Avvia run neutral**. It starts one Idealista scout run inside a Vercel Function, where the sensitive Apify and Supabase credentials remain server-side. The endpoint accepts only `neutral_fractionability`, requires the separate `TORIUM_RUN_PIN`, rejects cross-origin browser requests, and waits for persistence before refreshing the run selector. The PIN is retained only in the browser session.
