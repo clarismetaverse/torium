@@ -9,6 +9,8 @@ import { runImmobiliareUrlScraper } from '../scrapers/immobiliare-url/client.js'
 import { buildStrategySearchName, compareShortlistItems, resolveSearchStrategy } from '../lib/search-strategies.js';
 import fs from 'node:fs/promises';
 
+const INVESTOR_PROFILE_URL = new URL('../config/investor-profiles/max-doors-20k.json', import.meta.url);
+
 const APIFY_TOKEN = process.env.APIFY_TOKEN;
 const DEFAULT_CITY = process.env.TORIUM_CITY || 'Milano';
 const RUN_MODE = (process.env.TORIUM_RUN_MODE || 'scout').toLowerCase();
@@ -361,7 +363,7 @@ export async function runMassiveTriage(options = {}) {
 
   const baseSearchName = options.baseSearchName || process.argv[2] || 'milanoFractioningMassive';
   const searchName = buildStrategySearchName(baseSearchName, SEARCH_STRATEGY);
-  const investorProfile = JSON.parse(await fs.readFile('config/investor-profiles/max-doors-20k.json', 'utf8'));
+  const investorProfile = JSON.parse(await fs.readFile(INVESTOR_PROFILE_URL, 'utf8'));
 
   const queries = [];
   if (SOURCES.includes('immobiliare')) queries.push(...buildImmobiliareQueries(REQUESTED_AREAS));
