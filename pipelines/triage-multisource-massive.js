@@ -7,6 +7,7 @@ import { syncSourceListingsRunToSupabase } from '../lib/supabase-source-listings
 import { runImmobiliareScraper } from '../scrapers/immobiliare/client.js';
 import { runImmobiliareUrlScraper } from '../scrapers/immobiliare-url/client.js';
 import { buildStrategySearchName, compareShortlistItems, resolveSearchStrategy } from '../lib/search-strategies.js';
+import { findMilanIdealistaLocation } from '../lib/milan-idealista-locations.js';
 import fs from 'node:fs/promises';
 
 const INVESTOR_PROFILE_URL = new URL('../config/investor-profiles/max-doors-20k.json', import.meta.url);
@@ -247,27 +248,35 @@ function buildImmobiliareQueries(areas) {
   })));
 }
 
-function buildIdealistaQuery() {
-  return {
+export function buildIdealistaQueries(areas) {
+  return areas.map((area) => {
+    const idealistaLocation = findMilanIdealistaLocation(area);
+    return {
     actor: 'idealista',
     source_channel: 'idealista',
     source_platform_name: 'idealista',
-    query_name: 'idealista-milano-broad-post-area-filter',
-    query_area: REQUESTED_AREAS.join(','),
+    query_name: idealistaLocation ? 'idealista-location-id' : 'idealista-milano-broad-post-area-filter',
+    query_area: area,
     query_municipality: DEFAULT_CITY,
     query_province: 'MI',
+    source_area_enforced: Boolean(idealistaLocation),
+    idealista_location_id: idealistaLocation?.idealista_location_id ?? null,
+    idealista_zone_id: idealistaLocation?.idealista_zone_id ?? null,
+    idealista_zone_name: idealistaLocation?.idealista_zone_name ?? null,
+    idealista_neighborhood_name: idealistaLocation?.idealista_neighborhood_name ?? null,
     payload: {
       country: 'it',
       operation: 'sale',
       propertyType: 'homes',
-      location: DEFAULT_CITY,
+      location: idealistaLocation?.idealista_location_id || DEFAULT_CITY,
       minSize: String(MIN_SIZE),
       sortBy: SEARCH_STRATEGY.idealistaSortBy,
-      maxItems: Math.min(MAX_TOTAL_RAW_LISTINGS, Math.max(MAX_ITEMS_PER_QUERY, 100)),
+      maxItems: MAX_ITEMS_PER_QUERY,
       fetchDetails: false,
       fetchStats: false,
     },
-  };
+    };
+  });
 }
 
 async function runIdealistaScraper(input) {
@@ -367,7 +376,7 @@ export async function runMassiveTriage(options = {}) {
 
   const queries = [];
   if (SOURCES.includes('immobiliare')) queries.push(...buildImmobiliareQueries(REQUESTED_AREAS));
-  if (SOURCES.includes('idealista')) queries.push(buildIdealistaQuery());
+  if (SOURCES.includes('idealista')) queries.push(...buildIdealistaQueries(REQUESTED_AREAS));
   if (!queries.length) throw new Error('No sources selected. Set TORIUM_MASSIVE_SOURCES=immobiliare or immobiliare,idealista.');
 
   console.log(JSON.stringify({
@@ -424,7 +433,8 @@ export async function runMassiveTriage(options = {}) {
     });
 
     for (const raw of rawItems) {
-      const normalized = normalizeSourceListing(raw, {
+      const normalized = {
+        ...normalizeSourceListing(raw, {
         source_channel: query.source_channel,
         source_platform_name: query.source_platform_name,
         query_name: query.query_name,
@@ -432,9 +442,14 @@ export async function runMassiveTriage(options = {}) {
         query_municipality: query.query_municipality,
         query_province: query.query_province,
         query_payload: query.payload,
-      });
+        }),
+        idealista_location_id: query.idealista_location_id,
+        idealista_zone_id: query.idealista_zone_id,
+        idealista_zone_name: query.idealista_zone_name,
+        idealista_neighborhood_name: query.idealista_neighborhood_name,
+      };
 
-      if (query.source_channel === 'idealista' && !listingMatchesAnyArea(normalized.listing, REQUESTED_AREAS)) {
+      if (query.source_channel === 'idealista' && !query.source_area_enforced && !listingMatchesAnyArea(normalized.listing, REQUESTED_AREAS)) {
         continue;
       }
 

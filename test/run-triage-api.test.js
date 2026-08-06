@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import handler from '../api/run-triage.js';
+import { buildIdealistaQueries } from '../pipelines/triage-multisource-massive.js';
 
 function responseRecorder() {
   return {
@@ -34,4 +35,12 @@ test('run endpoint requires same-origin and a valid PIN', async () => {
     if (previousPin === undefined) delete process.env.TORIUM_RUN_PIN;
     else process.env.TORIUM_RUN_PIN = previousPin;
   }
+});
+
+test('Idealista scout targets the requested Milan location ID', () => {
+  const [query] = buildIdealistaQueries(['corso-san-gottardo']);
+  assert.equal(query.source_area_enforced, true);
+  assert.equal(query.payload.location, '0-EU-IT-MI-01-001-135-05-004');
+  assert.equal(query.query_area, 'corso-san-gottardo');
+  assert.equal(query.payload.maxItems, 20);
 });
