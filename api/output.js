@@ -5,12 +5,15 @@ import {
   summarizeRoi,
   underwritingFromResult,
 } from '../lib/financial-underwriting.js';
+import { combineRunOutputs, rescoreCombinedResults } from '../lib/combine-run-outputs.js';
+import { runDoorEngine } from '../lib/door-engine.js';
 
 const rootDir = process.cwd();
 const allowedPrefixes = ['triage-outputs/', 'outputs/triage/'];
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const SOURCE_LISTINGS_LIMIT = Number(process.env.TORIUM_VIEWER_SOURCE_LIMIT || 1000);
+const investorProfilePromise = readFile(new URL('../config/investor-profiles/max-doors-20k.json', import.meta.url), 'utf8').then(JSON.parse);
 
 function normalizeId(value) {
   return String(value || '').replaceAll('\\', '/').replace(/^\/+/, '');
@@ -385,10 +388,33 @@ async function readSupabaseOutput(id, { publicView = true } = {}) {
   return publicView ? redactOutput(output) : output;
 }
 
+async function readCombinedOutput(id, { publicView = true } = {}) {
+  const runIds = id.replace(/^combined:/, '').split('+').filter(Boolean);
+  if (runIds.length !== 2 || runIds.some((runId) => !/^[a-zA-Z0-9._-]+$/.test(runId))) {
+    throw new Error('Invalid combined output id');
+  }
+  const components = await Promise.all(runIds.map(async (runId) => ({
+    runId,
+    output: await readSupabaseOutput(`supabase:${runId}`, { publicView: false }),
+  })));
+  const investorProfile = await investorProfilePromise;
+  const output = rescoreCombinedResults(combineRunOutputs(components), (result) => runDoorEngine(
+    result.listing || result,
+    investorProfile,
+    { includeEconomicSignals: false, scoringMode: 'physical_fractionability_only_v1' },
+  ));
+  return publicView ? redactOutput(output) : output;
+}
+
 export default async function handler(request, response) {
   try {
     const id = normalizeId(request.query.file);
     const publicView = !(request.query.internal === 'true' || request.query.internal === '1');
+
+    if (id.startsWith('combined:')) {
+      response.status(200).json(await readCombinedOutput(id, { publicView }));
+      return;
+    }
 
     if (id.startsWith('supabase:')) {
       response.status(200).json(await readSupabaseOutput(id, { publicView }));

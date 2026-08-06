@@ -74,6 +74,15 @@ AI valuation remains available from the CLI with `TORIUM_VALUATION_MODE=ai`. On 
 
 Valuation is deliberately downstream of ranking. For `neutral_fractionability`, the persisted `ranking_score` remains the physical Door Score, equal-score rows keep candidate order, and exit value, spread, ROI, confidence, and recommended action cannot reorder the shortlist. For `legacy_low_price_m2`, the prior economic composite and price/mÂ² tie-break remain available.
 
+### Combined frontend view
+
+The run picker can expose a virtual `combined_neutral_legacy` output built from
+the latest successful neutral run and the latest legacy Milan run. It preserves
+the two source runs, recalculates financial underwriting at read time with the
+current versioned cost model, deduplicates by source identity, and records the
+origin run and strategy on every result. This is a comparison/union view only:
+it does not rewrite the physical ranking or the persisted source experiments.
+
 CLI valuation:
 
 ```powershell
