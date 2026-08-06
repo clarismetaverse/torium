@@ -20,10 +20,13 @@ test('calculates the agreed project costs and low/base/high ROI scenarios', () =
     projectCostEur: 484640,
     newUnitsCreated: 2,
   });
-  assert.equal(result.scenarios.base.profitLossEur, 405360);
-  assert.equal(result.scenarios.base.roiPct, 83.64);
-  assert.equal(result.scenarios.low.roiPct, 64.04);
-  assert.equal(result.scenarios.high.roiPct, 103.24);
+  assert.equal(result.assumptions.sellingCostRate, 0.03);
+  assert.equal(result.scenarios.base.sellingCostEur, 26700);
+  assert.equal(result.scenarios.base.totalCostEur, 511340);
+  assert.equal(result.scenarios.base.profitLossEur, 378660);
+  assert.equal(result.scenarios.base.roiPct, 74.05);
+  assert.equal(result.scenarios.low.roiPct, 56.35);
+  assert.equal(result.scenarios.high.roiPct, 91.56);
   assert.equal(result.status, 'complete');
 });
 
@@ -39,8 +42,10 @@ test('sums final-unit valuations and does not convert missing exits into zero', 
     },
   });
   assert.equal(valued.scenarios.base.exitValueEur, 315000);
-  assert.equal(valued.scenarios.base.profitLossEur, 71000);
-  assert.equal(valued.scenarios.base.roiPct, 29.1);
+  assert.equal(valued.scenarios.base.sellingCostEur, 9450);
+  assert.equal(valued.scenarios.base.totalCostEur, 253450);
+  assert.equal(valued.scenarios.base.profitLossEur, 61550);
+  assert.equal(valued.scenarios.base.roiPct, 24.28);
 
   const unvalued = calculateUnderwriting({ purchasePriceEur: 200000, newUnitsCreated: 1 });
   assert.equal(unvalued.costs.projectCostEur, 244000);

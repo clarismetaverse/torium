@@ -180,16 +180,22 @@ Disappearance is not proof of sale, so the score is an estimate and must be cali
 ## Financial underwriting shown in the frontend
 
 The physical Door Score and financial underwriting remain separate. Both legacy
-and neutral runs use the same versioned `max_doors_20k_v1` cost model:
+and neutral runs use the same versioned `max_doors_20k_v2_sales_cost_3pct` cost model:
 
 ```text
 purchase costs = purchase price × 12%
 transformation cost = new units created × EUR 20,000
 project cost = purchase price + purchase costs + transformation cost
-profit / loss = exit value − project cost
-ROI = profit / loss ÷ project cost × 100
+selling cost = exit value × 3%
+total scenario cost = project cost + selling cost
+profit / loss = exit value − total scenario cost
+ROI = profit / loss ÷ total scenario cost × 100
 margin on sales = profit / loss ÷ exit value × 100
 ```
+
+The current model does not include contingency or holding costs. A fractioning
+ROI is not applicable when the physical plan creates no new unit; those listings
+keep their physical score but expose null exit, P/L, and ROI values.
 
 Low, base, and high exit values come from the persisted valuation or the sum of
 the corresponding values in the final-unit plan. They are not inferred from the
