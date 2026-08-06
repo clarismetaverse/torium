@@ -177,6 +177,28 @@ absorption_proxy =
 
 Disappearance is not proof of sale, so the score is an estimate and must be calibrated through backtests.
 
+## Financial underwriting shown in the frontend
+
+The physical Door Score and financial underwriting remain separate. Both legacy
+and neutral runs use the same versioned `max_doors_20k_v1` cost model:
+
+```text
+purchase costs = purchase price × 12%
+transformation cost = new units created × EUR 20,000
+project cost = purchase price + purchase costs + transformation cost
+profit / loss = exit value − project cost
+ROI = profit / loss ÷ project cost × 100
+margin on sales = profit / loss ÷ exit value × 100
+```
+
+Low, base, and high exit values come from the persisted valuation or the sum of
+the corresponding values in the final-unit plan. They are not inferred from the
+physical score. When a run has not yet been valued, exit, P/L, and ROI remain
+`null` and the frontend must show them as unavailable rather than zero.
+
+Run-level ROI averages and medians include only properties with a calculable
+base-case ROI and expose the included property count.
+
 ## Versioning rules
 
 - Never overwrite the meaning of a score silently.

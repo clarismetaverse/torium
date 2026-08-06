@@ -1,5 +1,10 @@
 import { readFile } from 'node:fs/promises';
 import { resolve, relative, sep } from 'node:path';
+import {
+  DEFAULT_UNDERWRITING_ASSUMPTIONS,
+  summarizeRoi,
+  underwritingFromResult,
+} from '../lib/financial-underwriting.js';
 
 const rootDir = process.cwd();
 const allowedPrefixes = ['triage-outputs/', 'outputs/triage/'];
@@ -222,6 +227,7 @@ function redactResult(result) {
   const description = extractDescription(result);
   return {
     ...result,
+    underwriting: underwritingFromResult(result),
     title: redactedTitle,
     address: null,
     url: null,
@@ -252,6 +258,8 @@ function redactOutput(output) {
     result_links: Array.isArray(output.result_links) ? output.result_links.map(redactResult) : output.result_links,
     results: Array.isArray(output.results) ? output.results.map(redactResult) : output.results,
   };
+  const publicResults = Array.isArray(redacted.results) ? redacted.results : [];
+  redacted.roi_statistics = summarizeRoi(publicResults.map((result) => result.underwriting));
   // Final safety net across the entire public payload (covers Supabase-shaped
   // rows whose identifier fields differ from the file-based schema).
   return sanitizePublicDeep(redacted, 'root');
@@ -273,6 +281,10 @@ function sourceListingToResult(source, index) {
       doorScore: source.door_score,
       estimatedFinalUnits: source.estimated_final_units,
       newUnitsCreated: source.new_units_created,
+      costPerNewUnit: DEFAULT_UNDERWRITING_ASSUMPTIONS.costPerNewUnitEur,
+      transformationCost: source.new_units_created == null ? null : Number(source.new_units_created) * DEFAULT_UNDERWRITING_ASSUMPTIONS.costPerNewUnitEur,
+      purchaseCostRate: DEFAULT_UNDERWRITING_ASSUMPTIONS.purchaseCostRate,
+      purchaseCosts: source.price_eur == null ? null : Math.round(Number(source.price_eur) * DEFAULT_UNDERWRITING_ASSUMPTIONS.purchaseCostRate),
       estimatedProjectCost: source.estimated_project_cost_eur,
     },
     spread: {},
