@@ -110,7 +110,9 @@ function valuationSummary(r){const a=r?.gpt_analysis?.valuation_assumptions||{},
 function financeCard(r){const f=finance(r),a=r?.gpt_analysis||{},hasRevenue=f.saleLow!==null||f.saleBase!==null||f.saleHigh!==null,valuation=valuationSummary(r),notApplicable=a.valuation_applicability==='not_applicable_no_fractioning',origin=originLabel(r);const rate=f.sellingRate!==null?pct(f.sellingRate*100):'3%';return `<div class="finance-box"><div class="finance-head"><b>Costi stimati & ROI</b><span>${origin?`origine ${h(origin)} · `:''}costi ${h(r?.underwriting?.version||'')} ${valuation?'· exit deterministico':''}</span></div><div class="finance-grid"><div class="finance-metric"><span>Acquisto</span><b>${eur(f.p)}</b></div><div class="finance-metric"><span>Costi acquisto (${f.rate!==null?pct(f.rate*100):'—'})</span><b>${eur(f.purchaseCosts)}</b></div><div class="finance-metric"><span>Trasformazione (${fmt(f.newUnits)} nuove unità)</span><b>${eur(f.transformation)}</b></div><div class="finance-metric strong"><span>Costo progetto</span><b>${eur(f.projectCost)}</b></div><div class="finance-metric"><span>Exit low</span><b>${eur(f.saleLow)}</b></div><div class="finance-metric"><span>Vendita low (${rate})</span><b>${eur(f.sellingLow)}</b></div><div class="finance-metric"><span>Exit base</span><b>${eur(f.saleBase)}</b></div><div class="finance-metric"><span>Vendita base (${rate})</span><b>${eur(f.sellingBase)}</b></div><div class="finance-metric"><span>Exit high</span><b>${eur(f.saleHigh)}</b></div><div class="finance-metric"><span>Vendita high (${rate})</span><b>${eur(f.sellingHigh)}</b></div><div class="finance-metric strong"><span>Costo totale base</span><b>${eur(f.totalBase)}</b></div><div class="finance-metric strong"><span>ROI base</span><b>${pct(f.roi)}</b></div><div class="finance-metric"><span>P/L low · ROI ${pct(f.roiLow)}</span><b>${eur(f.profitLow)}</b></div><div class="finance-metric strong"><span>P/L base · ROI ${pct(f.roi)}</span><b>${eur(f.profitBase)}</b></div><div class="finance-metric"><span>P/L high · ROI ${pct(f.roiHigh)}</span><b>${eur(f.profitHigh)}</b></div></div><div class="finance-note">${valuation?h(valuation)+' ':''}${notApplicable?'ROI frazionamento non applicabile: il progetto non crea nuove unità.':hasRevenue?`Costo vendita = exit × ${rate}. Costo totale = costo progetto + costo vendita. P/L = exit − costo totale; ROI = P/L ÷ costo totale × 100.`:'ROI non calcolabile: questa run non contiene ancora una valuation di uscita.'} Nessuna contingency o holding inclusa. Valori preliminari.</div></div>`}
 
 async function loadOutputs(){const res=await fetch('/api/outputs?t='+Date.now());const data=await res.json();state.outputs=data.outputs||[];$('runSelect').innerHTML=state.outputs.map(o=>`<option value="${h(o.id)}">${h(outputLabel(o))}</option>`).join('');const requested=new URLSearchParams(location.search).get('run');const selected=requested?state.outputs.find(o=>o.id===requested||o.id===`supabase:${requested.replace(/^supabase:/,'')}`):null;if(selected||state.outputs[0])await loadRun((selected||state.outputs[0]).id)}
-async function loadRun(id){const res=await fetch('/api/output?file='+encodeURIComponent(id)+'&t='+Date.now());const out=await res.json();if(!res.ok)throw new Error(out.error||'Run load failed');state.output=out;state.outputId=id;$('runSelect').value=id;draw()}
+function syncRunUrl(id){const url=new URL(location.href);url.searchParams.set('run',id);url.searchParams.set('sort',state.criterion);history.replaceState(null,'',url.pathname+url.search)}
+function valuationTarget(id){const value=String(id||'');if(value.startsWith('supabase:'))return{runId:value.replace(/^supabase:/,''),label:'run selezionata'};if(value.startsWith('combined:')){const components=value.replace(/^combined:/,'').split('+').filter(Boolean);const neutral=components.find(component=>component.includes('neutral_fractionability'));if(neutral)return{runId:neutral,label:'componente neutral della vista combinata'}}return null}
+async function loadRun(id){const res=await fetch('/api/output?file='+encodeURIComponent(id)+'&t='+Date.now());const out=await res.json();if(!res.ok)throw new Error(out.error||'Run load failed');state.output=out;state.outputId=id;$('runSelect').value=id;syncRunUrl(id);draw()}
 async function startNeutralRun(){
   if(!confirm('Avviare una run scout neutral su Idealista? La run usa crediti Apify.'))return;
   let pin=sessionStorage.getItem('toriumRunPin')||prompt('Inserisci il PIN di avvio TORIUM');
@@ -129,12 +131,13 @@ async function startNeutralRun(){
   finally{clearInterval(timer);button.disabled=false}
 }
 async function startValuation(){
-  if(!state.outputId||!String(state.outputId).startsWith('supabase:')){alert('Seleziona prima una run Supabase.');return}
-  if(!confirm('Calcolare valuation deterministica low/base/high e ROI per tutti i deal idonei della run selezionata?'))return;
+  const target=valuationTarget(state.outputId);
+  if(!target){alert('Questa vista non contiene una run Supabase aggiornabile.');return}
+  if(!confirm(`Calcolare valuation deterministica low/base/high e ROI per tutti i deal idonei della ${target.label}?`))return;
   let pin=sessionStorage.getItem('toriumRunPin')||prompt('Inserisci il PIN di avvio TORIUM');
   if(!pin)return;
   sessionStorage.setItem('toriumRunPin',pin);
-  const button=$('valueRun'),status=$('runStatus'),started=Date.now(),runId=String(state.outputId).replace(/^supabase:/,'');
+  const button=$('valueRun'),status=$('runStatus'),started=Date.now(),runId=target.runId,selectedOutputId=state.outputId;
   button.disabled=true;status.className='run-status';
   const timer=setInterval(()=>{status.textContent=`Valuation in corso... ${Math.floor((Date.now()-started)/1000)}s`;},1000);
   try{
@@ -142,7 +145,7 @@ async function startValuation(){
     const data=await res.json();
     if(!res.ok){if(res.status===401)sessionStorage.removeItem('toriumRunPin');throw new Error(data.error||'Valuation fallita')}
     status.className='run-status success';status.textContent=`Valuation deterministica completata: ${data.valued_count} immobili. ROI aggiornati.`;
-    await loadRun(state.outputId);
+    await loadRun(selectedOutputId);
   }catch(error){status.className='run-status error';status.textContent=error.message}
   finally{clearInterval(timer);button.disabled=false}
 }
