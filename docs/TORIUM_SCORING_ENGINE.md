@@ -205,6 +205,48 @@ physical score. When a run has not yet been valued, exit, P/L, and ROI remain
 Run-level ROI averages and medians include only properties with a calculable
 base-case ROI and expose the included property count.
 
+## Provisional output-unit planner V2
+
+The current `max-doors-20k` profile uses the versioned
+`max_doors_residual_studio_v2` planning rule. It converts gross listing area to
+estimated saleable area using the same 92% ratio used by deterministic
+valuation, then applies:
+
+```text
+minimum bilocale = 40 saleable sqm
+minimum residual monolocale = 28 saleable sqm
+
+bilocali = floor(saleable area / 40)
+residual = saleable area - (bilocali x 40)
+
+if residual >= 28:
+  preserve one residual monolocale
+else:
+  redistribute residual area across the bilocali
+```
+
+The monolocale is residual-only and the planner creates at most one. A surface
+below 68 saleable sqm is not presented as a fractioning plan because it cannot
+contain both one 40 sqm bilocale and one 28 sqm monolocale under this rule.
+
+The 28 sqm threshold is a conservative automatic planning gate based on the
+ordinary minimum dwelling area in Milan. It does not prove feasibility. The
+floor plan, windows and ventilation, independent access, services, building
+systems, condominium rules, cadastral/urban status, and all current legal
+requirements still require professional validation. The exceptional 20 sqm
+case introduced by national legislation is not used automatically.
+
+Deterministic valuation must value every planned unit at its own size band and
+must preserve the exact unit mix. The physical plan and the economic unit plan
+must therefore never silently use different unit counts or equal-size
+assumptions.
+
+This is deliberately not the final sellability optimizer. A later version will
+choose the locally most liquid mix from `microzone + unit type + size band`
+rather than maximizing door count alone. For example, a prestigious family
+microzone may prefer fewer, larger trilocali even when more 40 sqm bilocali are
+physically possible.
+
 ## Versioning rules
 
 - Never overwrite the meaning of a score silently.

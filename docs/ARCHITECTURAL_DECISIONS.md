@@ -73,3 +73,11 @@ This log records durable product and technical decisions. Statuses are **Accepte
 - **Decision:** Use listing entry, disappearance, and price-history signals as market-liquidity proxies.
 - **Rationale:** A disappeared listing may be sold, withdrawn, or expired.
 - **Consequences:** Dynamic scores must express uncertainty and be validated by backtesting; they must not claim confirmed transaction outcomes without transaction data.
+
+## ADR-011 — Use a conservative residual-studio rule before microzone optimization
+
+- **Status:** Accepted (provisional)
+- **Decision:** Version `max_doors_residual_studio_v2` uses 40 saleable sqm as the minimum bilocale size and may preserve at most one residual monolocale when it reaches 28 saleable sqm. Smaller residuals are redistributed and never counted as an extra unit. The exceptional national 20 sqm case is excluded from automatic planning.
+- **Rationale:** The previous equal-size division discarded potentially sellable residual configurations and could make the physical unit count diverge from valuation. A conservative residual rule is useful immediately while retaining an explicit feasibility gate.
+- **Consequences:** Door Engine and deterministic valuation share the same planned unit mix. Every residual monolocale is labeled for technical due diligence. This rule maximizes plausible doors but does not yet optimize market demand.
+- **Future:** Replace the fixed mix with a microzone-aware optimizer that evaluates alternative layouts and prefers the most sellable size/type combination for the area, including larger trilocali in prestigious or family-oriented microzones.

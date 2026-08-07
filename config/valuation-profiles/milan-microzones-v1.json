@@ -1,5 +1,5 @@
 {
-  "version": "milan_microzone_exit_v1_2026_06",
+  "version": "milan_microzone_exit_v2_residual_studio_2026_08",
   "effective_month": "2026-06",
   "method": "asking_price_benchmark",
   "assumptions": {
@@ -38,6 +38,7 @@
         }
       ],
       "unit_size_bands": [
+        { "max_mq": 39.9, "unit_type": "monolocale", "multiplier": 1.06 },
         { "max_mq": 45, "unit_type": "bilocale", "multiplier": 1.06 },
         { "max_mq": 55, "unit_type": "bilocale", "multiplier": 1.04 },
         { "max_mq": 70, "unit_type": "trilocale", "multiplier": 1.02 },

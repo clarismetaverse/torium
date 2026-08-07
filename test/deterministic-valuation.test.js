@@ -21,16 +21,49 @@ test('builds auditable low/base/high values by output unit without changing phys
     profileSet,
     sourceRow: { query_area: 'corso-san-gottardo' },
     listing: { size: 225, hasPlan: true },
-    doorEngine: { estimatedFinalUnits: 5, doorScore: 89 },
+    doorEngine: {
+      estimatedFinalUnits: 5,
+      doorScore: 89,
+      planningVersion: 'max_doors_residual_studio_v2',
+      plannedUnitMix: Array.from({ length: 5 }, () => ({
+        unit_type: 'bilocale',
+        estimated_size_mq: 41.4,
+      })),
+    },
   });
 
-  assert.equal(valuation.valuation_profile_version, 'milan_microzone_exit_v1_2026_06');
+  assert.equal(valuation.valuation_profile_version, 'milan_microzone_exit_v2_residual_studio_2026_08');
   assert.equal(valuation.final_unit_plan.length, 5);
   assert.equal(valuation.final_unit_plan[0].estimated_size_mq, 41.4);
   assert.equal(valuation.total_sale_value_low_eur, 1350000);
   assert.equal(valuation.total_sale_value_base_eur, 1500000);
   assert.equal(valuation.total_sale_value_high_eur, 1650000);
   assert.equal(valuation.valuation_assumptions.saleable_area_ratio, 0.92);
+  assert.equal(valuation.valuation_assumptions.unit_mix_planning_version, 'max_doors_residual_studio_v2');
+});
+
+test('values a residual monolocale separately from the 40 sqm bilocali', () => {
+  const valuation = buildDeterministicValuation({
+    profileSet,
+    sourceRow: { query_area: 'corso-san-gottardo' },
+    listing: { size: 120, hasPlan: true },
+    doorEngine: {
+      estimatedFinalUnits: 3,
+      newUnitsCreated: 2,
+      planningVersion: 'max_doors_residual_studio_v2',
+      residualStudioIncluded: true,
+      plannedUnitMix: [
+        { unit_type: 'bilocale', estimated_size_mq: 40 },
+        { unit_type: 'bilocale', estimated_size_mq: 40 },
+        { unit_type: 'monolocale', estimated_size_mq: 30.4 },
+      ],
+    },
+  });
+
+  assert.deepEqual(valuation.final_unit_plan.map((unit) => unit.unit_type), ['bilocale', 'bilocale', 'monolocale']);
+  assert.deepEqual(valuation.final_unit_plan.map((unit) => unit.estimated_size_mq), [40, 40, 30.4]);
+  assert.equal(valuation.total_sale_value_base_eur, 800000);
+  assert.ok(valuation.red_flags.some((flag) => flag.includes('28 sqm')));
 });
 
 test('does not invent a valuation outside configured microzones', () => {
