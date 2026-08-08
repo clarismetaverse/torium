@@ -92,7 +92,7 @@ npm run triage:gpt:latest -- 1785975759601-milanoFractioningMassive-neutral_frac
 
 ## Supabase validation
 
-The homepage also exposes **Avvia run neutral**. It starts one Idealista scout run inside a Vercel Function, where the sensitive Apify and Supabase credentials remain server-side. The endpoint accepts only `neutral_fractionability`, requires the separate `TORIUM_RUN_PIN`, rejects cross-origin browser requests, and waits for persistence before refreshing the run selector. The PIN is retained only in the browser session.
+The homepage also exposes **Avvia run neutral**. It starts one Idealista scout run inside a Vercel Function, where the sensitive Apify and Supabase credentials remain server-side. The endpoint accepts only `neutral_fractionability`, rejects cross-origin browser requests, and waits for persistence before refreshing the run selector. The frontend intentionally does not require a PIN, so anyone with access to the site can trigger the action.
 
 The Function has a 300-second limit. Keep `TORIUM_APIFY_MAX_WAIT_SECONDS` at or below 240 for frontend-triggered scout runs; normal/deep runs require a durable workflow rather than this endpoint.
 

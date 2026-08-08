@@ -1,20 +1,8 @@
-import crypto from 'node:crypto';
 import { runValuationFromSupabase } from '../lib/valuation-runner.js';
 
 export const maxDuration = 300;
 
 let activeValuation = null;
-
-function sameValue(left, right) {
-  const a = Buffer.from(String(left || ''));
-  const b = Buffer.from(String(right || ''));
-  return a.length === b.length && crypto.timingSafeEqual(a, b);
-}
-
-function requestPin(request) {
-  const authorization = String(request.headers.authorization || '');
-  return authorization.startsWith('Bearer ') ? authorization.slice(7) : '';
-}
 
 function isSameOrigin(request) {
   const origin = request.headers.origin;
@@ -35,9 +23,6 @@ export default async function handler(request, response) {
   }
   if (!isSameOrigin(request)) return response.status(403).json({ error: 'Cross-origin request denied' });
 
-  const configuredPin = process.env.TORIUM_RUN_PIN;
-  if (!configuredPin) return response.status(503).json({ error: 'Run control is not configured' });
-  if (!sameValue(requestPin(request), configuredPin)) return response.status(401).json({ error: 'PIN non valido' });
   if (activeValuation) return response.status(409).json({ error: 'Una valuation e gia in corso su questa istanza' });
 
   const runId = String(request.body?.run_id || '').trim();

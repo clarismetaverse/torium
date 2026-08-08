@@ -4,9 +4,10 @@ import fs from 'node:fs/promises';
 
 const home = await fs.readFile(new URL('../public/home.html', import.meta.url), 'utf8');
 
-test('home run controls use an inline PIN instead of unsupported browser prompts', () => {
-  assert.match(home, /id="runPin"/);
-  assert.match(home, /function requireRunPin\(/);
+test('home run controls do not require a PIN or unsupported browser prompts', () => {
+  assert.doesNotMatch(home, /id="runPin"/);
+  assert.doesNotMatch(home, /function requireRunPin\(/);
+  assert.doesNotMatch(home, /Authorization['"]?\s*:/);
   assert.doesNotMatch(home, /\bprompt\s*\(/);
 });
 

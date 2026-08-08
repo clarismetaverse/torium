@@ -36,7 +36,6 @@
         <option value="bathrooms">Bagni-aware · superficie + bagni</option>
         <option value="spread">Opportunity · prezzo/mq + frazionabilità</option>
       </select></div>
-      <div class="field"><label for="runPin">PIN TORIUM</label><input id="runPin" type="password" inputmode="numeric" autocomplete="off" placeholder="Inserisci PIN"></div>
       <button id="newNeutralRun">Avvia run neutral</button>
       <button id="valueRun">Ricalcola valuation & ROI</button>
       <button id="refresh" class="secondary">Ricarica dati</button>
@@ -110,23 +109,19 @@ function finance(r){
 function valuationSummary(r){const a=r?.gpt_analysis?.valuation_assumptions||{},s=a.scenario_multipliers||{};if(!r?.gpt_analysis?.valuation_profile_version||r?.gpt_analysis?.valuation_applicability==='not_applicable_no_fractioning')return'';const factors=arr(a.unit_size_multipliers),factor=n(a.unit_size_multiplier)!==null?n(a.unit_size_multiplier).toFixed(2):factors.length?'per singola unità':'—';return `Exit ${r.gpt_analysis.valuation_profile_version}: benchmark ${eur(a.benchmark_eur_mq)}/mq × fattore taglio ${factor}; superficie vendibile ${pct(n(a.saleable_area_ratio)*100)}; scenari ${pct(n(s.low)*100)} / ${pct(n(s.base)*100)} / ${pct(n(s.high)*100)}.`}
 function financeCard(r){const f=finance(r),a=r?.gpt_analysis||{},hasRevenue=f.saleLow!==null||f.saleBase!==null||f.saleHigh!==null,valuation=valuationSummary(r),notApplicable=a.valuation_applicability==='not_applicable_no_fractioning',origin=originLabel(r);const rate=f.sellingRate!==null?pct(f.sellingRate*100):'3%';return `<div class="finance-box"><div class="finance-head"><b>Costi stimati & ROI</b><span>${origin?`origine ${h(origin)} · `:''}costi ${h(r?.underwriting?.version||'')} ${valuation?'· exit deterministico':''}</span></div><div class="finance-grid"><div class="finance-metric"><span>Acquisto</span><b>${eur(f.p)}</b></div><div class="finance-metric"><span>Costi acquisto (${f.rate!==null?pct(f.rate*100):'—'})</span><b>${eur(f.purchaseCosts)}</b></div><div class="finance-metric"><span>Trasformazione (${fmt(f.newUnits)} nuove unità)</span><b>${eur(f.transformation)}</b></div><div class="finance-metric strong"><span>Costo progetto</span><b>${eur(f.projectCost)}</b></div><div class="finance-metric"><span>Exit low</span><b>${eur(f.saleLow)}</b></div><div class="finance-metric"><span>Vendita low (${rate})</span><b>${eur(f.sellingLow)}</b></div><div class="finance-metric"><span>Exit base</span><b>${eur(f.saleBase)}</b></div><div class="finance-metric"><span>Vendita base (${rate})</span><b>${eur(f.sellingBase)}</b></div><div class="finance-metric"><span>Exit high</span><b>${eur(f.saleHigh)}</b></div><div class="finance-metric"><span>Vendita high (${rate})</span><b>${eur(f.sellingHigh)}</b></div><div class="finance-metric strong"><span>Costo totale base</span><b>${eur(f.totalBase)}</b></div><div class="finance-metric strong"><span>ROI base</span><b>${pct(f.roi)}</b></div><div class="finance-metric"><span>P/L low · ROI ${pct(f.roiLow)}</span><b>${eur(f.profitLow)}</b></div><div class="finance-metric strong"><span>P/L base · ROI ${pct(f.roi)}</span><b>${eur(f.profitBase)}</b></div><div class="finance-metric"><span>P/L high · ROI ${pct(f.roiHigh)}</span><b>${eur(f.profitHigh)}</b></div></div><div class="finance-note">${valuation?h(valuation)+' ':''}${notApplicable?'ROI frazionamento non applicabile: il progetto non crea nuove unità.':hasRevenue?`Costo vendita = exit × ${rate}. Costo totale = costo progetto + costo vendita. P/L = exit − costo totale; ROI = P/L ÷ costo totale × 100.`:'ROI non calcolabile: questa run non contiene ancora una valuation di uscita.'} Nessuna contingency o holding inclusa. Valori preliminari.</div></div>`}
 
-function requireRunPin(){const input=$('runPin'),entered=String(input.value||'').trim(),stored=sessionStorage.getItem('toriumRunPin'),pin=entered||stored;if(!pin){const status=$('runStatus');status.className='run-status error';status.textContent='Inserisci il PIN TORIUM nel campo qui sopra.';input.focus();return null}sessionStorage.setItem('toriumRunPin',pin);input.value='';return pin}
-
 async function loadOutputs(){const res=await fetch('/api/outputs?t='+Date.now());const data=await res.json();state.outputs=data.outputs||[];$('runSelect').innerHTML=state.outputs.map(o=>`<option value="${h(o.id)}">${h(outputLabel(o))}</option>`).join('');const requested=new URLSearchParams(location.search).get('run');const selected=requested?state.outputs.find(o=>o.id===requested||o.id===`supabase:${requested.replace(/^supabase:/,'')}`):null;if(selected||state.outputs[0])await loadRun((selected||state.outputs[0]).id)}
 function syncRunUrl(id){const url=new URL(location.href);url.searchParams.set('run',id);url.searchParams.set('sort',state.criterion);history.replaceState(null,'',url.pathname+url.search)}
 function valuationTarget(id){const value=String(id||'');if(value.startsWith('supabase:'))return{runId:value.replace(/^supabase:/,''),label:'run selezionata'};if(value.startsWith('combined:')){const components=value.replace(/^combined:/,'').split('+').filter(Boolean);const neutral=components.find(component=>component.includes('neutral_fractionability'));if(neutral)return{runId:neutral,label:'componente neutral della vista combinata'}}return null}
 async function loadRun(id){const res=await fetch('/api/output?file='+encodeURIComponent(id)+'&t='+Date.now());const out=await res.json();if(!res.ok)throw new Error(out.error||'Run load failed');state.output=out;state.outputId=id;$('runSelect').value=id;syncRunUrl(id);draw()}
 async function startNeutralRun(){
   if(!confirm('Avviare una run scout neutral su Idealista? La run usa crediti Apify.'))return;
-  const pin=requireRunPin();
-  if(!pin)return;
   const button=$('newNeutralRun'),status=$('runStatus'),started=Date.now();
   button.disabled=true;status.className='run-status';
   const timer=setInterval(()=>{status.textContent=`Run neutral in corso... ${Math.floor((Date.now()-started)/1000)}s`;},1000);
   try{
-    const res=await fetch('/api/run-triage',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+pin},body:JSON.stringify({strategy:'neutral_fractionability'})});
+    const res=await fetch('/api/run-triage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({strategy:'neutral_fractionability'})});
     const data=await res.json();
-    if(!res.ok){if(res.status===401){sessionStorage.removeItem('toriumRunPin');$('runPin').focus()}throw new Error(data.error||'Avvio run fallito')}
+    if(!res.ok)throw new Error(data.error||'Avvio run fallito');
     status.className='run-status success';status.textContent=`Run completata: ${data.eligible_count} immobili idonei. Carico i risultati...`;
     await loadOutputs();
   }catch(error){status.className='run-status error';status.textContent=error.message}
@@ -136,15 +131,13 @@ async function startValuation(){
   const target=valuationTarget(state.outputId);
   if(!target){alert('Questa vista non contiene una run Supabase aggiornabile.');return}
   if(!confirm(`Calcolare valuation deterministica low/base/high e ROI per tutti i deal idonei della ${target.label}?`))return;
-  const pin=requireRunPin();
-  if(!pin)return;
   const button=$('valueRun'),status=$('runStatus'),started=Date.now(),runId=target.runId,selectedOutputId=state.outputId;
   button.disabled=true;status.className='run-status';
   const timer=setInterval(()=>{status.textContent=`Valuation in corso... ${Math.floor((Date.now()-started)/1000)}s`;},1000);
   try{
-    const res=await fetch('/api/run-valuation',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+pin},body:JSON.stringify({run_id:runId,limit:20,mode:'deterministic'})});
+    const res=await fetch('/api/run-valuation',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({run_id:runId,limit:20,mode:'deterministic'})});
     const data=await res.json();
-    if(!res.ok){if(res.status===401){sessionStorage.removeItem('toriumRunPin');$('runPin').focus()}throw new Error(data.error||'Valuation fallita')}
+    if(!res.ok)throw new Error(data.error||'Valuation fallita');
     status.className='run-status success';status.textContent=`Valuation deterministica completata: ${data.valued_count} immobili. ROI aggiornati.`;
     await loadRun(selectedOutputId);
   }catch(error){status.className='run-status error';status.textContent=error.message}
