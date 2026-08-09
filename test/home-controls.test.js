@@ -17,4 +17,8 @@ test('reload and valuation actions have distinct labels and behaviors', () => {
   assert.match(home, />Ricalcola valuation &amp; ROI<|>Ricalcola valuation & ROI</);
   assert.match(home, />Ricarica dati</);
   assert.match(home, /function refreshData\(/);
+  assert.match(home, /<section class="toolbar actions-hidden">/);
+  assert.match(home, /<button id="newNeutralRun" hidden>/);
+  assert.match(home, /<button id="valueRun" hidden>/);
+  assert.match(home, /<button id="refresh" class="secondary" hidden>/);
 });
