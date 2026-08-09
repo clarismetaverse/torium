@@ -44,7 +44,7 @@ export default async function handler(request, response) {
         maxItemsPerQuery: 200,
         maxTotalRawListings: 200,
         topPrescoreLimit: 200,
-        minSize: 90,
+        minSize: 100,
       }
     : {};
 

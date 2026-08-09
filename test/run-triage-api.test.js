@@ -41,12 +41,12 @@ test('serious Milan profile expands the sample without a neighborhood filter', (
     maxItemsPerQuery: 200,
     maxTotalRawListings: 200,
     topPrescoreLimit: 200,
-    minSize: 90,
+    minSize: 100,
   }, {});
 
   assert.deepEqual(config.requestedAreas, ['Milano']);
   assert.equal(config.maxItemsPerQuery, 200);
   assert.equal(config.maxTotalRawListings, 200);
   assert.equal(config.topPrescoreLimit, 200);
-  assert.equal(config.minSize, 90);
+  assert.equal(config.minSize, 100);
 });
