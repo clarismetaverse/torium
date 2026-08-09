@@ -38,15 +38,17 @@ test('serious Milan profile expands the sample without a neighborhood filter', (
   const config = resolveMassiveRunConfig({
     runMode: 'serious',
     requestedAreas: ['Milano'],
-    maxItemsPerQuery: 200,
-    maxTotalRawListings: 200,
-    topPrescoreLimit: 200,
+    maxItemsPerQuery: 600,
+    maxTotalRawListings: 600,
+    topPrescoreLimit: 600,
     minSize: 100,
+    idealistaCondition: ['renew'],
   }, {});
 
   assert.deepEqual(config.requestedAreas, ['Milano']);
-  assert.equal(config.maxItemsPerQuery, 200);
-  assert.equal(config.maxTotalRawListings, 200);
-  assert.equal(config.topPrescoreLimit, 200);
+  assert.equal(config.maxItemsPerQuery, 600);
+  assert.equal(config.maxTotalRawListings, 600);
+  assert.equal(config.topPrescoreLimit, 600);
   assert.equal(config.minSize, 100);
+  assert.deepEqual(config.idealistaCondition, ['renew']);
 });

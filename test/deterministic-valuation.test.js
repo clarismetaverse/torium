@@ -32,7 +32,7 @@ test('builds auditable low/base/high values by output unit without changing phys
     },
   });
 
-  assert.equal(valuation.valuation_profile_version, 'milan_microzone_exit_v2_residual_studio_2026_08');
+  assert.equal(valuation.valuation_profile_version, 'milan_city_exit_v3_provisional_2026_07');
   assert.equal(valuation.final_unit_plan.length, 5);
   assert.equal(valuation.final_unit_plan[0].estimated_size_mq, 41.4);
   assert.equal(valuation.total_sale_value_low_eur, 1350000);
@@ -68,6 +68,29 @@ test('values a residual monolocale separately from the 40 sqm bilocali', () => {
 
 test('does not invent a valuation outside configured microzones', () => {
   assert.throws(() => resolveMicrozoneProfile(profileSet, { query_area: 'unknown-area' }, {}), /No deterministic valuation profile/);
+});
+
+test('resolves every provisional Milan macrozone benchmark', () => {
+  const cityProfiles = profileSet.microzones.filter((profile) => !['corso-san-gottardo', 'milano-citywide-fallback'].includes(profile.id));
+  assert.equal(cityProfiles.length, 18);
+  for (const profile of cityProfiles) {
+    const resolved = resolveMicrozoneProfile(profileSet, { area_label: profile.name }, {});
+    assert.equal(resolved.id, profile.id);
+    assert.ok(resolved.base_exit_eur_mq > 3000);
+    assert.ok(resolved.market_sentiment?.label);
+  }
+});
+
+test('uses a low-confidence Milan fallback only when no macrozone matches', () => {
+  const valuation = buildDeterministicValuation({
+    profileSet,
+    sourceRow: { query_area: 'Milano', area_label: 'Etichetta futura non mappata' },
+    listing: { size: 120, hasPlan: false },
+    doorEngine: { estimatedFinalUnits: 3, newUnitsCreated: 2 },
+  });
+  assert.equal(valuation.valuation_microzone_id, 'milano-citywide-fallback');
+  assert.equal(valuation.valuation_confidence, 'low');
+  assert.ok(valuation.red_flags.some((flag) => flag.includes('fallback')));
 });
 
 test('does not invent fractioning ROI when the project creates no new unit', () => {

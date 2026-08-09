@@ -41,10 +41,11 @@ export default async function handler(request, response) {
     ? {
         runMode: 'serious',
         requestedAreas: ['Milano'],
-        maxItemsPerQuery: 200,
-        maxTotalRawListings: 200,
-        topPrescoreLimit: 200,
+        maxItemsPerQuery: 600,
+        maxTotalRawListings: 600,
+        topPrescoreLimit: 600,
         minSize: 100,
+        idealistaCondition: ['renew'],
       }
     : {};
 

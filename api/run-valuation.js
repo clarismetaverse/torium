@@ -29,8 +29,8 @@ export default async function handler(request, response) {
   if (!runId || !/^[a-zA-Z0-9_.:-]{1,180}$/.test(runId)) {
     return response.status(400).json({ error: 'run_id non valido' });
   }
-  const requestedLimit = Number(request.body?.limit ?? 20);
-  const limit = Math.max(1, Math.min(20, Number.isFinite(requestedLimit) ? requestedLimit : 20));
+  const requestedLimit = Number(request.body?.limit ?? 600);
+  const limit = Math.max(1, Math.min(600, Number.isFinite(requestedLimit) ? requestedLimit : 600));
   const valuationMode = String(request.body?.mode || 'deterministic').toLowerCase();
   if (valuationMode !== 'deterministic') {
     return response.status(400).json({ error: 'Only deterministic valuation is enabled from the frontend' });

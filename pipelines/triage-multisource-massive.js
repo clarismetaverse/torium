@@ -76,6 +76,7 @@ export function resolveMassiveRunConfig(options = {}, env = process.env) {
     maxTotalRawListings: Number(options.maxTotalRawListings ?? env.TORIUM_MASSIVE_MAX_TOTAL_RAW_LISTINGS ?? defaultTotalRawListings),
     topPrescoreLimit: Number(options.topPrescoreLimit ?? env.TORIUM_MASSIVE_TOP_PRESCORE_LIMIT ?? modeDefaults.topPrescoreLimit),
     minSize: Number(options.minSize ?? env.TORIUM_MIN_SIZE ?? 80),
+    idealistaCondition: Array.isArray(options.idealistaCondition) ? options.idealistaCondition : [],
     includeDiscountedVariant: env.TORIUM_MASSIVE_INCLUDE_DISCOUNTED_VARIANT === 'true' || modeDefaults.includeDiscountedVariant,
   };
 }
@@ -285,6 +286,7 @@ export function buildIdealistaQueries(areas) {
       propertyType: 'homes',
       location: idealistaLocation?.idealista_location_id || DEFAULT_CITY,
       minSize: String(ACTIVE_RUN_CONFIG.minSize),
+      ...(ACTIVE_RUN_CONFIG.idealistaCondition.length ? { condition: ACTIVE_RUN_CONFIG.idealistaCondition } : {}),
       sortBy: SEARCH_STRATEGY.idealistaSortBy,
       maxItems: ACTIVE_RUN_CONFIG.maxItemsPerQuery,
       fetchDetails: false,

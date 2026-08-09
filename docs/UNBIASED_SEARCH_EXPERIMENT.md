@@ -92,7 +92,7 @@ npm run triage:gpt:latest -- 1785975759601-milanoFractioningMassive-neutral_frac
 
 ## Supabase validation
 
-The homepage exposes **Avvia run seria · Milano**. It starts one broad Idealista run inside a Vercel Function, where the sensitive Apify and Supabase credentials remain server-side. The controlled profile requests up to 200 recent Milan listings of at least 100 sqm, uses `neutral_fractionability`, does not restrict the source query to one neighborhood, rejects cross-origin browser requests, and waits for persistence before refreshing the run selector. The frontend intentionally does not require a PIN, so anyone with access to the site can trigger the action.
+The homepage exposes **Avvia run seria · Milano**. It starts one broad Idealista run inside a Vercel Function, where the sensitive Apify and Supabase credentials remain server-side. The controlled profile requests up to 600 recent Milan listings marked `renew` and at least 100 sqm, uses `neutral_fractionability`, does not restrict the source query to one neighborhood, rejects cross-origin browser requests, and waits for persistence before refreshing the run selector. The frontend intentionally does not require a PIN, so anyone with access to the site can trigger the action.
 
 The Function has a 300-second limit. Keep `TORIUM_APIFY_MAX_WAIT_SECONDS` at or below 240 for frontend-triggered scout runs; normal/deep runs require a durable workflow rather than this endpoint.
 

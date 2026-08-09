@@ -205,6 +205,23 @@ physical score. When a run has not yet been valued, exit, P/L, and ROI remain
 Run-level ROI averages and medians include only properties with a calculable
 base-case ROI and expose the included property count.
 
+## Provisional Milan-wide exit profile V3
+
+The temporary profile `milan_city_exit_v3_provisional_2026_07` maps all 18
+idealista Milan macro-zones to their July 2026 asking-price benchmarks. The
+base case does not add forecast appreciation. Zone sentiment is persisted for
+audit, while low/base/high scenarios remain 90% / 100% / 110% of the
+size-adjusted benchmark. These values are comparison inputs, not professional
+appraisals or confirmed transaction prices.
+
+The more specific Corso San Gottardo benchmark remains available and wins over
+the broader Navigli-Bocconi profile when the listing location supports that
+match. Every other zone uses the citywide provisional table until transaction
+comparables and microzone-specific sellability models replace it.
+A citywide 5,681 EUR/sqm fallback is used only when a future or unexpected
+area label does not match any of the 18 zones; those valuations are explicitly
+marked low-confidence.
+
 ## Provisional output-unit planner V2
 
 The current `max-doors-20k` profile uses the versioned
