@@ -2,12 +2,31 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { resolveSearchStrategy } from '../lib/search-strategies.js';
 import {
+  buildCompactRunRawOutput,
   resolveValuationProvider,
   scoreValuedResult,
   sortValuedResults,
   sourceCandidateOrder,
   validateValuation,
 } from '../lib/valuation-runner.js';
+
+test('run summary does not duplicate full valuation results or links in raw_output', () => {
+  const compact = buildCompactRunRawOutput({
+    raw_output: {
+      raw_source_count: 600,
+      results: [{ description: 'large listing payload' }],
+      result_links: [{ url: 'https://example.com' }],
+    },
+  }, {
+    valued_count: 373,
+    valuation_model: 'temporary-zone-profile',
+  });
+  assert.equal(compact.raw_source_count, 600);
+  assert.equal(compact.valued_count, 373);
+  assert.equal(compact.valuation_model, 'temporary-zone-profile');
+  assert.equal('results' in compact, false);
+  assert.equal('result_links' in compact, false);
+});
 
 test('neutral valuation never orders or scores by price and ROI', () => {
   const neutral = resolveSearchStrategy('neutral_fractionability');
