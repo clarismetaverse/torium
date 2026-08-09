@@ -86,7 +86,7 @@ const price=r=>n(listing(r)?.price??r?.price_eur??r?.price);
 const backendUnits=r=>n(r?.door_engine?.estimatedFinalUnits??r?.estimated_final_units);
 const doorScore=r=>n(r?.ranking_score??r?.score??r?.door_engine?.doorScore??r?.door_score)??0;
 const listingDescription=r=>String(r?.description||listing(r)?.description||r?.source_row?.description||r?.source_row?.raw_listing?.description||'');
-const markedForFractioning=r=>/\b(?:da\s+frazionare|to\s+be\s+(?:split|divided))\b/i.test(listingDescription(r));
+const markedForFractioning=r=>{const text=listingDescription(r).toLowerCase();if(/\b(?:non|impossibile)\s+(?:è\s+)?frazion\w*/i.test(text))return false;return /\bfrazion\w*/i.test(text)||/\b(?:suddividere|dividere)\b[^.]{0,100}\b(?:due|2)\s+(?:appartamenti|unità)\b/i.test(text)||/\bto\s+be\s+(?:split|divided)\b/i.test(text)};
 const hasFloorPlan=r=>arr(r?.floor_plans).length>0||arr(listing(r)?.floor_plans).length>0||arr(listing(r)?.multimedia?.floor_plans).length>0||listing(r)?.hasPlan===true||r?.has_plan===true||r?.door_engine?.signals?.hasFloorPlan===true;
 const idOf=(r,i)=>String(r?.id??r?.listing_index??i);
 const strategyLabel=v=>v==='neutral_fractionability'?t('neutral'):v==='legacy_low_price_m2'?t('legacy'):v==='combined_neutral_legacy'?t('combined'):t('unregistered');

@@ -32,7 +32,8 @@ test('home supports persistent Italian and English UI copy', () => {
 
 test('deal previews expose only evidence-backed fractioning and floor-plan tags', () => {
   assert.match(home, /markedForFractioning=r=>/);
-  assert.match(home, /da\\s\+frazionare/);
+  assert.match(home, /frazion\\w\*/);
+  assert.match(home, /suddividere\|dividere/);
   assert.match(home, /hasFloorPlan=r=>/);
   assert.match(home, /signal-split/);
   assert.match(home, /signal-plan/);
