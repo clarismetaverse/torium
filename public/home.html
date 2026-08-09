@@ -36,7 +36,7 @@
         <option value="bathrooms">Bagni-aware · superficie + bagni</option>
         <option value="spread">Opportunity · prezzo/mq + frazionabilità</option>
       </select></div>
-      <button id="newNeutralRun">Avvia run neutral</button>
+      <button id="newNeutralRun">Avvia run seria · Milano</button>
       <button id="valueRun">Ricalcola valuation & ROI</button>
       <button id="refresh" class="secondary">Ricarica dati</button>
     </section>
@@ -114,12 +114,12 @@ function syncRunUrl(id){const url=new URL(location.href);url.searchParams.set('r
 function valuationTarget(id){const value=String(id||'');if(value.startsWith('supabase:'))return{runId:value.replace(/^supabase:/,''),label:'run selezionata'};if(value.startsWith('combined:')){const components=value.replace(/^combined:/,'').split('+').filter(Boolean);const neutral=components.find(component=>component.includes('neutral_fractionability'));if(neutral)return{runId:neutral,label:'componente neutral della vista combinata'}}return null}
 async function loadRun(id){const res=await fetch('/api/output?file='+encodeURIComponent(id)+'&t='+Date.now());const out=await res.json();if(!res.ok)throw new Error(out.error||'Run load failed');state.output=out;state.outputId=id;$('runSelect').value=id;syncRunUrl(id);draw()}
 async function startNeutralRun(){
-  if(!confirm('Avviare una run scout neutral su Idealista? La run usa crediti Apify.'))return;
+  if(!confirm('Avviare una run neutral seria su tutta Milano? Verranno richiesti fino a 200 annunci da almeno 90 mq e verranno usati crediti Apify.'))return;
   const button=$('newNeutralRun'),status=$('runStatus'),started=Date.now();
   button.disabled=true;status.className='run-status';
-  const timer=setInterval(()=>{status.textContent=`Run neutral in corso... ${Math.floor((Date.now()-started)/1000)}s`;},1000);
+  const timer=setInterval(()=>{status.textContent=`Run seria Milano in corso... ${Math.floor((Date.now()-started)/1000)}s`;},1000);
   try{
-    const res=await fetch('/api/run-triage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({strategy:'neutral_fractionability'})});
+    const res=await fetch('/api/run-triage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({strategy:'neutral_fractionability',profile:'milano_broad'})});
     const data=await res.json();
     if(!res.ok)throw new Error(data.error||'Avvio run fallito');
     status.className='run-status success';status.textContent=`Run completata: ${data.eligible_count} immobili idonei. Carico i risultati...`;

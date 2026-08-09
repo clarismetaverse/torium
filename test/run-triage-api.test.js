@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import handler from '../api/run-triage.js';
-import { buildIdealistaQueries } from '../pipelines/triage-multisource-massive.js';
+import { buildIdealistaQueries, resolveMassiveRunConfig } from '../pipelines/triage-multisource-massive.js';
 
 function responseRecorder() {
   return {
@@ -32,4 +32,21 @@ test('Idealista scout targets the requested Milan location ID', () => {
   assert.equal(query.payload.location, '0-EU-IT-MI-01-001-135-05-004');
   assert.equal(query.query_area, 'corso-san-gottardo');
   assert.equal(query.payload.maxItems, 20);
+});
+
+test('serious Milan profile expands the sample without a neighborhood filter', () => {
+  const config = resolveMassiveRunConfig({
+    runMode: 'serious',
+    requestedAreas: ['Milano'],
+    maxItemsPerQuery: 200,
+    maxTotalRawListings: 200,
+    topPrescoreLimit: 200,
+    minSize: 90,
+  }, {});
+
+  assert.deepEqual(config.requestedAreas, ['Milano']);
+  assert.equal(config.maxItemsPerQuery, 200);
+  assert.equal(config.maxTotalRawListings, 200);
+  assert.equal(config.topPrescoreLimit, 200);
+  assert.equal(config.minSize, 90);
 });

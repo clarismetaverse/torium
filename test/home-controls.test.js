@@ -12,6 +12,8 @@ test('home run controls do not require a PIN or unsupported browser prompts', ()
 });
 
 test('reload and valuation actions have distinct labels and behaviors', () => {
+  assert.match(home, />Avvia run seria · Milano</);
+  assert.match(home, /profile:'milano_broad'/);
   assert.match(home, />Ricalcola valuation &amp; ROI<|>Ricalcola valuation & ROI</);
   assert.match(home, />Ricarica dati</);
   assert.match(home, /function refreshData\(/);

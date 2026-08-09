@@ -32,10 +32,27 @@ export default async function handler(request, response) {
     return response.status(400).json({ error: 'Only neutral_fractionability is enabled from the frontend' });
   }
 
+  const profile = request.body?.profile || 'scout';
+  if (!['scout', 'milano_broad'].includes(profile)) {
+    return response.status(400).json({ error: 'Profilo run non valido' });
+  }
+
+  const profileOptions = profile === 'milano_broad'
+    ? {
+        runMode: 'serious',
+        requestedAreas: ['Milano'],
+        maxItemsPerQuery: 200,
+        maxTotalRawListings: 200,
+        topPrescoreLimit: 200,
+        minSize: 90,
+      }
+    : {};
+
   activeRun = runMassiveTriage({
-    baseSearchName: 'milanoFractioningMassive',
+    baseSearchName: profile === 'milano_broad' ? 'milanoFractioningSerious' : 'milanoFractioningMassive',
     searchStrategy: strategy,
     sources: 'idealista',
+    ...profileOptions,
   });
 
   try {
@@ -45,6 +62,8 @@ export default async function handler(request, response) {
       run_id: output.run_id,
       search_name: output.search_name,
       search_strategy: output.search_strategy,
+      profile,
+      requested_areas: output.requested_areas,
       raw_source_count: output.raw_source_count,
       eligible_count: output.eligible_count,
       pre_scored_count: output.pre_scored_count,

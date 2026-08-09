@@ -14,7 +14,6 @@ const INVESTOR_PROFILE_URL = new URL('../config/investor-profiles/max-doors-20k.
 
 const APIFY_TOKEN = process.env.APIFY_TOKEN;
 const DEFAULT_CITY = process.env.TORIUM_CITY || 'Milano';
-const RUN_MODE = (process.env.TORIUM_RUN_MODE || 'scout').toLowerCase();
 const IDEALISTA_ACTOR_ID = process.env.TORIUM_IDEALISTA_ACTOR_ID || 'igolaizola~idealista-scraper';
 const IDEALISTA_DATASET_ID = process.env.TORIUM_IDEALISTA_DATASET_ID || null;
 const IDEALISTA_RUN_ID = process.env.TORIUM_IDEALISTA_RUN_ID || null;
@@ -47,24 +46,41 @@ const RUN_MODE_DEFAULTS = {
   },
 };
 
-const MODE_DEFAULTS = RUN_MODE_DEFAULTS[RUN_MODE] || RUN_MODE_DEFAULTS.scout;
 const IMMOBILIARE_ACTOR = (process.env.TORIUM_IMMOBILIARE_ACTOR || 'url').toLowerCase();
-const REQUESTED_AREAS = (process.env.TORIUM_MASSIVE_AREAS || MODE_DEFAULTS.areas)
-  .split(',')
-  .map((area) => area.trim())
-  .filter(Boolean);
 let SOURCES = (process.env.TORIUM_MASSIVE_SOURCES || 'immobiliare')
   .split(',')
   .map((source) => source.trim().toLowerCase())
   .filter(Boolean);
-const MAX_ITEMS_PER_QUERY = Number(process.env.TORIUM_MASSIVE_MAX_ITEMS_PER_QUERY || MODE_DEFAULTS.maxItemsPerQuery);
-const MAX_PAGES_PER_QUERY = Number(process.env.TORIUM_MASSIVE_MAX_PAGES_PER_QUERY || MODE_DEFAULTS.maxPagesPerQuery);
-const DEFAULT_TOTAL_RAW_LISTINGS = MAX_ITEMS_PER_QUERY * Math.max(1, REQUESTED_AREAS.length);
-const MAX_TOTAL_RAW_LISTINGS = Number(process.env.TORIUM_MASSIVE_MAX_TOTAL_RAW_LISTINGS || DEFAULT_TOTAL_RAW_LISTINGS);
-const TOP_PRESCORE_LIMIT = Number(process.env.TORIUM_MASSIVE_TOP_PRESCORE_LIMIT || MODE_DEFAULTS.topPrescoreLimit);
-const MIN_SIZE = Number(process.env.TORIUM_MIN_SIZE || 80);
 const MIN_ROOMS = Number(process.env.TORIUM_MIN_ROOMS || 1);
 const MAX_ROOMS = Number(process.env.TORIUM_MAX_ROOMS || 12);
+
+function areaList(value) {
+  return (Array.isArray(value) ? value : String(value || '').split(','))
+    .map((area) => String(area).trim())
+    .filter(Boolean);
+}
+
+export function resolveMassiveRunConfig(options = {}, env = process.env) {
+  const runMode = String(options.runMode || env.TORIUM_RUN_MODE || 'scout').toLowerCase();
+  const modeDefaults = RUN_MODE_DEFAULTS[runMode] || RUN_MODE_DEFAULTS.scout;
+  const requestedAreas = areaList(options.requestedAreas ?? env.TORIUM_MASSIVE_AREAS ?? modeDefaults.areas);
+  const maxItemsPerQuery = Number(options.maxItemsPerQuery ?? env.TORIUM_MASSIVE_MAX_ITEMS_PER_QUERY ?? modeDefaults.maxItemsPerQuery);
+  const maxPagesPerQuery = Number(options.maxPagesPerQuery ?? env.TORIUM_MASSIVE_MAX_PAGES_PER_QUERY ?? modeDefaults.maxPagesPerQuery);
+  const defaultTotalRawListings = maxItemsPerQuery * Math.max(1, requestedAreas.length);
+
+  return {
+    runMode,
+    requestedAreas,
+    maxItemsPerQuery,
+    maxPagesPerQuery,
+    maxTotalRawListings: Number(options.maxTotalRawListings ?? env.TORIUM_MASSIVE_MAX_TOTAL_RAW_LISTINGS ?? defaultTotalRawListings),
+    topPrescoreLimit: Number(options.topPrescoreLimit ?? env.TORIUM_MASSIVE_TOP_PRESCORE_LIMIT ?? modeDefaults.topPrescoreLimit),
+    minSize: Number(options.minSize ?? env.TORIUM_MIN_SIZE ?? 80),
+    includeDiscountedVariant: env.TORIUM_MASSIVE_INCLUDE_DISCOUNTED_VARIANT === 'true' || modeDefaults.includeDiscountedVariant,
+  };
+}
+
+let ACTIVE_RUN_CONFIG = resolveMassiveRunConfig();
 
 function optionalNumberEnv(name, fallback = null) {
   const value = process.env[name];
@@ -82,7 +98,6 @@ const REQUIRE_LIFT = process.env.TORIUM_IMMOBILIARE_REQUIRE_LIFT === 'true';
 const FURNISHED = process.env.TORIUM_IMMOBILIARE_FURNISHED === 'true';
 const EXCLUDE_AUCTIONS = process.env.TORIUM_IMMOBILIARE_EXCLUDE_AUCTIONS === 'true';
 const INCLUDE_RENOVATION_VARIANT = process.env.TORIUM_MASSIVE_INCLUDE_RENOVATION_VARIANT !== 'false';
-const INCLUDE_DISCOUNTED_VARIANT = process.env.TORIUM_MASSIVE_INCLUDE_DISCOUNTED_VARIANT === 'true' || MODE_DEFAULTS.includeDiscountedVariant;
 
 function compactObject(input) {
   return Object.fromEntries(
@@ -113,7 +128,7 @@ async function apifyFetchJson(pathname, options = {}, params = {}) {
   return body ? JSON.parse(body) : null;
 }
 
-async function fetchApifyDatasetItems(datasetId, maxItems = MAX_TOTAL_RAW_LISTINGS) {
+async function fetchApifyDatasetItems(datasetId, maxItems = ACTIVE_RUN_CONFIG.maxTotalRawListings) {
   const items = [];
   let offset = 0;
   while (items.length < maxItems) {
@@ -166,13 +181,13 @@ async function startApifyActorRun(actorId, input) {
 
 function buildImmobiliareStructuredPayload(area, variant) {
   return compactObject({
-    maxItems: MAX_ITEMS_PER_QUERY,
+    maxItems: ACTIVE_RUN_CONFIG.maxItemsPerQuery,
     province: 'MI',
     municipality: DEFAULT_CITY,
     area,
     operation: 'buy',
     sortType: variant.sortType,
-    minSize: MIN_SIZE,
+    minSize: ACTIVE_RUN_CONFIG.minSize,
     minRooms: MIN_ROOMS,
     maxRooms: MAX_ROOMS,
     bedrooms: 0,
@@ -186,7 +201,7 @@ function buildImmobiliareUrlPayload(area) {
   const startUrl = buildImmobiliareSearchUrl({
     city: DEFAULT_CITY,
     area,
-    minSize: MIN_SIZE,
+    minSize: ACTIVE_RUN_CONFIG.minSize,
     minRooms: MIN_ROOMS,
     maxRooms: MAX_ROOMS,
     bathrooms: BATHROOMS,
@@ -201,8 +216,8 @@ function buildImmobiliareUrlPayload(area) {
 
   return {
     startUrl,
-    results_wanted: MAX_ITEMS_PER_QUERY,
-    max_pages: MAX_PAGES_PER_QUERY,
+    results_wanted: ACTIVE_RUN_CONFIG.maxItemsPerQuery,
+    max_pages: ACTIVE_RUN_CONFIG.maxPagesPerQuery,
     proxyConfiguration: { useApifyProxy: false },
   };
 }
@@ -229,7 +244,7 @@ function buildImmobiliareQueries(areas) {
       propertyCondition: 'toBeRenovated',
     });
   }
-  if (INCLUDE_DISCOUNTED_VARIANT) {
+  if (ACTIVE_RUN_CONFIG.includeDiscountedVariant) {
     variants.push({
       name: 'immobiliare-discounted-broad',
       sortType: 'discounted',
@@ -269,9 +284,9 @@ export function buildIdealistaQueries(areas) {
       operation: 'sale',
       propertyType: 'homes',
       location: idealistaLocation?.idealista_location_id || DEFAULT_CITY,
-      minSize: String(MIN_SIZE),
+      minSize: String(ACTIVE_RUN_CONFIG.minSize),
       sortBy: SEARCH_STRATEGY.idealistaSortBy,
-      maxItems: MAX_ITEMS_PER_QUERY,
+      maxItems: ACTIVE_RUN_CONFIG.maxItemsPerQuery,
       fetchDetails: false,
       fetchStats: false,
     },
@@ -280,7 +295,7 @@ export function buildIdealistaQueries(areas) {
 }
 
 async function runIdealistaScraper(input) {
-  const maxItems = Number(input.maxItems || MAX_TOTAL_RAW_LISTINGS);
+  const maxItems = Number(input.maxItems || ACTIVE_RUN_CONFIG.maxTotalRawListings);
 
   if (IDEALISTA_DATASET_ID) {
     console.log(`Loading Idealista items from existing Apify dataset: ${IDEALISTA_DATASET_ID}`);
@@ -362,6 +377,7 @@ function buildResultLinks(items) {
 }
 
 export async function runMassiveTriage(options = {}) {
+  ACTIVE_RUN_CONFIG = resolveMassiveRunConfig(options);
   SEARCH_STRATEGY = resolveSearchStrategy(options.searchStrategy || process.env.TORIUM_SEARCH_STRATEGY);
   SOURCES = (options.sources || process.env.TORIUM_MASSIVE_SOURCES || 'immobiliare')
     .split(',')
@@ -375,24 +391,24 @@ export async function runMassiveTriage(options = {}) {
   const investorProfile = JSON.parse(await fs.readFile(INVESTOR_PROFILE_URL, 'utf8'));
 
   const queries = [];
-  if (SOURCES.includes('immobiliare')) queries.push(...buildImmobiliareQueries(REQUESTED_AREAS));
-  if (SOURCES.includes('idealista')) queries.push(...buildIdealistaQueries(REQUESTED_AREAS));
+  if (SOURCES.includes('immobiliare')) queries.push(...buildImmobiliareQueries(ACTIVE_RUN_CONFIG.requestedAreas));
+  if (SOURCES.includes('idealista')) queries.push(...buildIdealistaQueries(ACTIVE_RUN_CONFIG.requestedAreas));
   if (!queries.length) throw new Error('No sources selected. Set TORIUM_MASSIVE_SOURCES=immobiliare or immobiliare,idealista.');
 
   console.log(JSON.stringify({
-    run_mode: RUN_MODE,
+    run_mode: ACTIVE_RUN_CONFIG.runMode,
     search_name: searchName,
     search_strategy: SEARCH_STRATEGY.id,
     scoring_mode: SEARCH_STRATEGY.scoringMode,
     shortlist_tie_breaker: SEARCH_STRATEGY.shortlistTieBreaker,
     sources: SOURCES,
     immobiliare_actor: IMMOBILIARE_ACTOR,
-    requested_areas: REQUESTED_AREAS,
-    max_items_per_query: MAX_ITEMS_PER_QUERY,
-    max_pages_per_query: MAX_PAGES_PER_QUERY,
-    max_total_raw_listings: MAX_TOTAL_RAW_LISTINGS,
+    requested_areas: ACTIVE_RUN_CONFIG.requestedAreas,
+    max_items_per_query: ACTIVE_RUN_CONFIG.maxItemsPerQuery,
+    max_pages_per_query: ACTIVE_RUN_CONFIG.maxPagesPerQuery,
+    max_total_raw_listings: ACTIVE_RUN_CONFIG.maxTotalRawListings,
     filters: {
-      min_size: MIN_SIZE,
+      min_size: ACTIVE_RUN_CONFIG.minSize,
       condition_code: CONDITION_CODE,
       bathrooms: BATHROOMS,
       ownership_code: OWNERSHIP_CODE,
@@ -417,7 +433,7 @@ export async function runMassiveTriage(options = {}) {
   const queryPayloads = [];
 
   for (const query of queries) {
-    if (collected.length >= MAX_TOTAL_RAW_LISTINGS) break;
+    if (collected.length >= ACTIVE_RUN_CONFIG.maxTotalRawListings) break;
 
     console.log(`Running ${query.actor} query: ${query.query_name} / ${query.query_area || 'all'}`);
     const rawResults = await runSourceQuery(query);
@@ -449,13 +465,13 @@ export async function runMassiveTriage(options = {}) {
         idealista_neighborhood_name: query.idealista_neighborhood_name,
       };
 
-      if (query.source_channel === 'idealista' && !query.source_area_enforced && !listingMatchesAnyArea(normalized.listing, REQUESTED_AREAS)) {
+      if (query.source_channel === 'idealista' && !query.source_area_enforced && !listingMatchesAnyArea(normalized.listing, ACTIVE_RUN_CONFIG.requestedAreas)) {
         continue;
       }
 
       const enriched = enrichWithPreScore(normalized, investorProfile);
       collected.push(enriched);
-      if (collected.length >= MAX_TOTAL_RAW_LISTINGS) break;
+      if (collected.length >= ACTIVE_RUN_CONFIG.maxTotalRawListings) break;
     }
   }
 
@@ -468,16 +484,23 @@ export async function runMassiveTriage(options = {}) {
   const preScored = dedupedEligible
     .sort((a, b) => compareShortlistItems(a, b, SEARCH_STRATEGY));
 
-  const shortlist = preScored.slice(0, TOP_PRESCORE_LIMIT);
+  const shortlist = preScored.slice(0, ACTIVE_RUN_CONFIG.topPrescoreLimit);
   const output = {
     run_id: nowRunId(searchName),
     search_name: searchName,
+    run_mode: ACTIVE_RUN_CONFIG.runMode,
     city: DEFAULT_CITY,
     investor_profile: investorProfile.id,
     search_strategy: SEARCH_STRATEGY.id,
     scoring_mode: SEARCH_STRATEGY.scoringMode,
     source_channels: SOURCES,
-    requested_areas: REQUESTED_AREAS,
+    requested_areas: ACTIVE_RUN_CONFIG.requestedAreas,
+    sample_config: {
+      max_items_per_query: ACTIVE_RUN_CONFIG.maxItemsPerQuery,
+      max_total_raw_listings: ACTIVE_RUN_CONFIG.maxTotalRawListings,
+      top_prescore_limit: ACTIVE_RUN_CONFIG.topPrescoreLimit,
+      min_size_mq: ACTIVE_RUN_CONFIG.minSize,
+    },
     query_payloads: queryPayloads,
     raw_source_count: collected.length,
     scraped_count: collected.length,
