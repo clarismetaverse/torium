@@ -49,10 +49,10 @@ function cleanItems(items) {
 // Keys whose string values are real image assets and must be preserved so the
 // public gallery/floor plans keep working (their host may be a source CDN).
 const PUBLIC_IMAGE_KEYS = new Set(['url', 'thumbnail', 'thumbnail_url', 'src', 'image']);
+const PUBLIC_EXTERNAL_LINK_KEYS = new Set(['source_url', 'sourceurl', 'idealista_url']);
 // Source/listing identifier keys that must never reach the public viewer.
 const PUBLIC_DENY_KEYS = new Set([
-  'address', 'source_url', 'sourceurl', 'idealista_url', 'source_platform_name',
-  'source_channel', 'source_key', 'canonical_source_key', 'source_fingerprint',
+  'source_platform_name', 'source_channel', 'source_key', 'canonical_source_key', 'source_fingerprint',
   'source_listing_id', 'externalreference', 'propertycode', 'agency', 'agencylogo',
   'contactinfo', 'micrositeshortname',
 ]);
@@ -66,6 +66,7 @@ function sanitizePublicDeep(node, key) {
     const k = String(key).toLowerCase();
     if (PUBLIC_DENY_KEYS.has(k)) return null;
     if (PUBLIC_IMAGE_KEYS.has(k)) return node;
+    if (PUBLIC_EXTERNAL_LINK_KEYS.has(k)) return safeIdealistaUrl(node);
     return node.toLowerCase().includes(PLATFORM_TOKEN) ? null : node;
   }
   if (Array.isArray(node)) {
@@ -85,6 +86,45 @@ function sanitizePublicDeep(node, key) {
     return out;
   }
   return node;
+}
+
+export function safeIdealistaUrl(value) {
+  try {
+    const url = new URL(String(value));
+    if (!['http:', 'https:'].includes(url.protocol)) return null;
+    const hostname = url.hostname.toLowerCase();
+    return hostname === 'idealista.it' || hostname.endsWith('.idealista.it') ? url.href : null;
+  } catch {
+    return null;
+  }
+}
+
+export function publicAddress(result) {
+  return cleanText(
+    result?.address ||
+    result?.listing?.address ||
+    result?.source_row?.address ||
+    result?.source_row?.raw_listing?.address ||
+    null
+  );
+}
+
+export function publicIdealistaUrl(result) {
+  const candidates = [
+    result?.idealista_url,
+    result?.source_url,
+    result?.url,
+    result?.listing?.idealista_url,
+    result?.listing?.source_url,
+    result?.listing?.url,
+    result?.source_row?.source_url,
+    result?.source_row?.raw_listing?.url,
+  ];
+  for (const candidate of candidates) {
+    const safeUrl = safeIdealistaUrl(candidate);
+    if (safeUrl) return safeUrl;
+  }
+  return null;
 }
 
 function publicTitle(result) {
@@ -167,17 +207,17 @@ function redactAnalysis(analysis) {
   };
 }
 
-function redactListing(listing, redactedTitle, photos, floorPlans, description) {
+function redactListing(listing, redactedTitle, photos, floorPlans, description, address, idealistaUrl) {
   if (!listing || typeof listing !== 'object') return listing;
   return {
     ...listing,
     title: redactedTitle,
-    address: null,
-    url: null,
+    address,
+    url: idealistaUrl,
     propertyCode: null,
-    source_url: null,
-    sourceUrl: null,
-    idealista_url: null,
+    source_url: idealistaUrl,
+    sourceUrl: idealistaUrl,
+    idealista_url: idealistaUrl,
     contactInfo: null,
     agency: null,
     description,
@@ -188,14 +228,14 @@ function redactListing(listing, redactedTitle, photos, floorPlans, description) 
   };
 }
 
-function redactSourceRow(sourceRow, redactedTitle, photos, floorPlans, description) {
+function redactSourceRow(sourceRow, redactedTitle, photos, floorPlans, description, address, idealistaUrl) {
   if (!sourceRow || typeof sourceRow !== 'object') return sourceRow;
   return {
     ...sourceRow,
     title: redactedTitle,
-    address: null,
+    address,
     source_channel: null,
-    source_url: null,
+    source_url: idealistaUrl,
     source_listing_id: null,
     canonical_source_key: null,
     source_fingerprint: null,
@@ -208,8 +248,8 @@ function redactSourceRow(sourceRow, redactedTitle, photos, floorPlans, descripti
     raw_listing: sourceRow.raw_listing ? {
       ...sourceRow.raw_listing,
       title: redactedTitle,
-      address: null,
-      url: null,
+      address,
+      url: idealistaUrl,
       propertyCode: null,
       externalReference: null,
       contactInfo: null,
@@ -228,14 +268,16 @@ function redactResult(result) {
   const photos = extractPhotos(result);
   const floorPlans = extractFloorPlans(result);
   const description = extractDescription(result);
+  const address = publicAddress(result);
+  const idealistaUrl = publicIdealistaUrl(result);
   return {
     ...result,
     underwriting: underwritingFromResult(result),
     title: redactedTitle,
-    address: null,
-    url: null,
-    idealista_url: null,
-    source_url: null,
+    address,
+    url: idealistaUrl,
+    idealista_url: idealistaUrl,
+    source_url: idealistaUrl,
     source_channel: null,
     source_listing_id: null,
     propertyCode: null,
@@ -246,8 +288,8 @@ function redactResult(result) {
     floor_plans: floorPlans,
     share_url: `/?property=${encodeURIComponent(result.listing_index ?? result.id ?? redactedTitle)}`,
     gpt_analysis: redactAnalysis(result.gpt_analysis),
-    listing: redactListing(result.listing, redactedTitle, photos, floorPlans, description),
-    source_row: redactSourceRow(result.source_row, redactedTitle, photos, floorPlans, description),
+    listing: redactListing(result.listing, redactedTitle, photos, floorPlans, description, address, idealistaUrl),
+    source_row: redactSourceRow(result.source_row, redactedTitle, photos, floorPlans, description, address, idealistaUrl),
   };
 }
 
