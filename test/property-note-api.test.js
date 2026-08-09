@@ -51,9 +51,19 @@ test('property note endpoint validates target before database access', async () 
 });
 
 test('property page exposes an unauthenticated Supabase-backed note editor', () => {
-  assert.match(propertyPage, /Note sull'operazione/);
+  assert.match(propertyPage, /Note sull[’']operazione/);
   assert.match(propertyPage, /id="propertyNote"/);
   assert.match(propertyPage, /fetch\('\/api\/property-note'/);
   assert.match(propertyPage, /method:'POST'/);
   assert.doesNotMatch(propertyPage, /propertyNote[\s\S]{0,800}Authorization/);
+});
+
+test('property detail shares the persistent Italian and English switch', () => {
+  assert.match(propertyPage, /localStorage\.getItem\('torium-language'\)/);
+  assert.match(propertyPage, /id="detailLanguage"/);
+  assert.match(propertyPage, /Passa all’italiano/);
+  assert.match(propertyPage, /Switch to English/);
+  const script = propertyPage.match(/<script>([\s\S]*?)<\/script>/)?.[1];
+  assert.ok(script);
+  assert.doesNotThrow(() => new Function(script));
 });

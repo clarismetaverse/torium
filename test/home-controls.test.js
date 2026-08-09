@@ -22,3 +22,25 @@ test('reload and valuation actions have distinct labels and behaviors', () => {
   assert.match(home, /<button id="valueRun" hidden>/);
   assert.match(home, /<button id="refresh" class="secondary" hidden>/);
 });
+
+test('home supports persistent Italian and English UI copy', () => {
+  assert.match(home, /id="languageSwitch"/);
+  assert.match(home, /localStorage\.getItem\('torium-language'\)/);
+  assert.match(home, /dashboard scouting e frazionabilità/);
+  assert.match(home, /scouting & fractionability dashboard/);
+});
+
+test('deal previews expose only evidence-backed fractioning and floor-plan tags', () => {
+  assert.match(home, /markedForFractioning=r=>/);
+  assert.match(home, /da\\s\+frazionare/);
+  assert.match(home, /hasFloorPlan=r=>/);
+  assert.match(home, /signal-split/);
+  assert.match(home, /signal-plan/);
+  assert.match(home, /Planimetria presente/);
+});
+
+test('home inline script is valid JavaScript', () => {
+  const script = home.match(/<script>([\s\S]*?)<\/script>/)?.[1];
+  assert.ok(script);
+  assert.doesNotThrow(() => new Function(script));
+});
