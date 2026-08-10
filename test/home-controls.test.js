@@ -37,6 +37,10 @@ test('deal previews expose only evidence-backed fractioning and floor-plan tags'
   assert.match(home, /hasFloorPlan=r=>/);
   assert.match(home, /signal-split/);
   assert.match(home, /signal-plan/);
+  assert.match(home, /needsRenovation=r=>/);
+  assert.match(home, /signal-renovation/);
+  assert.match(home, /Da ristrutturare/);
+  assert.match(home, /Needs renovation/);
   assert.match(home, /Planimetria presente/);
 });
 
