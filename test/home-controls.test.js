@@ -54,6 +54,23 @@ test('home applies the data quality gate before every ranking criterion', () => 
   assert.match(home, /qualityReasons/);
 });
 
+test('home keeps change-of-use deals visible but ranks them after residential deals', () => {
+  assert.match(home, /const changeOfUseRisk=r=>/);
+  assert.match(home, /const lowPriorityRisk=r=>Number\(changeOfUseRisk\(r\)\|\|constructionRisk\(r\)\)/);
+  assert.match(home, /lowPriorityRisk\(a\.r\)-lowPriorityRisk\(b\.r\)/);
+  assert.match(home, /signal-change-use/);
+  assert.match(home, /Cambio d’uso · priorità bassa/);
+  assert.match(home, /Change of use · low priority/);
+});
+
+test('home gives under-construction listings low priority without excluding them', () => {
+  assert.match(home, /const constructionRisk=r=>/);
+  assert.match(home, /in\\s\+\(\?:fase\\s\+di\\s\+\)\?costruzione\|nuova\\s\+costruzione\|cantiere/);
+  assert.match(home, /lowPriorityRisk\(a\.r\)-lowPriorityRisk\(b\.r\)/);
+  assert.match(home, /In costruzione · priorità bassa/);
+  assert.match(home, /Under construction · low priority/);
+});
+
 test('home shows transformation cost against all final units', () => {
   assert.match(home, /costPerFinalUnitEur/);
   assert.match(home, /costPerTrilocaleEur/);
