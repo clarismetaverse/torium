@@ -418,11 +418,13 @@ function sourceListingToResult(source, index) {
 
 async function readSupabaseOutput(id, { publicView = true } = {}) {
   const runId = id.replace(/^supabase:/, '');
-  const runs = await supabaseGet(`triage_runs?run_id=eq.${encodeURIComponent(runId)}&select=*`);
+  const [runs, properties] = await Promise.all([
+    supabaseGet(`triage_runs?run_id=eq.${encodeURIComponent(runId)}&select=*`),
+    supabaseGet(`triage_properties?run_id=eq.${encodeURIComponent(runId)}&select=*&order=rank.asc`),
+  ]);
   const run = runs?.[0];
   if (!run) throw new Error(`Supabase run not found: ${runId}`);
 
-  const properties = await supabaseGet(`triage_properties?run_id=eq.${encodeURIComponent(runId)}&select=*&order=rank.asc`);
   const sourceOrder = run.search_strategy === 'neutral_fractionability'
     ? 'door_score.desc.nullslast'
     : 'door_score.desc.nullslast,price_by_area.asc.nullslast';
@@ -476,12 +478,16 @@ export default async function handler(request, response) {
     const publicView = !(request.query.internal === 'true' || request.query.internal === '1');
 
     if (id.startsWith('combined:')) {
-      response.status(200).json(await readCombinedOutput(id, { publicView }));
+      const output = await readCombinedOutput(id, { publicView });
+      response.setHeader('Cache-Control', publicView ? 'public, s-maxage=300, stale-while-revalidate=86400' : 'private, no-store');
+      response.status(200).json(output);
       return;
     }
 
     if (id.startsWith('supabase:')) {
-      response.status(200).json(await readSupabaseOutput(id, { publicView }));
+      const output = await readSupabaseOutput(id, { publicView });
+      response.setHeader('Cache-Control', publicView ? 'public, s-maxage=300, stale-while-revalidate=86400' : 'private, no-store');
+      response.status(200).json(output);
       return;
     }
 

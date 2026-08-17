@@ -58,6 +58,12 @@ test('property page exposes an unauthenticated Supabase-backed note editor', () 
   assert.doesNotMatch(propertyPage, /propertyNote[\s\S]{0,800}Authorization/);
 });
 
+test('combined views map notes back to the original Supabase property', () => {
+  assert.match(propertyPage, /const originRun=arr\(r\?\.origin_run_ids\)\[0\],sourceIndex=Number\(r\?\.source_listing_index\)/);
+  assert.match(propertyPage, /outputId\.startsWith\('combined:'\)/);
+  assert.match(propertyPage, /runId:String\(originRun\),listingIndex:sourceIndex/);
+});
+
 test('property detail shares the persistent Italian and English switch', () => {
   assert.match(propertyPage, /localStorage\.getItem\('torium-language'\)/);
   assert.match(propertyPage, /id="detailLanguage"/);
