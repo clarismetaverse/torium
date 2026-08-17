@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import handler from '../api/run-triage.js';
+import handler, { resolveRequestedLimit } from '../api/run-triage.js';
 import { buildIdealistaQueries, resolveMassiveRunConfig } from '../pipelines/triage-multisource-massive.js';
 
 function responseRecorder() {
@@ -24,6 +24,13 @@ test('run endpoint requires same-origin', async () => {
   const crossOrigin = responseRecorder();
   await handler({ method: 'POST', headers: { origin: 'https://attacker.example', host: 'torium.example' }, body: {} }, crossOrigin);
   assert.equal(crossOrigin.statusCode, 403);
+});
+
+test('serious run limit defaults to 600 and is capped at 2000', () => {
+  assert.equal(resolveRequestedLimit(undefined), 600);
+  assert.equal(resolveRequestedLimit(2000), 2000);
+  assert.equal(resolveRequestedLimit(3000), 2000);
+  assert.equal(resolveRequestedLimit('invalid'), 600);
 });
 
 test('Idealista scout targets the requested Milan location ID', () => {

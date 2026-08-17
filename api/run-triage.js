@@ -4,6 +4,12 @@ export const maxDuration = 300;
 
 let activeRun = null;
 
+export function resolveRequestedLimit(value, fallback = 600, maximum = 2000) {
+  const numeric = Number(value ?? fallback);
+  if (!Number.isFinite(numeric)) return fallback;
+  return Math.max(1, Math.min(maximum, Math.floor(numeric)));
+}
+
 function isSameOrigin(request) {
   const origin = request.headers.origin;
   if (!origin) return true;
@@ -37,13 +43,15 @@ export default async function handler(request, response) {
     return response.status(400).json({ error: 'Profilo run non valido' });
   }
 
+  const requestedLimit = resolveRequestedLimit(request.body?.limit);
+
   const profileOptions = profile === 'milano_broad'
     ? {
         runMode: 'serious',
         requestedAreas: ['Milano'],
-        maxItemsPerQuery: 600,
-        maxTotalRawListings: 600,
-        topPrescoreLimit: 600,
+        maxItemsPerQuery: requestedLimit,
+        maxTotalRawListings: requestedLimit,
+        topPrescoreLimit: requestedLimit,
         minSize: 100,
         idealistaCondition: ['renew'],
       }
@@ -64,6 +72,7 @@ export default async function handler(request, response) {
       search_name: output.search_name,
       search_strategy: output.search_strategy,
       profile,
+      requested_limit: requestedLimit,
       requested_areas: output.requested_areas,
       raw_source_count: output.raw_source_count,
       eligible_count: output.eligible_count,
