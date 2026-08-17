@@ -7,6 +7,7 @@ import {
 } from '../lib/financial-underwriting.js';
 import { combineRunOutputs, rescoreCombinedResults } from '../lib/combine-run-outputs.js';
 import { runDoorEngine } from '../lib/door-engine.js';
+import { evaluateDataQuality } from '../lib/data-quality-gate.js';
 
 const rootDir = process.cwd();
 const allowedPrefixes = ['triage-outputs/', 'outputs/triage/'];
@@ -273,6 +274,7 @@ function redactResult(result) {
   return {
     ...result,
     underwriting: underwritingFromResult(result),
+    data_quality: evaluateDataQuality(result),
     title: redactedTitle,
     address,
     url: idealistaUrl,
@@ -304,7 +306,15 @@ function redactOutput(output) {
     results: Array.isArray(output.results) ? output.results.map(redactResult) : output.results,
   };
   const publicResults = Array.isArray(redacted.results) ? redacted.results : [];
-  redacted.roi_statistics = summarizeRoi(publicResults.map((result) => result.underwriting));
+  const qualityPassedResults = publicResults.filter((result) => result.data_quality?.valid !== false);
+  redacted.data_quality_statistics = {
+    version: 'data_quality_gate_v1',
+    checked_count: publicResults.length,
+    passed_count: qualityPassedResults.length,
+    review_count: publicResults.length - qualityPassedResults.length,
+  };
+  // Failed records remain available for audit, but cannot distort run-level ROI.
+  redacted.roi_statistics = summarizeRoi(qualityPassedResults.map((result) => result.underwriting));
   // Final safety net across the entire public payload (covers Supabase-shaped
   // rows whose identifier fields differ from the file-based schema).
   return sanitizePublicDeep(redacted, 'root');
@@ -313,6 +323,17 @@ function redactOutput(output) {
 function sourceListingToResult(source, index) {
   const listing = source.raw_listing && typeof source.raw_listing === 'object' ? source.raw_listing : {};
   const realArea = source.district || source.neighborhood || source.area_label || listing.district || listing.neighborhood || listing.area_label || null;
+  const estimatedFinalUnits = source.estimated_final_units == null ? null : Number(source.estimated_final_units);
+  const transformationCost = Number.isFinite(estimatedFinalUnits)
+    ? estimatedFinalUnits * DEFAULT_UNDERWRITING_ASSUMPTIONS.costPerFinalUnitEur
+    : null;
+  const purchasePrice = source.price_eur == null ? null : Number(source.price_eur);
+  const purchaseCosts = Number.isFinite(purchasePrice)
+    ? Math.round(purchasePrice * DEFAULT_UNDERWRITING_ASSUMPTIONS.purchaseCostRate)
+    : null;
+  const estimatedProjectCost = !Number.isFinite(purchasePrice) || purchaseCosts === null || transformationCost === null
+    ? null
+    : purchasePrice + purchaseCosts + transformationCost;
   const result = {
     listing_index: index,
     title: source.title,
@@ -324,13 +345,14 @@ function sourceListingToResult(source, index) {
     source_row: source,
     door_engine: {
       doorScore: source.door_score,
-      estimatedFinalUnits: source.estimated_final_units,
+      estimatedFinalUnits,
       newUnitsCreated: source.new_units_created,
-      costPerNewUnit: DEFAULT_UNDERWRITING_ASSUMPTIONS.costPerNewUnitEur,
-      transformationCost: source.new_units_created == null ? null : Number(source.new_units_created) * DEFAULT_UNDERWRITING_ASSUMPTIONS.costPerNewUnitEur,
+      costPerFinalUnit: DEFAULT_UNDERWRITING_ASSUMPTIONS.costPerFinalUnitEur,
+      costPerTrilocale: DEFAULT_UNDERWRITING_ASSUMPTIONS.costPerTrilocaleEur,
+      transformationCost,
       purchaseCostRate: DEFAULT_UNDERWRITING_ASSUMPTIONS.purchaseCostRate,
-      purchaseCosts: source.price_eur == null ? null : Math.round(Number(source.price_eur) * DEFAULT_UNDERWRITING_ASSUMPTIONS.purchaseCostRate),
-      estimatedProjectCost: source.estimated_project_cost_eur,
+      purchaseCosts,
+      estimatedProjectCost,
     },
     spread: {},
     gpt_analysis: {

@@ -1,4 +1,5 @@
 import { jsonResponse, latestRunId, numberParam, sendError, supabaseGet } from './_supabase-debug.js';
+import { evaluateDataQuality } from '../lib/data-quality-gate.js';
 
 function appendFilter(parts, name, operator, value) {
   if (value !== undefined && value !== null && value !== '') parts.push(`${name}=${operator}.${encodeURIComponent(value)}`);
@@ -66,6 +67,7 @@ function redactRaw(raw, title, photos, floorPlans, description) {
   if (!raw || typeof raw !== 'object') return raw;
   return {
     ...raw,
+    data_quality: evaluateDataQuality(raw),
     title,
     address: null,
     url: null,
@@ -129,6 +131,7 @@ function redactRow(row) {
   const description = extractDescription(row);
   return {
     ...row,
+    data_quality: evaluateDataQuality(row.raw_result || row),
     title,
     address: null,
     source_channel: null,

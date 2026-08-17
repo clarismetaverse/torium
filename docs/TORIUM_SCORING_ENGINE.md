@@ -180,11 +180,13 @@ Disappearance is not proof of sale, so the score is an estimate and must be cali
 ## Financial underwriting shown in the frontend
 
 The physical Door Score and financial underwriting remain separate. Both legacy
-and neutral runs use the same versioned `max_doors_20k_v2_sales_cost_3pct` cost model:
+and neutral runs use the same versioned `max_doors_unit_type_costs_v4_sales_cost_3pct` cost model:
 
 ```text
 purchase costs = purchase price × 12%
-transformation cost = new units created × EUR 20,000
+transformation cost = sum of the cost assigned to every final unit
+monolocale or bilocale = EUR 25,000 per final unit
+trilocale = EUR 30,000 per final unit
 project cost = purchase price + purchase costs + transformation cost
 selling cost = exit value × 3%
 total scenario cost = project cost + selling cost
@@ -224,7 +226,8 @@ marked low-confidence.
 
 ## Provisional output-unit planner V2
 
-The current `max-doors-20k` profile uses the versioned
+The current `max-doors-25k-final-units` profile (kept at the legacy-compatible
+`max-doors-20k.json` path) uses the versioned
 `max_doors_residual_studio_v2` planning rule. It converts gross listing area to
 estimated saleable area using the same 92% ratio used by deterministic
 valuation, then applies:

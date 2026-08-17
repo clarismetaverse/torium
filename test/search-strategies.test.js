@@ -7,7 +7,8 @@ const profile = {
   id: 'test',
   target_unit_types: { bilocale: { target_mq: 45 } },
   default_existing_units: 1,
-  cost_per_new_unit_eur: 20000,
+  cost_per_final_unit_eur: 25000,
+  cost_per_trilocale_eur: 30000,
   purchase_cost_rate: 0.12,
   minimum_surface_mq: 90,
 };
@@ -34,6 +35,9 @@ test('legacy keeps price signals while neutral removes every economic reason', (
   assert.ok(legacyResult.doorScoreReasons.includes('price_reduction_signal'));
   assert.ok(!neutralResult.doorScoreReasons.some((reason) => reason.includes('price_m2') || reason === 'price_reduction_signal'));
   assert.ok(legacyResult.doorScore > neutralResult.doorScore);
+  assert.equal(neutralResult.estimatedFinalUnits, 3);
+  assert.equal(neutralResult.costPerFinalUnit, 25000);
+  assert.equal(neutralResult.transformationCost, 75000);
 });
 
 test('neutral does not use price/m2 to break equal physical scores', () => {
