@@ -1,11 +1,20 @@
 import { readFile } from 'node:fs/promises';
 import { resolve, relative, sep } from 'node:path';
+import {
+  DEFAULT_UNDERWRITING_ASSUMPTIONS,
+  summarizeRoi,
+  underwritingFromResult,
+} from '../lib/financial-underwriting.js';
+import { combineRunOutputs, rescoreCombinedResults } from '../lib/combine-run-outputs.js';
+import { runDoorEngine } from '../lib/door-engine.js';
+import { evaluateDataQuality } from '../lib/data-quality-gate.js';
 
 const rootDir = process.cwd();
 const allowedPrefixes = ['triage-outputs/', 'outputs/triage/'];
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const SOURCE_LISTINGS_LIMIT = Number(process.env.TORIUM_VIEWER_SOURCE_LIMIT || 1000);
+const investorProfilePromise = readFile(new URL('../config/investor-profiles/max-doors-20k.json', import.meta.url), 'utf8').then(JSON.parse);
 
 function normalizeId(value) {
   return String(value || '').replaceAll('\\', '/').replace(/^\/+/, '');
@@ -41,10 +50,10 @@ function cleanItems(items) {
 // Keys whose string values are real image assets and must be preserved so the
 // public gallery/floor plans keep working (their host may be a source CDN).
 const PUBLIC_IMAGE_KEYS = new Set(['url', 'thumbnail', 'thumbnail_url', 'src', 'image']);
+const PUBLIC_EXTERNAL_LINK_KEYS = new Set(['source_url', 'sourceurl', 'idealista_url']);
 // Source/listing identifier keys that must never reach the public viewer.
 const PUBLIC_DENY_KEYS = new Set([
-  'address', 'source_url', 'sourceurl', 'idealista_url', 'source_platform_name',
-  'source_channel', 'source_key', 'canonical_source_key', 'source_fingerprint',
+  'source_platform_name', 'source_channel', 'source_key', 'canonical_source_key', 'source_fingerprint',
   'source_listing_id', 'externalreference', 'propertycode', 'agency', 'agencylogo',
   'contactinfo', 'micrositeshortname',
 ]);
@@ -58,6 +67,7 @@ function sanitizePublicDeep(node, key) {
     const k = String(key).toLowerCase();
     if (PUBLIC_DENY_KEYS.has(k)) return null;
     if (PUBLIC_IMAGE_KEYS.has(k)) return node;
+    if (PUBLIC_EXTERNAL_LINK_KEYS.has(k)) return safeIdealistaUrl(node);
     return node.toLowerCase().includes(PLATFORM_TOKEN) ? null : node;
   }
   if (Array.isArray(node)) {
@@ -77,6 +87,45 @@ function sanitizePublicDeep(node, key) {
     return out;
   }
   return node;
+}
+
+export function safeIdealistaUrl(value) {
+  try {
+    const url = new URL(String(value));
+    if (!['http:', 'https:'].includes(url.protocol)) return null;
+    const hostname = url.hostname.toLowerCase();
+    return hostname === 'idealista.it' || hostname.endsWith('.idealista.it') ? url.href : null;
+  } catch {
+    return null;
+  }
+}
+
+export function publicAddress(result) {
+  return cleanText(
+    result?.address ||
+    result?.listing?.address ||
+    result?.source_row?.address ||
+    result?.source_row?.raw_listing?.address ||
+    null
+  );
+}
+
+export function publicIdealistaUrl(result) {
+  const candidates = [
+    result?.idealista_url,
+    result?.source_url,
+    result?.url,
+    result?.listing?.idealista_url,
+    result?.listing?.source_url,
+    result?.listing?.url,
+    result?.source_row?.source_url,
+    result?.source_row?.raw_listing?.url,
+  ];
+  for (const candidate of candidates) {
+    const safeUrl = safeIdealistaUrl(candidate);
+    if (safeUrl) return safeUrl;
+  }
+  return null;
 }
 
 function publicTitle(result) {
@@ -159,17 +208,17 @@ function redactAnalysis(analysis) {
   };
 }
 
-function redactListing(listing, redactedTitle, photos, floorPlans, description) {
+function redactListing(listing, redactedTitle, photos, floorPlans, description, address, idealistaUrl) {
   if (!listing || typeof listing !== 'object') return listing;
   return {
     ...listing,
     title: redactedTitle,
-    address: null,
-    url: null,
+    address,
+    url: idealistaUrl,
     propertyCode: null,
-    source_url: null,
-    sourceUrl: null,
-    idealista_url: null,
+    source_url: idealistaUrl,
+    sourceUrl: idealistaUrl,
+    idealista_url: idealistaUrl,
     contactInfo: null,
     agency: null,
     description,
@@ -180,14 +229,14 @@ function redactListing(listing, redactedTitle, photos, floorPlans, description) 
   };
 }
 
-function redactSourceRow(sourceRow, redactedTitle, photos, floorPlans, description) {
+function redactSourceRow(sourceRow, redactedTitle, photos, floorPlans, description, address, idealistaUrl) {
   if (!sourceRow || typeof sourceRow !== 'object') return sourceRow;
   return {
     ...sourceRow,
     title: redactedTitle,
-    address: null,
+    address,
     source_channel: null,
-    source_url: null,
+    source_url: idealistaUrl,
     source_listing_id: null,
     canonical_source_key: null,
     source_fingerprint: null,
@@ -200,8 +249,8 @@ function redactSourceRow(sourceRow, redactedTitle, photos, floorPlans, descripti
     raw_listing: sourceRow.raw_listing ? {
       ...sourceRow.raw_listing,
       title: redactedTitle,
-      address: null,
-      url: null,
+      address,
+      url: idealistaUrl,
       propertyCode: null,
       externalReference: null,
       contactInfo: null,
@@ -220,13 +269,17 @@ function redactResult(result) {
   const photos = extractPhotos(result);
   const floorPlans = extractFloorPlans(result);
   const description = extractDescription(result);
+  const address = publicAddress(result);
+  const idealistaUrl = publicIdealistaUrl(result);
   return {
     ...result,
+    underwriting: underwritingFromResult(result),
+    data_quality: evaluateDataQuality(result),
     title: redactedTitle,
-    address: null,
-    url: null,
-    idealista_url: null,
-    source_url: null,
+    address,
+    url: idealistaUrl,
+    idealista_url: idealistaUrl,
+    source_url: idealistaUrl,
     source_channel: null,
     source_listing_id: null,
     propertyCode: null,
@@ -237,8 +290,8 @@ function redactResult(result) {
     floor_plans: floorPlans,
     share_url: `/?property=${encodeURIComponent(result.listing_index ?? result.id ?? redactedTitle)}`,
     gpt_analysis: redactAnalysis(result.gpt_analysis),
-    listing: redactListing(result.listing, redactedTitle, photos, floorPlans, description),
-    source_row: redactSourceRow(result.source_row, redactedTitle, photos, floorPlans, description),
+    listing: redactListing(result.listing, redactedTitle, photos, floorPlans, description, address, idealistaUrl),
+    source_row: redactSourceRow(result.source_row, redactedTitle, photos, floorPlans, description, address, idealistaUrl),
   };
 }
 
@@ -252,6 +305,16 @@ function redactOutput(output) {
     result_links: Array.isArray(output.result_links) ? output.result_links.map(redactResult) : output.result_links,
     results: Array.isArray(output.results) ? output.results.map(redactResult) : output.results,
   };
+  const publicResults = Array.isArray(redacted.results) ? redacted.results : [];
+  const qualityPassedResults = publicResults.filter((result) => result.data_quality?.valid !== false);
+  redacted.data_quality_statistics = {
+    version: 'data_quality_gate_v1',
+    checked_count: publicResults.length,
+    passed_count: qualityPassedResults.length,
+    review_count: publicResults.length - qualityPassedResults.length,
+  };
+  // Failed records remain available for audit, but cannot distort run-level ROI.
+  redacted.roi_statistics = summarizeRoi(qualityPassedResults.map((result) => result.underwriting));
   // Final safety net across the entire public payload (covers Supabase-shaped
   // rows whose identifier fields differ from the file-based schema).
   return sanitizePublicDeep(redacted, 'root');
@@ -260,6 +323,17 @@ function redactOutput(output) {
 function sourceListingToResult(source, index) {
   const listing = source.raw_listing && typeof source.raw_listing === 'object' ? source.raw_listing : {};
   const realArea = source.district || source.neighborhood || source.area_label || listing.district || listing.neighborhood || listing.area_label || null;
+  const estimatedFinalUnits = source.estimated_final_units == null ? null : Number(source.estimated_final_units);
+  const transformationCost = Number.isFinite(estimatedFinalUnits)
+    ? estimatedFinalUnits * DEFAULT_UNDERWRITING_ASSUMPTIONS.costPerFinalUnitEur
+    : null;
+  const purchasePrice = source.price_eur == null ? null : Number(source.price_eur);
+  const purchaseCosts = Number.isFinite(purchasePrice)
+    ? Math.round(purchasePrice * DEFAULT_UNDERWRITING_ASSUMPTIONS.purchaseCostRate)
+    : null;
+  const estimatedProjectCost = !Number.isFinite(purchasePrice) || purchaseCosts === null || transformationCost === null
+    ? null
+    : purchasePrice + purchaseCosts + transformationCost;
   const result = {
     listing_index: index,
     title: source.title,
@@ -271,9 +345,14 @@ function sourceListingToResult(source, index) {
     source_row: source,
     door_engine: {
       doorScore: source.door_score,
-      estimatedFinalUnits: source.estimated_final_units,
+      estimatedFinalUnits,
       newUnitsCreated: source.new_units_created,
-      estimatedProjectCost: source.estimated_project_cost_eur,
+      costPerFinalUnit: DEFAULT_UNDERWRITING_ASSUMPTIONS.costPerFinalUnitEur,
+      costPerTrilocale: DEFAULT_UNDERWRITING_ASSUMPTIONS.costPerTrilocaleEur,
+      transformationCost,
+      purchaseCostRate: DEFAULT_UNDERWRITING_ASSUMPTIONS.purchaseCostRate,
+      purchaseCosts,
+      estimatedProjectCost,
     },
     spread: {},
     gpt_analysis: {
@@ -373,10 +452,33 @@ async function readSupabaseOutput(id, { publicView = true } = {}) {
   return publicView ? redactOutput(output) : output;
 }
 
+async function readCombinedOutput(id, { publicView = true } = {}) {
+  const runIds = id.replace(/^combined:/, '').split('+').filter(Boolean);
+  if (runIds.length !== 2 || runIds.some((runId) => !/^[a-zA-Z0-9._-]+$/.test(runId))) {
+    throw new Error('Invalid combined output id');
+  }
+  const components = await Promise.all(runIds.map(async (runId) => ({
+    runId,
+    output: await readSupabaseOutput(`supabase:${runId}`, { publicView: false }),
+  })));
+  const investorProfile = await investorProfilePromise;
+  const output = rescoreCombinedResults(combineRunOutputs(components), (result) => runDoorEngine(
+    result.listing || result,
+    investorProfile,
+    { includeEconomicSignals: false, scoringMode: 'physical_fractionability_only_v1' },
+  ));
+  return publicView ? redactOutput(output) : output;
+}
+
 export default async function handler(request, response) {
   try {
     const id = normalizeId(request.query.file);
     const publicView = !(request.query.internal === 'true' || request.query.internal === '1');
+
+    if (id.startsWith('combined:')) {
+      response.status(200).json(await readCombinedOutput(id, { publicView }));
+      return;
+    }
 
     if (id.startsWith('supabase:')) {
       response.status(200).json(await readSupabaseOutput(id, { publicView }));

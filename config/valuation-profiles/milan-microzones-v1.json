@@ -1,0 +1,192 @@
+{
+  "version": "milan_city_exit_v3_provisional_2026_07",
+  "effective_month": "2026-07",
+  "method": "provisional_asking_price_by_idealista_macrozone",
+  "assumptions": {
+    "saleable_area_ratio": 0.92,
+    "low_multiplier": 0.90,
+    "base_multiplier": 1.00,
+    "high_multiplier": 1.10,
+    "round_to_eur": 5000,
+    "benchmark_interpretation": "Current asking-price benchmark; no future appreciation is added to the base case."
+  },
+  "unit_size_bands": [
+    { "max_mq": 39.9, "unit_type": "monolocale", "multiplier": 1.06 },
+    { "max_mq": 45, "unit_type": "bilocale", "multiplier": 1.06 },
+    { "max_mq": 55, "unit_type": "bilocale", "multiplier": 1.04 },
+    { "max_mq": 70, "unit_type": "trilocale", "multiplier": 1.02 },
+    { "max_mq": 9999, "unit_type": "unknown", "multiplier": 1.00 }
+  ],
+  "microzones": [
+    {
+      "id": "corso-san-gottardo",
+      "name": "Corso San Gottardo / Navigli-Bocconi",
+      "aliases": ["corso-san-gottardo", "corso san gottardo", "gottardo"],
+      "base_exit_eur_mq": 6833,
+      "market_sentiment": { "label": "positive", "annual_change_pct": 2.4, "note": "Specific Gottardo benchmark retained; broader Navigli-Bocconi trend is positive." },
+      "benchmarks": [
+        { "source": "Immobiliare.it", "period": "2026-06", "area": "Corso San Gottardo", "asking_eur_mq": 6665, "url": "https://www.immobiliare.it/mercato-immobiliare/lombardia/milano/zona-navigli/" },
+        { "source": "idealista/data", "period": "2026-06", "area": "Navigli-Bocconi", "asking_eur_mq": 7000, "url": "https://www.idealista.it/sala-stampa/report-prezzo-immobile/vendita/lombardia/milano-provincia/milano/navigli-bocconi/" }
+      ]
+    },
+    {
+      "id": "abbiategrasso-chiesa-rossa",
+      "name": "Abbiategrasso - Chiesa Rossa",
+      "aliases": ["abbiategrasso - chiesa rossa", "abbiategrasso-chiesa rossa", "chiesa rossa"],
+      "base_exit_eur_mq": 4320,
+      "market_sentiment": { "label": "strong_positive", "monthly_change_pct": 1.3, "annual_change_pct": 7.2 },
+      "benchmarks": [{ "source": "idealista/data", "period": "2026-07", "asking_eur_mq": 4320, "url": "https://www.idealista.it/sala-stampa/report-prezzo-immobile/vendita/lombardia/milano-provincia/milano/" }]
+    },
+    {
+      "id": "baggio",
+      "name": "Baggio",
+      "aliases": ["baggio"],
+      "base_exit_eur_mq": 3086,
+      "market_sentiment": { "label": "strong_positive", "monthly_change_pct": 0.0, "annual_change_pct": 7.6 },
+      "benchmarks": [{ "source": "idealista/data", "period": "2026-07", "asking_eur_mq": 3086, "url": "https://www.idealista.it/sala-stampa/report-prezzo-immobile/vendita/lombardia/milano-provincia/milano/" }]
+    },
+    {
+      "id": "centro-storico",
+      "name": "Centro Storico",
+      "aliases": ["centro storico", "centro-storico"],
+      "base_exit_eur_mq": 12334,
+      "market_sentiment": { "label": "soft", "monthly_change_pct": -2.1, "annual_change_pct": -3.6 },
+      "benchmarks": [{ "source": "idealista/data", "period": "2026-07", "asking_eur_mq": 12334, "url": "https://www.idealista.it/sala-stampa/report-prezzo-immobile/vendita/lombardia/milano-provincia/milano/" }]
+    },
+    {
+      "id": "certosa",
+      "name": "Certosa",
+      "aliases": ["certosa"],
+      "base_exit_eur_mq": 4032,
+      "market_sentiment": { "label": "positive_watch", "monthly_change_pct": -2.1, "annual_change_pct": 1.1, "note": "Current price softened, while the 2026 outlook highlights Viale Certosa-Cascina Merlata." },
+      "benchmarks": [{ "source": "idealista/data", "period": "2026-07", "asking_eur_mq": 4032, "url": "https://www.idealista.it/sala-stampa/report-prezzo-immobile/vendita/lombardia/milano-provincia/milano/" }]
+    },
+    {
+      "id": "citta-studi-lambrate",
+      "name": "Città Studi - Lambrate",
+      "aliases": ["citta studi - lambrate", "città studi - lambrate", "citta studi-lambrate", "città studi-lambrate"],
+      "base_exit_eur_mq": 5478,
+      "market_sentiment": { "label": "positive", "monthly_change_pct": -0.8, "annual_change_pct": 1.9 },
+      "benchmarks": [{ "source": "idealista/data", "period": "2026-07", "asking_eur_mq": 5478, "url": "https://www.idealista.it/sala-stampa/report-prezzo-immobile/vendita/lombardia/milano-provincia/milano/" }]
+    },
+    {
+      "id": "comasina-bicocca",
+      "name": "Comasina - Bicocca",
+      "aliases": ["comasina - bicocca", "comasina-bicocca", "bicocca"],
+      "base_exit_eur_mq": 4172,
+      "market_sentiment": { "label": "stable_positive_outlook", "monthly_change_pct": -0.4, "annual_change_pct": -0.1, "note": "Current market is flat; the 2026 outlook is stronger for Bicocca-Niguarda." },
+      "benchmarks": [{ "source": "idealista/data", "period": "2026-07", "asking_eur_mq": 4172, "url": "https://www.idealista.it/sala-stampa/report-prezzo-immobile/vendita/lombardia/milano-provincia/milano/" }]
+    },
+    {
+      "id": "corvetto-rogoredo",
+      "name": "Corvetto - Rogoredo",
+      "aliases": ["corvetto - rogoredo", "corvetto-rogoredo", "corvetto", "rogoredo"],
+      "base_exit_eur_mq": 4016,
+      "market_sentiment": { "label": "stable", "monthly_change_pct": -2.0, "annual_change_pct": 0.1 },
+      "benchmarks": [{ "source": "idealista/data", "period": "2026-07", "asking_eur_mq": 4016, "url": "https://www.idealista.it/sala-stampa/report-prezzo-immobile/vendita/lombardia/milano-provincia/milano/" }]
+    },
+    {
+      "id": "famagosta-naviglio-grande",
+      "name": "Famagosta - Naviglio Grande",
+      "aliases": ["famagosta - naviglio grande", "famagosta-naviglio grande", "famagosta", "naviglio grande"],
+      "base_exit_eur_mq": 4368,
+      "market_sentiment": { "label": "positive", "monthly_change_pct": 0.1, "annual_change_pct": 1.9 },
+      "benchmarks": [{ "source": "idealista/data", "period": "2026-07", "asking_eur_mq": 4368, "url": "https://www.idealista.it/sala-stampa/report-prezzo-immobile/vendita/lombardia/milano-provincia/milano/" }]
+    },
+    {
+      "id": "fiera-de-angeli",
+      "name": "Fiera - De Angeli",
+      "aliases": ["fiera - de angeli", "fiera-de angeli", "de angeli"],
+      "base_exit_eur_mq": 7309,
+      "market_sentiment": { "label": "stable", "monthly_change_pct": -1.7, "annual_change_pct": 0.7 },
+      "benchmarks": [{ "source": "idealista/data", "period": "2026-07", "asking_eur_mq": 7309, "url": "https://www.idealista.it/sala-stampa/report-prezzo-immobile/vendita/lombardia/milano-provincia/milano/" }]
+    },
+    {
+      "id": "forlanini",
+      "name": "Forlanini",
+      "aliases": ["forlanini"],
+      "base_exit_eur_mq": 3602,
+      "market_sentiment": { "label": "strong_positive", "monthly_change_pct": 1.0, "annual_change_pct": 7.1 },
+      "benchmarks": [{ "source": "idealista/data", "period": "2026-07", "asking_eur_mq": 3602, "url": "https://www.idealista.it/sala-stampa/report-prezzo-immobile/vendita/lombardia/milano-provincia/milano/" }]
+    },
+    {
+      "id": "garibaldi-porta-venezia",
+      "name": "Garibaldi - Porta Venezia",
+      "aliases": ["garibaldi - porta venezia", "garibaldi-porta venezia", "porta venezia"],
+      "base_exit_eur_mq": 7840,
+      "market_sentiment": { "label": "positive", "monthly_change_pct": -1.0, "annual_change_pct": 2.8 },
+      "benchmarks": [{ "source": "idealista/data", "period": "2026-07", "asking_eur_mq": 7840, "url": "https://www.idealista.it/sala-stampa/report-prezzo-immobile/vendita/lombardia/milano-provincia/milano/" }]
+    },
+    {
+      "id": "greco-turro",
+      "name": "Greco - Turro",
+      "aliases": ["greco - turro", "greco-turro", "greco", "turro"],
+      "base_exit_eur_mq": 4562,
+      "market_sentiment": { "label": "stable", "monthly_change_pct": -0.2, "annual_change_pct": 0.0 },
+      "benchmarks": [{ "source": "idealista/data", "period": "2026-07", "asking_eur_mq": 4562, "url": "https://www.idealista.it/sala-stampa/report-prezzo-immobile/vendita/lombardia/milano-provincia/milano/" }]
+    },
+    {
+      "id": "lorenteggio-bande-nere",
+      "name": "Lorenteggio - Bande Nere",
+      "aliases": ["lorenteggio - bande nere", "lorenteggio-bande nere", "lorenteggio", "bande nere"],
+      "base_exit_eur_mq": 4656,
+      "market_sentiment": { "label": "positive", "monthly_change_pct": 0.1, "annual_change_pct": 1.7 },
+      "benchmarks": [{ "source": "idealista/data", "period": "2026-07", "asking_eur_mq": 4656, "url": "https://www.idealista.it/sala-stampa/report-prezzo-immobile/vendita/lombardia/milano-provincia/milano/" }]
+    },
+    {
+      "id": "navigli-bocconi",
+      "name": "Navigli - Bocconi",
+      "aliases": ["navigli - bocconi", "navigli-bocconi", "navigli", "bocconi"],
+      "base_exit_eur_mq": 7077,
+      "market_sentiment": { "label": "positive", "monthly_change_pct": 0.4, "annual_change_pct": 2.4 },
+      "benchmarks": [{ "source": "idealista/data", "period": "2026-07", "asking_eur_mq": 7077, "url": "https://www.idealista.it/sala-stampa/report-prezzo-immobile/vendita/lombardia/milano-provincia/milano/" }]
+    },
+    {
+      "id": "porta-vittoria",
+      "name": "Porta Vittoria",
+      "aliases": ["porta vittoria", "porta-vittoria"],
+      "base_exit_eur_mq": 6296,
+      "market_sentiment": { "label": "positive", "monthly_change_pct": -0.9, "annual_change_pct": 3.0 },
+      "benchmarks": [{ "source": "idealista/data", "period": "2026-07", "asking_eur_mq": 6296, "url": "https://www.idealista.it/sala-stampa/report-prezzo-immobile/vendita/lombardia/milano-provincia/milano/" }]
+    },
+    {
+      "id": "quarto-oggiaro-vialba",
+      "name": "Quarto Oggiaro - Vialba",
+      "aliases": ["quarto oggiaro - vialba", "quarto oggiaro-vialba", "quarto oggiaro", "vialba"],
+      "base_exit_eur_mq": 3156,
+      "market_sentiment": { "label": "positive", "monthly_change_pct": -0.6, "annual_change_pct": 3.1 },
+      "benchmarks": [{ "source": "idealista/data", "period": "2026-07", "asking_eur_mq": 3156, "url": "https://www.idealista.it/sala-stampa/report-prezzo-immobile/vendita/lombardia/milano-provincia/milano/" }]
+    },
+    {
+      "id": "san-siro-trenno",
+      "name": "San Siro - Trenno",
+      "aliases": ["san siro - trenno", "san siro-trenno", "san siro", "trenno"],
+      "base_exit_eur_mq": 4280,
+      "market_sentiment": { "label": "stable", "monthly_change_pct": -0.9, "annual_change_pct": 0.1 },
+      "benchmarks": [{ "source": "idealista/data", "period": "2026-07", "asking_eur_mq": 4280, "url": "https://www.idealista.it/sala-stampa/report-prezzo-immobile/vendita/lombardia/milano-provincia/milano/" }]
+    },
+    {
+      "id": "vigentino-ripamonti",
+      "name": "Vigentino - Ripamonti",
+      "aliases": ["vigentino - ripamonti", "vigentino-ripamonti", "vigentino", "ripamonti"],
+      "base_exit_eur_mq": 4530,
+      "market_sentiment": { "label": "soft", "monthly_change_pct": -1.1, "annual_change_pct": -2.2 },
+      "benchmarks": [{ "source": "idealista/data", "period": "2026-07", "asking_eur_mq": 4530, "url": "https://www.idealista.it/sala-stampa/report-prezzo-immobile/vendita/lombardia/milano-provincia/milano/" }]
+    },
+    {
+      "id": "milano-citywide-fallback",
+      "name": "Milano citywide fallback",
+      "aliases": ["milano"],
+      "base_exit_eur_mq": 5681,
+      "provisional_fallback": true,
+      "market_sentiment": { "label": "stable", "monthly_change_pct": -1.3, "annual_change_pct": 0.7, "note": "Used only when no specific Milan macro-zone matches." },
+      "benchmarks": [{ "source": "idealista/data", "period": "2026-07", "asking_eur_mq": 5681, "url": "https://www.idealista.it/sala-stampa/report-prezzo-immobile/vendita/lombardia/milano-provincia/milano/" }]
+    }
+  ],
+  "notes": [
+    "All citywide values except the specific Gottardo profile are provisional July 2026 asking-price benchmarks from idealista/data.",
+    "The base case does not add forecast appreciation; market sentiment is recorded for audit and future calibration.",
+    "Low/base/high remain scenario multipliers around asking-price benchmarks, not confirmed transaction values.",
+    "Small-unit multipliers, saleable-area ratio and transformation costs remain expert-authored assumptions requiring calibration."
+  ]
+}

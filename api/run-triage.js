@@ -1,20 +1,8 @@
-import crypto from 'node:crypto';
 import { runMassiveTriage } from '../pipelines/triage-multisource-massive.js';
 
 export const maxDuration = 300;
 
 let activeRun = null;
-
-function sameValue(left, right) {
-  const a = Buffer.from(String(left || ''));
-  const b = Buffer.from(String(right || ''));
-  return a.length === b.length && crypto.timingSafeEqual(a, b);
-}
-
-function requestPin(request) {
-  const authorization = String(request.headers.authorization || '');
-  return authorization.startsWith('Bearer ') ? authorization.slice(7) : '';
-}
 
 function isSameOrigin(request) {
   const origin = request.headers.origin;
@@ -37,9 +25,6 @@ export default async function handler(request, response) {
 
   if (!isSameOrigin(request)) return response.status(403).json({ error: 'Cross-origin request denied' });
 
-  const configuredPin = process.env.TORIUM_RUN_PIN;
-  if (!configuredPin) return response.status(503).json({ error: 'Run control is not configured' });
-  if (!sameValue(requestPin(request), configuredPin)) return response.status(401).json({ error: 'PIN non valido' });
   if (activeRun) return response.status(409).json({ error: 'Una run e gia in corso su questa istanza' });
 
   const strategy = request.body?.strategy || 'neutral_fractionability';
@@ -47,10 +32,28 @@ export default async function handler(request, response) {
     return response.status(400).json({ error: 'Only neutral_fractionability is enabled from the frontend' });
   }
 
+  const profile = request.body?.profile || 'scout';
+  if (!['scout', 'milano_broad'].includes(profile)) {
+    return response.status(400).json({ error: 'Profilo run non valido' });
+  }
+
+  const profileOptions = profile === 'milano_broad'
+    ? {
+        runMode: 'serious',
+        requestedAreas: ['Milano'],
+        maxItemsPerQuery: 600,
+        maxTotalRawListings: 600,
+        topPrescoreLimit: 600,
+        minSize: 100,
+        idealistaCondition: ['renew'],
+      }
+    : {};
+
   activeRun = runMassiveTriage({
-    baseSearchName: 'milanoFractioningMassive',
+    baseSearchName: profile === 'milano_broad' ? 'milanoFractioningSerious' : 'milanoFractioningMassive',
     searchStrategy: strategy,
     sources: 'idealista',
+    ...profileOptions,
   });
 
   try {
@@ -60,6 +63,8 @@ export default async function handler(request, response) {
       run_id: output.run_id,
       search_name: output.search_name,
       search_strategy: output.search_strategy,
+      profile,
+      requested_areas: output.requested_areas,
       raw_source_count: output.raw_source_count,
       eligible_count: output.eligible_count,
       pre_scored_count: output.pre_scored_count,

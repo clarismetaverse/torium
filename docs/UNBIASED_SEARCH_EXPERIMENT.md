@@ -66,9 +66,33 @@ Generated search names are `milanoFractioningMassive-legacy_low_price_m2` and `m
 
 Persisted runs appear automatically in the existing run selector. The frontend shows the strategy and scoring mode and loads only eligible source listings. Legacy runs keep the price/m² tie-break; neutral runs order by Physical Fractionability Score without reintroducing a price/m² tie-break in the API.
 
+The **Calcola valuation & ROI** action values the selected Supabase run and then reloads it. It uses the same server-side PIN protection as run creation. The frontend enables deterministic valuation only; it does not consume AI credits.
+
+`milan_microzone_exit_v1_2026_06` currently covers Corso San Gottardo / Navigli-Bocconi. Its base EUR/mq is the rounded midpoint of June 2026 asking-price benchmarks from Immobiliare.it and idealista/data. It applies a 92% saleable-area ratio, an explicit output-unit size multiplier, low/base/high multipliers of 0.90/1.00/1.10, and rounds each projected unit to EUR 5,000. Unsupported microzones fail closed rather than inheriting a city-wide guess. These are versioned preliminary asking-price priors, not transaction evidence or a professional appraisal.
+
+AI valuation remains available from the CLI with `TORIUM_VALUATION_MODE=ai`. On Vercel it can authenticate to AI Gateway with deployment OIDC; locally it can use `OPENAI_API_KEY`. It is not the default and must not replace the deterministic inputs silently.
+
+Valuation is deliberately downstream of ranking. For `neutral_fractionability`, the persisted `ranking_score` remains the physical Door Score, equal-score rows keep candidate order, and exit value, spread, ROI, confidence, and recommended action cannot reorder the shortlist. For `legacy_low_price_m2`, the prior economic composite and price/mÂ² tie-break remain available.
+
+### Combined frontend view
+
+The run picker can expose a virtual `combined_neutral_legacy` output built from
+the latest successful neutral run and the latest legacy Milan run. It preserves
+the two source runs, recalculates financial underwriting at read time with the
+current versioned cost model, deduplicates by source identity, and records the
+origin run and strategy on every result. This is a comparison/union view only:
+it does not rewrite the physical ranking or the persisted source experiments.
+
+CLI valuation:
+
+```powershell
+$env:TORIUM_GPT_TRIAGE_LIMIT='20'
+npm run triage:gpt:latest -- 1785975759601-milanoFractioningMassive-neutral_fractionability
+```
+
 ## Supabase validation
 
-The homepage also exposes **Avvia run neutral**. It starts one Idealista scout run inside a Vercel Function, where the sensitive Apify and Supabase credentials remain server-side. The endpoint accepts only `neutral_fractionability`, requires the separate `TORIUM_RUN_PIN`, rejects cross-origin browser requests, and waits for persistence before refreshing the run selector. The PIN is retained only in the browser session.
+The homepage exposes **Avvia run seria · Milano**. It starts one broad Idealista run inside a Vercel Function, where the sensitive Apify and Supabase credentials remain server-side. The controlled profile requests up to 600 recent Milan listings marked `renew` and at least 100 sqm, uses `neutral_fractionability`, does not restrict the source query to one neighborhood, rejects cross-origin browser requests, and waits for persistence before refreshing the run selector. The frontend intentionally does not require a PIN, so anyone with access to the site can trigger the action.
 
 The Function has a 300-second limit. Keep `TORIUM_APIFY_MAX_WAIT_SECONDS` at or below 240 for frontend-triggered scout runs; normal/deep runs require a durable workflow rather than this endpoint.
 

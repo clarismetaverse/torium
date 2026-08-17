@@ -32,7 +32,7 @@ async function readDirSafe(dirName) {
 
 async function readSupabaseRuns() {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) return null;
-  const query = 'triage_runs?select=run_id,filename,search_name,search_strategy,scoring_mode,city,created_at,top_result_title&order=created_at.desc&limit=50';
+  const query = 'triage_runs?select=run_id,filename,search_name,search_strategy,scoring_mode,city,created_at,top_result_title,raw_source_count,eligible_count&order=created_at.desc&limit=50';
   const response = await fetch(`${SUPABASE_URL.replace(/\/$/, '')}/rest/v1/${query}`, {
     headers: {
       apikey: SUPABASE_SERVICE_ROLE_KEY,
@@ -41,7 +41,7 @@ async function readSupabaseRuns() {
   });
   if (!response.ok) throw new Error(`Supabase outputs failed: ${response.status}\n${await response.text()}`);
   const rows = await response.json();
-  return rows.map((row) => ({
+  const outputs = rows.map((row) => ({
     id: `supabase:${row.run_id}`,
     name: row.filename || row.run_id,
     dir: 'supabase/triage_runs',
@@ -52,6 +52,22 @@ async function readSupabaseRuns() {
     city: row.city,
     top_result_title: row.top_result_title,
   }));
+  const neutral = rows.find((row) => row.search_strategy === 'neutral_fractionability' && Number(row.raw_source_count) > 0);
+  const legacy = rows.find((row) => Number(row.raw_source_count) > 0 && (row.search_strategy === 'legacy_low_price_m2' || (!row.search_strategy && row.search_name === 'milanoFractioningMassive')));
+  if (neutral && legacy) {
+    outputs.unshift({
+      id: `combined:${neutral.run_id}+${legacy.run_id}`,
+      name: 'Neutral + Legacy ricalcolata',
+      dir: 'supabase/combined',
+      modified_at: Math.max(Date.parse(neutral.created_at) || 0, Date.parse(legacy.created_at) || 0) + 1,
+      search_name: 'milanoFractioningCombined-neutral-plus-legacy',
+      search_strategy: 'combined_neutral_legacy',
+      scoring_mode: 'cross_run_frontend_view_v1',
+      city: neutral.city || legacy.city,
+      top_result_title: null,
+    });
+  }
+  return outputs;
 }
 
 export default async function handler(_request, response) {

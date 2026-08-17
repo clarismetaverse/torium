@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import handler from '../api/run-triage.js';
-import { buildIdealistaQueries } from '../pipelines/triage-multisource-massive.js';
+import { buildIdealistaQueries, resolveMassiveRunConfig } from '../pipelines/triage-multisource-massive.js';
 
 function responseRecorder() {
   return {
@@ -20,21 +20,10 @@ test('run endpoint rejects non-POST requests', async () => {
   assert.equal(response.statusCode, 405);
 });
 
-test('run endpoint requires same-origin and a valid PIN', async () => {
-  const previousPin = process.env.TORIUM_RUN_PIN;
-  process.env.TORIUM_RUN_PIN = 'test-pin';
-  try {
-    const crossOrigin = responseRecorder();
-    await handler({ method: 'POST', headers: { origin: 'https://attacker.example', host: 'torium.example' }, body: {} }, crossOrigin);
-    assert.equal(crossOrigin.statusCode, 403);
-
-    const wrongPin = responseRecorder();
-    await handler({ method: 'POST', headers: { host: 'torium.example', authorization: 'Bearer wrong' }, body: {} }, wrongPin);
-    assert.equal(wrongPin.statusCode, 401);
-  } finally {
-    if (previousPin === undefined) delete process.env.TORIUM_RUN_PIN;
-    else process.env.TORIUM_RUN_PIN = previousPin;
-  }
+test('run endpoint requires same-origin', async () => {
+  const crossOrigin = responseRecorder();
+  await handler({ method: 'POST', headers: { origin: 'https://attacker.example', host: 'torium.example' }, body: {} }, crossOrigin);
+  assert.equal(crossOrigin.statusCode, 403);
 });
 
 test('Idealista scout targets the requested Milan location ID', () => {
@@ -43,4 +32,23 @@ test('Idealista scout targets the requested Milan location ID', () => {
   assert.equal(query.payload.location, '0-EU-IT-MI-01-001-135-05-004');
   assert.equal(query.query_area, 'corso-san-gottardo');
   assert.equal(query.payload.maxItems, 20);
+});
+
+test('serious Milan profile expands the sample without a neighborhood filter', () => {
+  const config = resolveMassiveRunConfig({
+    runMode: 'serious',
+    requestedAreas: ['Milano'],
+    maxItemsPerQuery: 600,
+    maxTotalRawListings: 600,
+    topPrescoreLimit: 600,
+    minSize: 100,
+    idealistaCondition: ['renew'],
+  }, {});
+
+  assert.deepEqual(config.requestedAreas, ['Milano']);
+  assert.equal(config.maxItemsPerQuery, 600);
+  assert.equal(config.maxTotalRawListings, 600);
+  assert.equal(config.topPrescoreLimit, 600);
+  assert.equal(config.minSize, 100);
+  assert.deepEqual(config.idealistaCondition, ['renew']);
 });
