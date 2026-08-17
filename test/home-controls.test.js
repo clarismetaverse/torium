@@ -31,6 +31,24 @@ test('home supports persistent Italian and English UI copy', () => {
   assert.match(home, /scouting & fractionability dashboard/);
 });
 
+test('home exposes detailed neighborhood labels, distribution and filtering', () => {
+  assert.match(home, /id="neighborhoodFilter"/);
+  assert.match(home, /id="neighborhoodCoverage"/);
+  assert.match(home, /const neighborhood=r=>/);
+  assert.match(home, /const macroArea=r=>/);
+  assert.match(home, /const area=r=>neighborhood\(r\)\|\|macroArea\(r\)/);
+  assert.match(home, /function drawNeighborhoodCoverage\(/);
+  assert.match(home, /state\.neighborhood==='all'\|\|neighborhoodKey\(x\.r\)===state\.neighborhood/);
+  assert.match(home, /chip area-primary/);
+  assert.match(home, /chip area-secondary/);
+});
+
+test('home recomputes visible ROI statistics for the selected neighborhood', () => {
+  assert.match(home, /const o=state\.output\|\|\{\},rs=filteredResults\(\),rank=ranked\(\)/);
+  assert.match(home, /roiValues=rs\.filter\(r=>dataQuality\(r\)\.valid\)/);
+  assert.match(home, /roiMedian=roiValues\.length/);
+});
+
 test('deal previews expose only evidence-backed fractioning and floor-plan tags', () => {
   assert.match(home, /markedForFractioning=r=>/);
   assert.match(home, /frazion\\w\*/);

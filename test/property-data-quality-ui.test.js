@@ -68,3 +68,12 @@ test('property detail inline script is valid JavaScript', () => {
   assert.ok(script);
   assert.doesNotThrow(() => new Function(script));
 });
+
+test('property detail preserves neighborhood filtering and shows macro-area context', () => {
+  assert.match(detail, /neighborhood:q\.get\('neighborhood'\)\|\|null/);
+  assert.match(detail, /const rawNeighborhood=r=>/);
+  assert.match(detail, /const area=r=>h\(rawNeighborhood\(r\)\|\|rawMacroArea\(r\)/);
+  assert.match(detail, /function drawAreaContext\(/);
+  assert.match(detail, /function drawNeighborhoodBackLink\(/);
+  assert.match(detail, /results\(o\)\.filter\(item=>rawNeighborhood\(item\)/);
+});

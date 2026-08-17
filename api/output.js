@@ -132,7 +132,7 @@ function publicTitle(result) {
   const listing = result?.listing || result || {};
   const rawTitle = result?.title || listing?.suggestedTexts?.title || listing?.title || '';
   const typology = String(rawTitle).split(' in ')[0] || listing.propertyType || result?.property_type || 'Immobile';
-  const area = listing.listing_area || listing.area_label || listing.neighborhood || listing.district || result?.listing_area || result?.area_label || result?.neighborhood || result?.district || result?.query_area || 'Milano';
+  const area = listing.neighborhood || result?.neighborhood || result?.source_row?.neighborhood || listing.listing_area || listing.area_label || listing.district || result?.listing_area || result?.area_label || result?.district || result?.query_area || 'Milano';
   const size = listing.size || result?.size_mq || result?.size;
   return [typology, area, size ? `${size} mq` : null].filter(Boolean).join(' · ');
 }
@@ -322,7 +322,7 @@ function redactOutput(output) {
 
 function sourceListingToResult(source, index) {
   const listing = source.raw_listing && typeof source.raw_listing === 'object' ? source.raw_listing : {};
-  const realArea = source.district || source.neighborhood || source.area_label || listing.district || listing.neighborhood || listing.area_label || null;
+  const realArea = source.neighborhood || listing.neighborhood || source.district || listing.district || source.area_label || listing.area_label || null;
   const estimatedFinalUnits = source.estimated_final_units == null ? null : Number(source.estimated_final_units);
   const transformationCost = Number.isFinite(estimatedFinalUnits)
     ? estimatedFinalUnits * DEFAULT_UNDERWRITING_ASSUMPTIONS.costPerFinalUnitEur
