@@ -47,6 +47,8 @@ test('home recomputes visible ROI statistics for the selected neighborhood', () 
   assert.match(home, /const o=state\.output\|\|\{\},rs=filteredResults\(\),rank=ranked\(\)/);
   assert.match(home, /roiValues=rs\.filter\(r=>dataQuality\(r\)\.valid\)/);
   assert.match(home, /roiMedian=roiValues\.length/);
+  assert.match(home, /roiMedian!==null&&roiMedian>=0/);
+  assert.match(home, /roiAverage!==null&&roiAverage>=0/);
 });
 
 test('deal previews expose only evidence-backed fractioning and floor-plan tags', () => {
@@ -108,6 +110,8 @@ test('home discloses provisional methodology and the AVM target', () => {
   assert.match(home, /TORIUM AVM/);
   assert.match(home, /Methodology and assumptions/);
   assert.match(home, /Complete AVM/);
+  assert.doesNotMatch(home, /San Gottardo uses a specific blended benchmark/);
+  assert.doesNotMatch(home, /San Gottardo usa un benchmark specifico combinato/);
 });
 
 test('valuation memory records current formulas, caveats and future architecture', () => {
