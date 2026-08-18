@@ -51,6 +51,15 @@ test('home recomputes visible ROI statistics for the selected neighborhood', () 
   assert.match(home, /roiAverage!==null&&roiAverage>=0/);
 });
 
+test('home exposes ROI base as the only ranking option', () => {
+  const select = home.match(/<select id="criterion">([\s\S]*?)<\/select>/)?.[1] || '';
+  assert.match(select, /value="roiBase"/);
+  assert.doesNotMatch(select, /value="torium"|value="balanced"|value="profitBase"|value="roiLow"/);
+  assert.match(home, /criterion:'roiBase'/);
+  assert.match(home, /const rankingCriteria=\(\)=>\(\{roiBase:criteria\(\)\.roiBase\}\)/);
+  assert.doesNotMatch(home, /\|\|\(doorScore\(b\.r\)-doorScore\(a\.r\)\)/);
+});
+
 test('deal previews expose only evidence-backed fractioning and floor-plan tags', () => {
   assert.match(home, /markedForFractioning=r=>/);
   assert.match(home, /frazion\\w\*/);

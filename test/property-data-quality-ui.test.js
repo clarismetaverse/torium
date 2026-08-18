@@ -77,3 +77,10 @@ test('property detail preserves neighborhood filtering and shows macro-area cont
   assert.match(detail, /function drawNeighborhoodBackLink\(/);
   assert.match(detail, /results\(o\)\.filter\(item=>rawNeighborhood\(item\)/);
 });
+
+test('property detail always uses ROI base as its only ranking', () => {
+  assert.match(detail, /sort:'roiBase'/);
+  assert.match(detail, /const sortModes=\(\)=>state\.lang==='it'\?\{roiBase:'ROI base'\}/);
+  assert.match(detail, /state\.sortMode='roiBase'/);
+  assert.doesNotMatch(detail, /\|\|\(physicalScore\(b\.r\)-physicalScore\(a\.r\)\)/);
+});
