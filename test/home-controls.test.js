@@ -60,6 +60,16 @@ test('home exposes ROI base as the only ranking option', () => {
   assert.doesNotMatch(home, /\|\|\(doorScore\(b\.r\)-doorScore\(a\.r\)\)/);
 });
 
+test('home supports 5000-item runs without rendering every card at once', () => {
+  assert.match(home, /profile:'milano_broad',limit:5000/);
+  assert.match(home, /run_id:runId,limit:5000,mode:'deterministic'/);
+  assert.match(home, /visibleLimit:100/);
+  assert.match(home, /state\.visibleLimit\+=200/);
+  assert.match(home, /id="loadMoreDeals"/);
+  assert.match(home, /api\/output\?summary=1&file=/);
+  assert.doesNotMatch(home, /slice\(0,60\)/);
+});
+
 test('deal previews expose only evidence-backed fractioning and floor-plan tags', () => {
   assert.match(home, /markedForFractioning=r=>/);
   assert.match(home, /frazion\\w\*/);

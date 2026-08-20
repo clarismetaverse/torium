@@ -69,6 +69,12 @@ test('property detail inline script is valid JavaScript', () => {
   assert.doesNotThrow(() => new Function(script));
 });
 
+test('property detail translates stored analysis into Italian while preserving English mode', () => {
+  assert.match(detail, /function analysisItemIt\(/);
+  assert.match(detail, /state\.lang==='it'\?analysisItemIt\(x\):x/);
+  assert.match(detail, /Validazione tecnica della distribuzione finale/);
+});
+
 test('property detail preserves neighborhood filtering and shows macro-area context', () => {
   assert.match(detail, /neighborhood:q\.get\('neighborhood'\)\|\|null/);
   assert.match(detail, /const rawNeighborhood=r=>/);

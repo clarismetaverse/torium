@@ -63,7 +63,7 @@ test('values a residual monolocale separately from the 40 sqm bilocali', () => {
   assert.deepEqual(valuation.final_unit_plan.map((unit) => unit.unit_type), ['bilocale', 'bilocale', 'monolocale']);
   assert.deepEqual(valuation.final_unit_plan.map((unit) => unit.estimated_size_mq), [40, 40, 30.4]);
   assert.equal(valuation.total_sale_value_base_eur, 800000);
-  assert.ok(valuation.red_flags.some((flag) => flag.includes('28 sqm')));
+  assert.ok(valuation.red_flags.some((flag) => flag.includes('28 mq')));
 });
 
 test('does not invent a valuation outside configured microzones', () => {
@@ -90,7 +90,7 @@ test('uses a low-confidence Milan fallback only when no macrozone matches', () =
   });
   assert.equal(valuation.valuation_microzone_id, 'milano-citywide-fallback');
   assert.equal(valuation.valuation_confidence, 'low');
-  assert.ok(valuation.red_flags.some((flag) => flag.includes('fallback')));
+  assert.ok(valuation.red_flags.some((flag) => flag.includes('benchmark cittadino generale')));
 });
 
 test('does not invent fractioning ROI when the project creates no new unit', () => {

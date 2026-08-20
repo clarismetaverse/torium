@@ -7,13 +7,18 @@ import {
 } from '../lib/financial-underwriting.js';
 import { combineRunOutputs, rescoreCombinedResults } from '../lib/combine-run-outputs.js';
 import { runDoorEngine } from '../lib/door-engine.js';
+import { normalizeItalianFloor } from '../lib/italian-localization.js';
 import { evaluateDataQuality } from '../lib/data-quality-gate.js';
 
 const rootDir = process.cwd();
 const allowedPrefixes = ['triage-outputs/', 'outputs/triage/'];
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const SOURCE_LISTINGS_LIMIT = Number(process.env.TORIUM_VIEWER_SOURCE_LIMIT || 1000);
+const configuredViewerLimit = Number(process.env.TORIUM_VIEWER_RESULTS_LIMIT || 5000);
+const VIEWER_RESULTS_LIMIT = Number.isFinite(configuredViewerLimit)
+  ? Math.max(1, Math.min(5000, configuredViewerLimit))
+  : 5000;
+const SUPABASE_PAGE_SIZE = 1000;
 const investorProfilePromise = readFile(new URL('../config/investor-profiles/max-doors-20k.json', import.meta.url), 'utf8').then(JSON.parse);
 
 function normalizeId(value) {
@@ -38,12 +43,58 @@ async function supabaseGet(pathname) {
   return response.json();
 }
 
+async function supabaseGetAll(pathname, limit = VIEWER_RESULTS_LIMIT) {
+  const rows = [];
+  const [basePath, rawQuery = ''] = pathname.split('?');
+  const baseParams = new URLSearchParams(rawQuery);
+  baseParams.delete('limit');
+  baseParams.delete('offset');
+
+  while (rows.length < limit) {
+    const pageSize = Math.min(SUPABASE_PAGE_SIZE, limit - rows.length);
+    const params = new URLSearchParams(baseParams);
+    params.set('limit', String(pageSize));
+    params.set('offset', String(rows.length));
+    const page = await supabaseGet(`${basePath}?${params.toString()}`);
+    if (!Array.isArray(page) || page.length === 0) break;
+    rows.push(...page);
+    if (page.length < pageSize) break;
+  }
+  return rows;
+}
+
 function cleanText(value) {
   return String(value || '').replace(/\s+/g, ' ').trim() || null;
 }
 
 function cleanItems(items) {
   return (Array.isArray(items) ? items : []).filter((item) => !String(item).toLowerCase().includes('idealista'));
+}
+
+function compactDashboardOutput(output) {
+  return {
+    ...output,
+    result_links: [],
+    results: (output.results || []).map((result) => ({
+      ...result,
+      photos: undefined,
+      floor_plans: undefined,
+      raw_listing: undefined,
+      listing: result.listing && typeof result.listing === 'object' ? {
+        ...result.listing,
+        photos: undefined,
+        floor_plans: undefined,
+        multimedia: undefined,
+        raw: undefined,
+      } : result.listing,
+      source_row: result.source_row && typeof result.source_row === 'object' ? {
+        ...result.source_row,
+        photos: undefined,
+        floor_plans: undefined,
+        raw_listing: undefined,
+      } : result.source_row,
+    })),
+  };
 }
 
 // --- Public payload defense-in-depth sanitizer -----------------------------
@@ -214,6 +265,7 @@ function redactListing(listing, redactedTitle, photos, floorPlans, description, 
     ...listing,
     title: redactedTitle,
     address,
+    floor: normalizeItalianFloor(listing.floor),
     url: idealistaUrl,
     propertyCode: null,
     source_url: idealistaUrl,
@@ -235,6 +287,7 @@ function redactSourceRow(sourceRow, redactedTitle, photos, floorPlans, descripti
     ...sourceRow,
     title: redactedTitle,
     address,
+    floor: normalizeItalianFloor(sourceRow.floor),
     source_channel: null,
     source_url: idealistaUrl,
     source_listing_id: null,
@@ -273,6 +326,7 @@ function redactResult(result) {
   const idealistaUrl = publicIdealistaUrl(result);
   return {
     ...result,
+    floor: normalizeItalianFloor(result.floor ?? result.listing?.floor ?? result.source_row?.floor),
     underwriting: underwritingFromResult(result),
     data_quality: evaluateDataQuality(result),
     title: redactedTitle,
@@ -395,7 +449,7 @@ function sourceListingToResult(source, index) {
       size: source.size_mq ?? listing.size,
       rooms: source.rooms ?? listing.rooms,
       bathrooms: source.bathrooms ?? listing.bathrooms,
-      floor: source.floor ?? listing.floor,
+      floor: normalizeItalianFloor(source.floor ?? listing.floor),
       hasLift: source.has_lift ?? listing.hasLift,
       hasPlan: source.has_plan ?? listing.hasPlan,
       status: source.property_condition ?? listing.status,
@@ -420,7 +474,7 @@ async function readSupabaseOutput(id, { publicView = true } = {}) {
   const runId = id.replace(/^supabase:/, '');
   const [runs, properties] = await Promise.all([
     supabaseGet(`triage_runs?run_id=eq.${encodeURIComponent(runId)}&select=*`),
-    supabaseGet(`triage_properties?run_id=eq.${encodeURIComponent(runId)}&select=*&order=rank.asc`),
+    supabaseGetAll(`triage_properties?run_id=eq.${encodeURIComponent(runId)}&select=*&order=rank.asc`),
   ]);
   const run = runs?.[0];
   if (!run) throw new Error(`Supabase run not found: ${runId}`);
@@ -428,7 +482,7 @@ async function readSupabaseOutput(id, { publicView = true } = {}) {
   const sourceOrder = run.search_strategy === 'neutral_fractionability'
     ? 'door_score.desc.nullslast'
     : 'door_score.desc.nullslast,price_by_area.asc.nullslast';
-  const sourceListings = properties.length ? [] : await supabaseGet(`triage_source_listings?run_id=eq.${encodeURIComponent(runId)}&pre_triage_excluded=eq.false&select=*&order=${sourceOrder}&limit=${SOURCE_LISTINGS_LIMIT}`);
+  const sourceListings = properties.length ? [] : await supabaseGetAll(`triage_source_listings?run_id=eq.${encodeURIComponent(runId)}&pre_triage_excluded=eq.false&select=*&order=${sourceOrder}`);
   const results = properties.length ? properties.map((property) => property.raw_result || property).filter(Boolean) : sourceListings.map((source, index) => sourceListingToResult(source, index));
 
   const output = run.raw_output && typeof run.raw_output === 'object'
@@ -476,18 +530,19 @@ export default async function handler(request, response) {
   try {
     const id = normalizeId(request.query.file);
     const publicView = !(request.query.internal === 'true' || request.query.internal === '1');
+    const dashboardSummary = request.query.summary === 'true' || request.query.summary === '1';
 
     if (id.startsWith('combined:')) {
       const output = await readCombinedOutput(id, { publicView });
       response.setHeader('Cache-Control', publicView ? 'public, s-maxage=300, stale-while-revalidate=86400' : 'private, no-store');
-      response.status(200).json(output);
+      response.status(200).json(dashboardSummary ? compactDashboardOutput(output) : output);
       return;
     }
 
     if (id.startsWith('supabase:')) {
       const output = await readSupabaseOutput(id, { publicView });
       response.setHeader('Cache-Control', publicView ? 'public, s-maxage=300, stale-while-revalidate=86400' : 'private, no-store');
-      response.status(200).json(output);
+      response.status(200).json(dashboardSummary ? compactDashboardOutput(output) : output);
       return;
     }
 

@@ -34,6 +34,8 @@ Return only valid JSON.
 
 Do not use Markdown.
 
+Write every human-readable sentence in Italian. In particular, `valuation_reasoning`, `positive_signals`, `red_flags`, `missing_information`, and `human_due_diligence_questions` must contain clear Italian prose. Keep only enum values and JSON field names in English as required by the schema.
+
 Use this exact structure:
 
 ```json

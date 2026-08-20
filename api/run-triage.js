@@ -4,7 +4,7 @@ export const maxDuration = 300;
 
 let activeRun = null;
 
-export function resolveRequestedLimit(value, fallback = 600, maximum = 2000) {
+export function resolveRequestedLimit(value, fallback = 600, maximum = 5000) {
   const numeric = Number(value ?? fallback);
   if (!Number.isFinite(numeric)) return fallback;
   return Math.max(1, Math.min(maximum, Math.floor(numeric)));

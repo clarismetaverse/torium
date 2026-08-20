@@ -1,5 +1,6 @@
 import { jsonResponse, latestRunId, numberParam, sendError, supabaseGet } from './_supabase-debug.js';
 import { evaluateDataQuality } from '../lib/data-quality-gate.js';
+import { normalizeItalianFloor } from '../lib/italian-localization.js';
 
 function appendFilter(parts, name, operator, value) {
   if (value !== undefined && value !== null && value !== '') parts.push(`${name}=${operator}.${encodeURIComponent(value)}`);
@@ -67,6 +68,7 @@ function redactRaw(raw, title, photos, floorPlans, description) {
   if (!raw || typeof raw !== 'object') return raw;
   return {
     ...raw,
+    floor: normalizeItalianFloor(raw.floor ?? raw.listing?.floor ?? raw.source_row?.floor),
     data_quality: evaluateDataQuality(raw),
     title,
     address: null,
@@ -88,6 +90,7 @@ function redactRaw(raw, title, photos, floorPlans, description) {
     } : raw.gpt_analysis,
     listing: raw.listing && typeof raw.listing === 'object' ? {
       ...raw.listing,
+      floor: normalizeItalianFloor(raw.listing.floor),
       title,
       address: null,
       url: null,
@@ -100,6 +103,7 @@ function redactRaw(raw, title, photos, floorPlans, description) {
     } : raw.listing,
     source_row: raw.source_row && typeof raw.source_row === 'object' ? {
       ...raw.source_row,
+      floor: normalizeItalianFloor(raw.source_row.floor),
       title,
       address: null,
       source_url: null,
@@ -131,6 +135,7 @@ function redactRow(row) {
   const description = extractDescription(row);
   return {
     ...row,
+    floor: normalizeItalianFloor(row.floor),
     data_quality: evaluateDataQuality(row.raw_result || row),
     title,
     address: null,

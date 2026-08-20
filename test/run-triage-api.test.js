@@ -26,10 +26,11 @@ test('run endpoint requires same-origin', async () => {
   assert.equal(crossOrigin.statusCode, 403);
 });
 
-test('serious run limit defaults to 600 and is capped at 2000', () => {
+test('serious run limit defaults to 600 and supports up to 5000', () => {
   assert.equal(resolveRequestedLimit(undefined), 600);
-  assert.equal(resolveRequestedLimit(2000), 2000);
-  assert.equal(resolveRequestedLimit(3000), 2000);
+  assert.equal(resolveRequestedLimit(4000), 4000);
+  assert.equal(resolveRequestedLimit(5000), 5000);
+  assert.equal(resolveRequestedLimit(6000), 5000);
   assert.equal(resolveRequestedLimit('invalid'), 600);
 });
 
