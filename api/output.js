@@ -7,13 +7,19 @@ import {
 } from '../lib/financial-underwriting.js';
 import { combineRunOutputs, rescoreCombinedResults } from '../lib/combine-run-outputs.js';
 import { runDoorEngine } from '../lib/door-engine.js';
+import { normalizeItalianFloor } from '../lib/italian-localization.js';
 import { evaluateDataQuality } from '../lib/data-quality-gate.js';
+import { mergeUnifiedProperty } from '../lib/source-offers.js';
 
 const rootDir = process.cwd();
 const allowedPrefixes = ['triage-outputs/', 'outputs/triage/'];
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const SOURCE_LISTINGS_LIMIT = Number(process.env.TORIUM_VIEWER_SOURCE_LIMIT || 1000);
+const configuredViewerLimit = Number(process.env.TORIUM_VIEWER_RESULTS_LIMIT || 5000);
+const VIEWER_RESULTS_LIMIT = Number.isFinite(configuredViewerLimit)
+  ? Math.max(1, Math.min(5000, configuredViewerLimit))
+  : 5000;
+const SUPABASE_PAGE_SIZE = 1000;
 const investorProfilePromise = readFile(new URL('../config/investor-profiles/max-doors-20k.json', import.meta.url), 'utf8').then(JSON.parse);
 
 function normalizeId(value) {
@@ -38,6 +44,26 @@ async function supabaseGet(pathname) {
   return response.json();
 }
 
+async function supabaseGetAll(pathname, limit = VIEWER_RESULTS_LIMIT) {
+  const rows = [];
+  const [basePath, rawQuery = ''] = pathname.split('?');
+  const baseParams = new URLSearchParams(rawQuery);
+  baseParams.delete('limit');
+  baseParams.delete('offset');
+
+  while (rows.length < limit) {
+    const pageSize = Math.min(SUPABASE_PAGE_SIZE, limit - rows.length);
+    const params = new URLSearchParams(baseParams);
+    params.set('limit', String(pageSize));
+    params.set('offset', String(rows.length));
+    const page = await supabaseGet(`${basePath}?${params.toString()}`);
+    if (!Array.isArray(page) || page.length === 0) break;
+    rows.push(...page);
+    if (page.length < pageSize) break;
+  }
+  return rows;
+}
+
 function cleanText(value) {
   return String(value || '').replace(/\s+/g, ' ').trim() || null;
 }
@@ -46,16 +72,42 @@ function cleanItems(items) {
   return (Array.isArray(items) ? items : []).filter((item) => !String(item).toLowerCase().includes('idealista'));
 }
 
+function compactDashboardOutput(output) {
+  return {
+    ...output,
+    result_links: [],
+    results: (output.results || []).map((result) => ({
+      ...result,
+      photos: undefined,
+      floor_plans: undefined,
+      raw_listing: undefined,
+      listing: result.listing && typeof result.listing === 'object' ? {
+        ...result.listing,
+        photos: undefined,
+        floor_plans: undefined,
+        multimedia: undefined,
+        raw: undefined,
+      } : result.listing,
+      source_row: result.source_row && typeof result.source_row === 'object' ? {
+        ...result.source_row,
+        photos: undefined,
+        floor_plans: undefined,
+        raw_listing: undefined,
+      } : result.source_row,
+    })),
+  };
+}
+
 // --- Public payload defense-in-depth sanitizer -----------------------------
 // Keys whose string values are real image assets and must be preserved so the
 // public gallery/floor plans keep working (their host may be a source CDN).
 const PUBLIC_IMAGE_KEYS = new Set(['url', 'thumbnail', 'thumbnail_url', 'src', 'image']);
-const PUBLIC_EXTERNAL_LINK_KEYS = new Set(['source_url', 'sourceurl', 'idealista_url']);
+const PUBLIC_EXTERNAL_LINK_KEYS = new Set(['source_url', 'sourceurl', 'idealista_url', 'immobiliare_url']);
 // Source/listing identifier keys that must never reach the public viewer.
 const PUBLIC_DENY_KEYS = new Set([
-  'source_platform_name', 'source_channel', 'source_key', 'canonical_source_key', 'source_fingerprint',
+  'source_platform_name', 'source_key', 'canonical_source_key', 'source_fingerprint',
   'source_listing_id', 'externalreference', 'propertycode', 'agency', 'agencylogo',
-  'contactinfo', 'micrositeshortname',
+  'contactinfo', 'contacts', 'author', 'phone', 'phones', 'email', 'agencyname', 'micrositeshortname',
 ]);
 // Brand token to strip anywhere it appears (only unambiguous platform brands;
 // deliberately NOT "immobiliare", which is also the Italian word for real estate).
@@ -66,14 +118,19 @@ function sanitizePublicDeep(node, key) {
   if (typeof node === 'string') {
     const k = String(key).toLowerCase();
     if (PUBLIC_DENY_KEYS.has(k)) return null;
+    if (k === 'source_channel') return ['idealista', 'immobiliare'].includes(node.toLowerCase()) ? node.toLowerCase() : null;
     if (PUBLIC_IMAGE_KEYS.has(k)) return node;
-    if (PUBLIC_EXTERNAL_LINK_KEYS.has(k)) return safeIdealistaUrl(node);
+    if (PUBLIC_EXTERNAL_LINK_KEYS.has(k)) return safeSourceUrl(node);
     return node.toLowerCase().includes(PLATFORM_TOKEN) ? null : node;
   }
   if (Array.isArray(node)) {
     const out = [];
     for (const item of node) {
       if (typeof item === 'string') {
+        if (String(key).toLowerCase() === 'origin_source_channels' && ['idealista', 'immobiliare'].includes(item.toLowerCase())) {
+          out.push(item.toLowerCase());
+          continue;
+        }
         if (!item.toLowerCase().includes(PLATFORM_TOKEN)) out.push(item);
         continue;
       }
@@ -100,14 +157,69 @@ export function safeIdealistaUrl(value) {
   }
 }
 
+export function safeSourceUrl(value) {
+  try {
+    const url = new URL(String(value));
+    if (url.protocol !== 'https:') return null;
+    const hostname = url.hostname.toLowerCase();
+    const allowed = ['idealista.it', 'immobiliare.it'];
+    return allowed.some((host) => hostname === host || hostname.endsWith(`.${host}`)) ? url.href : null;
+  } catch {
+    return null;
+  }
+}
+
 export function publicAddress(result) {
   return cleanText(
     result?.address ||
     result?.listing?.address ||
+    result?.normalized_v1?.address?.formatted ||
+    result?.listing?.normalized_v1?.address?.formatted ||
+    result?.source_row?.normalized_v1?.address?.formatted ||
     result?.source_row?.address ||
+    result?.source_row?.raw_listing?.geography?.street ||
     result?.source_row?.raw_listing?.address ||
     null
   );
+}
+
+export function publicSourceChannel(result) {
+  const candidates = [
+    result?.source_channel,
+    result?.normalized_v1?.source_channel,
+    result?.listing?.source_channel,
+    result?.listing?.normalized_v1?.source_channel,
+    result?.source_row?.source_channel,
+    result?.source_row?.normalized_v1?.source_channel,
+  ];
+  return candidates.map((value) => String(value || '').toLowerCase())
+    .find((value) => ['idealista', 'immobiliare'].includes(value)) || null;
+}
+
+export function publicSourceUrl(result) {
+  const candidates = [
+    result?.source_url,
+    result?.url,
+    result?.normalized_v1?.canonical_url,
+    result?.listing?.source_url,
+    result?.listing?.url,
+    result?.listing?.normalized_v1?.canonical_url,
+    result?.source_row?.source_url,
+    result?.source_row?.normalized_v1?.canonical_url,
+    result?.source_row?.raw_listing?.url,
+  ];
+  for (const candidate of candidates) {
+    const safeUrl = safeSourceUrl(candidate);
+    if (safeUrl) return safeUrl;
+  }
+  if (publicSourceChannel(result) === 'immobiliare') {
+    const listingId = result?.source_listing_id || result?.listing?.source_listing_id ||
+      result?.source_row?.source_listing_id || result?.source_row?.raw_listing?.id;
+    if (listingId && /^[0-9]+$/.test(String(listingId))) {
+      return `https://www.immobiliare.it/annunci/${listingId}/`;
+    }
+  }
+  return null;
 }
 
 export function publicIdealistaUrl(result) {
@@ -130,6 +242,9 @@ export function publicIdealistaUrl(result) {
 
 function publicTitle(result) {
   const listing = result?.listing || result || {};
+  const normalizedTitle = result?.normalized_v1?.display_title || listing?.normalized_v1?.display_title ||
+    result?.source_row?.normalized_v1?.display_title;
+  if (cleanText(normalizedTitle)) return cleanText(normalizedTitle);
   const rawTitle = result?.title || listing?.suggestedTexts?.title || listing?.title || '';
   const typology = String(rawTitle).split(' in ')[0] || listing.propertyType || result?.property_type || 'Immobile';
   const area = listing.neighborhood || result?.neighborhood || result?.source_row?.neighborhood || listing.listing_area || listing.area_label || listing.district || result?.listing_area || result?.area_label || result?.district || result?.query_area || 'Milano';
@@ -140,15 +255,29 @@ function publicTitle(result) {
 function imageBuckets(result) {
   return [
     result?.photos,
-    result?.floor_plans,
     result?.listing?.photos,
-    result?.listing?.floor_plans,
     result?.listing?.multimedia?.images,
+    result?.normalized_v1?.media?.images,
+    result?.listing?.normalized_v1?.media?.images,
     result?.source_row?.photos,
-    result?.source_row?.floor_plans,
+    result?.source_row?.normalized_v1?.media?.images,
     result?.source_row?.raw_listing?.photos,
-    result?.source_row?.raw_listing?.floor_plans,
     result?.source_row?.raw_listing?.multimedia?.images,
+    result?.source_row?.raw_listing?.media?.images,
+  ].filter(Array.isArray);
+}
+
+function floorPlanBuckets(result) {
+  return [
+    result?.floor_plans,
+    result?.listing?.floor_plans,
+    result?.normalized_v1?.media?.floor_plans,
+    result?.listing?.normalized_v1?.media?.floor_plans,
+    result?.source_row?.floor_plans,
+    result?.source_row?.normalized_v1?.media?.floor_plans,
+    result?.source_row?.raw_listing?.floor_plans,
+    result?.source_row?.raw_listing?.multimedia?.floor_plans,
+    result?.source_row?.raw_listing?.media?.floorPlans,
   ].filter(Array.isArray);
 }
 
@@ -156,10 +285,11 @@ function extractPhotos(result) {
   const seen = new Set();
   const photos = [];
   const push = (item) => {
-    const url = typeof item === 'string' ? item : item?.url || item?.thumbnail;
+    const url = typeof item === 'string' ? item : item?.url || item?.thumbnail || item?.hd || item?.sd;
     if (!url || seen.has(url)) return;
     seen.add(url);
-    const tag = item?.tag && !String(item.tag).toLowerCase().includes('idealista') ? item.tag : null;
+    const observedTag = item?.tag || item?.label || item?.type;
+    const tag = observedTag && !String(observedTag).toLowerCase().includes('idealista') ? observedTag : null;
     photos.push({ url, tag });
   };
   push(result?.thumbnail_url);
@@ -173,16 +303,18 @@ function extractPhotos(result) {
 function extractFloorPlans(result) {
   const seen = new Set();
   const plans = [];
-  const push = (item) => {
-    const url = typeof item === 'string' ? item : item?.url || item?.thumbnail;
-    const tag = String(item?.tag || '').toLowerCase();
+  const push = (item, knownPlan = false) => {
+    const url = typeof item === 'string' ? item : item?.url || item?.thumbnail || item?.hd || item?.sd;
+    const observedTag = item?.tag || item?.label || item?.type;
+    const tag = String(observedTag || '').toLowerCase();
     if (!url || seen.has(url)) return;
-    if (tag && !['plan', 'floorplan', 'floor_plan', 'layout', 'plano'].includes(tag)) return;
+    if (!knownPlan && tag && !['plan', 'floorplan', 'floor_plan', 'layout', 'plano', 'planimetria'].includes(tag)) return;
     if (!tag && !String(url).toLowerCase().includes('plan')) return;
     seen.add(url);
-    plans.push({ url, tag: item?.tag || 'plan' });
+    plans.push({ url, tag: observedTag || 'plan' });
   };
-  for (const images of imageBuckets(result)) images.forEach(push);
+  for (const images of floorPlanBuckets(result)) images.forEach((item) => push(item, true));
+  for (const images of imageBuckets(result)) images.forEach((item) => push(item, false));
   return plans.slice(0, 8);
 }
 
@@ -208,17 +340,20 @@ function redactAnalysis(analysis) {
   };
 }
 
-function redactListing(listing, redactedTitle, photos, floorPlans, description, address, idealistaUrl) {
+function redactListing(listing, redactedTitle, photos, floorPlans, description, address, sourceUrl, sourceChannel) {
   if (!listing || typeof listing !== 'object') return listing;
   return {
     ...listing,
     title: redactedTitle,
     address,
-    url: idealistaUrl,
+    floor: normalizeItalianFloor(listing.floor),
+    url: sourceUrl,
     propertyCode: null,
-    source_url: idealistaUrl,
-    sourceUrl: idealistaUrl,
-    idealista_url: idealistaUrl,
+    source_channel: sourceChannel,
+    source_url: sourceUrl,
+    sourceUrl,
+    idealista_url: sourceChannel === 'idealista' ? sourceUrl : null,
+    immobiliare_url: sourceChannel === 'immobiliare' ? sourceUrl : null,
     contactInfo: null,
     agency: null,
     description,
@@ -229,14 +364,15 @@ function redactListing(listing, redactedTitle, photos, floorPlans, description, 
   };
 }
 
-function redactSourceRow(sourceRow, redactedTitle, photos, floorPlans, description, address, idealistaUrl) {
+function redactSourceRow(sourceRow, redactedTitle, photos, floorPlans, description, address, sourceUrl, sourceChannel) {
   if (!sourceRow || typeof sourceRow !== 'object') return sourceRow;
   return {
     ...sourceRow,
     title: redactedTitle,
     address,
-    source_channel: null,
-    source_url: idealistaUrl,
+    floor: normalizeItalianFloor(sourceRow.floor),
+    source_channel: sourceChannel,
+    source_url: sourceUrl,
     source_listing_id: null,
     canonical_source_key: null,
     source_fingerprint: null,
@@ -250,7 +386,7 @@ function redactSourceRow(sourceRow, redactedTitle, photos, floorPlans, descripti
       ...sourceRow.raw_listing,
       title: redactedTitle,
       address,
-      url: idealistaUrl,
+      url: sourceUrl,
       propertyCode: null,
       externalReference: null,
       contactInfo: null,
@@ -270,17 +406,20 @@ function redactResult(result) {
   const floorPlans = extractFloorPlans(result);
   const description = extractDescription(result);
   const address = publicAddress(result);
-  const idealistaUrl = publicIdealistaUrl(result);
+  const sourceChannel = publicSourceChannel(result);
+  const sourceUrl = publicSourceUrl(result);
   return {
     ...result,
+    floor: normalizeItalianFloor(result.floor ?? result.listing?.floor ?? result.source_row?.floor),
     underwriting: underwritingFromResult(result),
     data_quality: evaluateDataQuality(result),
     title: redactedTitle,
     address,
-    url: idealistaUrl,
-    idealista_url: idealistaUrl,
-    source_url: idealistaUrl,
-    source_channel: null,
+    url: sourceUrl,
+    idealista_url: sourceChannel === 'idealista' ? sourceUrl : null,
+    immobiliare_url: sourceChannel === 'immobiliare' ? sourceUrl : null,
+    source_url: sourceUrl,
+    source_channel: sourceChannel,
     source_listing_id: null,
     propertyCode: null,
     contactInfo: null,
@@ -290,8 +429,8 @@ function redactResult(result) {
     floor_plans: floorPlans,
     share_url: `/?property=${encodeURIComponent(result.listing_index ?? result.id ?? redactedTitle)}`,
     gpt_analysis: redactAnalysis(result.gpt_analysis),
-    listing: redactListing(result.listing, redactedTitle, photos, floorPlans, description, address, idealistaUrl),
-    source_row: redactSourceRow(result.source_row, redactedTitle, photos, floorPlans, description, address, idealistaUrl),
+    listing: redactListing(result.listing, redactedTitle, photos, floorPlans, description, address, sourceUrl, sourceChannel),
+    source_row: redactSourceRow(result.source_row, redactedTitle, photos, floorPlans, description, address, sourceUrl, sourceChannel),
   };
 }
 
@@ -395,7 +534,7 @@ function sourceListingToResult(source, index) {
       size: source.size_mq ?? listing.size,
       rooms: source.rooms ?? listing.rooms,
       bathrooms: source.bathrooms ?? listing.bathrooms,
-      floor: source.floor ?? listing.floor,
+      floor: normalizeItalianFloor(source.floor ?? listing.floor),
       hasLift: source.has_lift ?? listing.hasLift,
       hasPlan: source.has_plan ?? listing.hasPlan,
       status: source.property_condition ?? listing.status,
@@ -416,11 +555,21 @@ function sourceListingToResult(source, index) {
   return result;
 }
 
+function unifySourceListings(sourceListings) {
+  const groups = new Map();
+  for (const source of sourceListings) {
+    const key = source.canonical_source_key || `${source.source_channel}:${source.source_listing_id || source.source_url || source.id}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(source);
+  }
+  return [...groups.values()].map((members) => mergeUnifiedProperty(members));
+}
+
 async function readSupabaseOutput(id, { publicView = true } = {}) {
   const runId = id.replace(/^supabase:/, '');
   const [runs, properties] = await Promise.all([
     supabaseGet(`triage_runs?run_id=eq.${encodeURIComponent(runId)}&select=*`),
-    supabaseGet(`triage_properties?run_id=eq.${encodeURIComponent(runId)}&select=*&order=rank.asc`),
+    supabaseGetAll(`triage_properties?run_id=eq.${encodeURIComponent(runId)}&select=*&order=rank.asc`),
   ]);
   const run = runs?.[0];
   if (!run) throw new Error(`Supabase run not found: ${runId}`);
@@ -428,8 +577,13 @@ async function readSupabaseOutput(id, { publicView = true } = {}) {
   const sourceOrder = run.search_strategy === 'neutral_fractionability'
     ? 'door_score.desc.nullslast'
     : 'door_score.desc.nullslast,price_by_area.asc.nullslast';
-  const sourceListings = properties.length ? [] : await supabaseGet(`triage_source_listings?run_id=eq.${encodeURIComponent(runId)}&pre_triage_excluded=eq.false&select=*&order=${sourceOrder}&limit=${SOURCE_LISTINGS_LIMIT}`);
-  const results = properties.length ? properties.map((property) => property.raw_result || property).filter(Boolean) : sourceListings.map((source, index) => sourceListingToResult(source, index));
+  const sourceListings = properties.length ? [] : await supabaseGetAll(
+    `triage_source_listings?run_id=eq.${encodeURIComponent(runId)}&pre_triage_excluded=eq.false&select=*&order=${sourceOrder}`,
+    VIEWER_RESULTS_LIMIT * 2,
+  );
+  const results = properties.length
+    ? properties.map((property) => property.raw_result || property).filter(Boolean)
+    : unifySourceListings(sourceListings).slice(0, VIEWER_RESULTS_LIMIT).map((source, index) => sourceListingToResult(source, index));
 
   const output = run.raw_output && typeof run.raw_output === 'object'
     ? { ...run.raw_output, result_links: run.result_links ?? run.raw_output.result_links ?? [], results }
@@ -475,19 +629,21 @@ async function readCombinedOutput(id, { publicView = true } = {}) {
 export default async function handler(request, response) {
   try {
     const id = normalizeId(request.query.file);
-    const publicView = !(request.query.internal === 'true' || request.query.internal === '1');
+    // This is a public endpoint. Never allow a query parameter to bypass redaction.
+    const publicView = true;
+    const dashboardSummary = request.query.summary === 'true' || request.query.summary === '1';
 
     if (id.startsWith('combined:')) {
       const output = await readCombinedOutput(id, { publicView });
       response.setHeader('Cache-Control', publicView ? 'public, s-maxage=300, stale-while-revalidate=86400' : 'private, no-store');
-      response.status(200).json(output);
+      response.status(200).json(dashboardSummary ? compactDashboardOutput(output) : output);
       return;
     }
 
     if (id.startsWith('supabase:')) {
       const output = await readSupabaseOutput(id, { publicView });
       response.setHeader('Cache-Control', publicView ? 'public, s-maxage=300, stale-while-revalidate=86400' : 'private, no-store');
-      response.status(200).json(output);
+      response.status(200).json(dashboardSummary ? compactDashboardOutput(output) : output);
       return;
     }
 
@@ -514,3 +670,4 @@ export default async function handler(request, response) {
     response.status(500).json({ error: error.message });
   }
 }
+
