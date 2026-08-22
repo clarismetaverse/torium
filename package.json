@@ -18,6 +18,7 @@
     "triage:idealista:homes": "node pipelines/triage-idealista-filtered.js residentialRenovationMilan",
     "triage:massive": "node pipelines/triage-multisource-massive.js milanoFractioningMassive",
     "triage:gpt:latest": "node pipelines/triage-gpt-from-supabase.js latest",
+    "replay:multisource:v1": "node scripts/replay-normalized-listings-v1.js",
     "viewer:triage": "node viewer/server.js",
     "triage:idealista:neighborhoods": "node scripts/neighborhoods.js",
     "test": "node --test"
@@ -26,3 +27,4 @@
     "dotenv": "latest"
   }
 }
+
