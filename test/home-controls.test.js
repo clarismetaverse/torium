@@ -35,6 +35,7 @@ test('home exposes detailed neighborhood labels, distribution and filtering', ()
   assert.match(home, /id="neighborhoodFilter"/);
   assert.match(home, /id="neighborhoodCoverage"/);
   assert.match(home, /const neighborhood=r=>/);
+  assert.match(home, /canonical_zone_name\|\|r\?\.canonical_zone_name\|\|listing\(r\)\?\.area_label/);
   assert.match(home, /const macroArea=r=>/);
   assert.match(home, /const area=r=>neighborhood\(r\)\|\|macroArea\(r\)/);
   assert.match(home, /function drawNeighborhoodCoverage\(/);

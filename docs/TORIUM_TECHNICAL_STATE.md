@@ -101,6 +101,14 @@ Required rework:
 
 Immobiliare.it remains integrated but must not drive primary scouting or benchmarking until this work is validated.
 
+Current recovery work uses the structured `igolaizola/immobiliare-it-scraper` actor as the default secondary adapter. It runs asynchronously, uses `mostRecent` in neutral mode, validates source-provided geography after collection, isolates individual query failures, and performs conservative cross-source deduplication while retaining source provenance. The older start-URL actor remains available only through `TORIUM_IMMOBILIARE_ACTOR=url` for controlled comparisons. Promotion beyond secondary status still requires a live validation sample and geographic/duplicate-rate reporting.
+
+### Milan area standard
+
+New runs normalize both portal taxonomies into 32 canonical Milan zones derived from Immobiliare.it's search/market grouping. The canonical name is stored in `area_label` and drives dashboard grouping and filters; the original Idealista or Immobiliare neighborhood remains available in `neighborhood`, `source_area_label`, and the raw source payload for audit and future microzone analysis. This is a many-label-to-one-zone compatibility layer, not a claim that the two portals draw identical geographic boundaries.
+
+See `docs/MILAN_AREA_TAXONOMY.md` for the full mapping and current limitations.
+
 ## Current scoring implementation
 
 The Door Engine currently uses signals including surface, bathrooms, entrances, plans, renovation status, and risk flags. A known limitation is that price per square meter still affects ranking.

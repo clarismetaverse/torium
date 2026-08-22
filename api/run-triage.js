@@ -39,13 +39,14 @@ export default async function handler(request, response) {
   }
 
   const profile = request.body?.profile || 'scout';
-  if (!['scout', 'milano_broad'].includes(profile)) {
+  if (!['scout', 'milano_broad', 'milano_multisource'].includes(profile)) {
     return response.status(400).json({ error: 'Profilo run non valido' });
   }
 
   const requestedLimit = resolveRequestedLimit(request.body?.limit);
 
-  const profileOptions = profile === 'milano_broad'
+  const seriousProfile = profile === 'milano_broad' || profile === 'milano_multisource';
+  const profileOptions = seriousProfile
     ? {
         runMode: 'serious',
         requestedAreas: ['Milano'],
@@ -58,9 +59,9 @@ export default async function handler(request, response) {
     : {};
 
   activeRun = runMassiveTriage({
-    baseSearchName: profile === 'milano_broad' ? 'milanoFractioningSerious' : 'milanoFractioningMassive',
+    baseSearchName: profile === 'milano_multisource' ? 'milanoFractioningMultisource' : profile === 'milano_broad' ? 'milanoFractioningSerious' : 'milanoFractioningMassive',
     searchStrategy: strategy,
-    sources: 'idealista',
+    sources: profile === 'milano_multisource' ? 'idealista,immobiliare' : 'idealista',
     ...profileOptions,
   });
 
