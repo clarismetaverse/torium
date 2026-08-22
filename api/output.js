@@ -127,7 +127,7 @@ function sanitizePublicDeep(node, key) {
     const out = [];
     for (const item of node) {
       if (typeof item === 'string') {
-        if (String(key).toLowerCase() === 'origin_source_channels' && ['idealista', 'immobiliare'].includes(item.toLowerCase())) {
+        if (['source_channels', 'origin_source_channels'].includes(String(key).toLowerCase()) && ['idealista', 'immobiliare'].includes(item.toLowerCase())) {
           out.push(item.toLowerCase());
           continue;
         }
