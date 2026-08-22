@@ -154,13 +154,12 @@ export default async function handler(request, response) {
     if (!runId) return sendError(response, 404, 'No run found');
 
     const raw = request.query.raw === '1' || request.query.raw === 'true';
-    const internal = request.query.internal === '1' || request.query.internal === 'true';
     const deduped = request.query.deduped === '1' || request.query.deduped === 'true';
     const areaMatchFilter = boolParam(request.query.area_match);
     const fetchLimit = deduped || areaMatchFilter !== null ? 1000 : limit;
     const fetchOffset = deduped || areaMatchFilter !== null ? 0 : offset;
 
-    const select = raw || internal || areaMatchFilter !== null
+    const select = raw || areaMatchFilter !== null
       ? '*'
       : 'id,created_at,run_id,source_channel,source_url,source_listing_id,source_fingerprint,canonical_source_key,query_name,query_area,title,address,city,district,neighborhood,area_label,price_eur,price_by_area,size_mq,rooms,bathrooms,floor,property_condition,property_type,has_lift,has_plan,features,is_new,renovation_features,ignored_features,risk_features,quality_flags,pre_triage_excluded,pre_triage_exclusion_reason,door_score,estimated_final_units,new_units_created,estimated_project_cost_eur,thumbnail_url,raw_listing';
 
@@ -181,7 +180,7 @@ export default async function handler(request, response) {
     if (deduped) rows = dedupeRows(rows);
 
     const pagedRows = deduped || areaMatchFilter !== null ? rows.slice(offset, offset + limit) : rows;
-    jsonResponse(response, { run_id: runId, mode: deduped ? 'deduped' : 'raw', raw_count_loaded: rawCount, count: pagedRows.length, total_after_filters: rows.length, limit, offset, rows: internal ? pagedRows : pagedRows.map(redactRow) });
+    jsonResponse(response, { run_id: runId, mode: deduped ? 'deduped' : 'raw', raw_count_loaded: rawCount, count: pagedRows.length, total_after_filters: rows.length, limit, offset, rows: pagedRows.map(redactRow) });
   } catch (error) {
     sendError(response, 500, error.message);
   }

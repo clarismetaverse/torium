@@ -46,13 +46,15 @@ export default async function handler(request, response) {
   const requestedLimit = resolveRequestedLimit(request.body?.limit);
 
   const seriousProfile = profile === 'milano_broad' || profile === 'milano_multisource';
+  const sourceCount = profile === 'milano_multisource' ? 2 : 1;
   const profileOptions = seriousProfile
     ? {
         runMode: 'serious',
         requestedAreas: ['Milano'],
         maxItemsPerQuery: requestedLimit,
-        maxTotalRawListings: requestedLimit,
-        topPrescoreLimit: requestedLimit,
+        maxItemsPerSource: requestedLimit,
+        maxTotalRawListings: requestedLimit * sourceCount,
+        topPrescoreLimit: requestedLimit * sourceCount,
         minSize: 100,
         idealistaCondition: ['renew'],
       }
@@ -74,8 +76,10 @@ export default async function handler(request, response) {
       search_strategy: output.search_strategy,
       profile,
       requested_limit: requestedLimit,
+      requested_limit_per_source: requestedLimit,
       requested_areas: output.requested_areas,
       raw_source_count: output.raw_source_count,
+      raw_source_counts_by_channel: output.raw_source_counts_by_channel,
       eligible_count: output.eligible_count,
       pre_scored_count: output.pre_scored_count,
     });

@@ -3,11 +3,13 @@ import assert from 'node:assert/strict';
 import {
   buildImmobiliareQueries,
   dedupeListings,
+  enrichWithPreScore,
   sourceAreaMatches,
 } from '../pipelines/triage-multisource-massive.js';
 import { listingMatchesAnyArea, normalizeSourceListing } from '../lib/source-normalizers.js';
 import { resolveSearchStrategy } from '../lib/search-strategies.js';
 import { dedupeValuationCandidates } from '../lib/valuation-runner.js';
+import { readFile } from 'node:fs/promises';
 
 test('neutral Immobiliare query uses the structured actor schema without price ordering', () => {
   const [query] = buildImmobiliareQueries(['Milano'], resolveSearchStrategy('neutral_fractionability'));
@@ -57,4 +59,23 @@ test('valuation consumes one candidate per canonical property', () => {
     { id: 3, canonical_source_key: 'property:via verdi 5:450000:110:1' },
   ]);
   assert.deepEqual(candidates.map((item) => item.id), [1, 3]);
+});
+
+test('pipeline quality gate excludes on-request prices before valuation', async () => {
+  const profile = JSON.parse(await readFile(new URL('../config/investor-profiles/max-doors-20k.json', import.meta.url), 'utf8'));
+  const normalized = normalizeSourceListing({
+    id: 123456790,
+    title: 'Appartamento',
+    price: { raw: null, value: 'Prezzo su richiesta', isHidden: true },
+    topology: { surface: { size: 140 }, rooms: '4', bathrooms: '2', typology: { name: 'Appartamento' } },
+    geography: { municipality: { name: 'Milano' }, microzone: { name: 'Isola' }, street: 'Via Esempio, 10' },
+    analytics: { propertyStatus: 'Da ristrutturare', microzone: 'Isola' },
+    media: { images: [], floorPlans: [] },
+  }, { source_channel: 'immobiliare' });
+  const enriched = enrichWithPreScore(normalized, profile);
+
+  assert.equal(enriched.price_eur, null);
+  assert.equal(enriched.data_quality.valid, false);
+  assert.equal(enriched.pre_triage_excluded, true);
+  assert.match(enriched.pre_triage_exclusion_reason, /data_quality:missing_or_invalid_price/);
 });

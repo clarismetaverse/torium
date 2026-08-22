@@ -1,0 +1,46 @@
+{
+  "id": "123456790",
+  "uuid": "fixture-immobiliare-on-request",
+  "title": "Appartamento",
+  "price": {
+    "raw": null,
+    "value": "Prezzo su richiesta",
+    "currency": "EUR",
+    "isHidden": true
+  },
+  "topology": {
+    "lift": true,
+    "floor": "2",
+    "rooms": "5+",
+    "surface": { "size": 235, "unitOfMeasure": "m²" },
+    "typology": { "id": 4, "name": "Appartamento" },
+    "bathrooms": "2"
+  },
+  "analytics": {
+    "macrozone": "Porta Venezia, Indipendenza",
+    "microzone": "Indipendenza",
+    "propertyStatus": "Da ristrutturare",
+    "otherFeatures": ["balcone", "cantina"]
+  },
+  "geography": {
+    "street": "Via Esempio",
+    "macrozone": { "id": 10060, "name": "Porta Venezia, Indipendenza" },
+    "microzone": { "id": 10289, "name": "Indipendenza" },
+    "geolocation": {
+      "latitude": 45.4668,
+      "longitude": 9.2147,
+      "visibilityType": "exact_location"
+    },
+    "municipality": { "id": 8042, "name": "Milano" }
+  },
+  "media": {
+    "images": [
+      {
+        "hd": "https://pwm.im-cdn.it/image/100000002/xxl.jpg",
+        "sd": "https://pwm.im-cdn.it/image/100000002/m-c.jpg",
+        "label": "Salone"
+      }
+    ],
+    "floorPlans": []
+  }
+}

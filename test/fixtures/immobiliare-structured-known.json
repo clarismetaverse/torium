@@ -1,0 +1,54 @@
+{
+  "id": "123456789",
+  "uuid": "fixture-immobiliare-known",
+  "title": "Appartamento",
+  "lastModified": "2026-08-20T10:15:00.000Z",
+  "price": {
+    "raw": 880000,
+    "value": "€ 880.000",
+    "currency": "EUR",
+    "isHidden": false
+  },
+  "topology": {
+    "lift": true,
+    "floor": "1",
+    "rooms": "5",
+    "surface": { "size": 160, "unitOfMeasure": "m²" },
+    "category": { "id": 1, "name": "Residenziale" },
+    "typology": { "id": 4, "name": "Appartamento" },
+    "bathrooms": "2"
+  },
+  "analytics": {
+    "macrozone": "Cenisio, Sarpi, Isola",
+    "microzone": "Isola",
+    "propertyStatus": "Da ristrutturare",
+    "otherFeatures": ["balcone", "cantina", "esposizione interna"]
+  },
+  "geography": {
+    "street": "Piazzale Esempio, 4",
+    "macrozone": { "id": 10054, "name": "Cenisio, Sarpi, Isola" },
+    "microzone": { "id": 10295, "name": "Isola" },
+    "geolocation": {
+      "latitude": 45.4889,
+      "longitude": 9.1913,
+      "visibilityType": "exact_location"
+    },
+    "municipality": { "id": 8042, "name": "Milano" }
+  },
+  "media": {
+    "images": [
+      {
+        "hd": "https://pwm.im-cdn.it/image/100000001/xxl.jpg",
+        "sd": "https://pwm.im-cdn.it/image/100000001/m-c.jpg",
+        "label": "Salone"
+      }
+    ],
+    "floorPlans": [
+      {
+        "hd": "https://pic.im-cdn.it/plan/100000001/xxl.jpg",
+        "sd": "https://pic.im-cdn.it/plan/100000001/m.jpg",
+        "label": "Planimetria"
+      }
+    ]
+  }
+}

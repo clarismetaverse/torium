@@ -1,0 +1,42 @@
+{
+  "propertyCode": "35738713",
+  "url": "https://www.idealista.it/immobile/35738713/",
+  "size": 107,
+  "floor": null,
+  "price": 182000,
+  "rooms": 3,
+  "suggestedTexts": {
+    "title": "Villetta a schiera in Via Esempio, 30, Gratosoglio, Milano"
+  },
+  "status": "renew",
+  "address": "Via Esempio, 30",
+  "showAddress": true,
+  "hasLift": null,
+  "hasPlan": true,
+  "district": "Abbiategrasso - Chiesa Rossa",
+  "features": {
+    "hasGarden": true,
+    "hasBoxRoom": true,
+    "hasTerrace": false
+  },
+  "latitude": 45.4190032,
+  "bathrooms": 2,
+  "longitude": 9.1943232,
+  "thumbnail": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/fixture-cover.jpg",
+  "priceByArea": 1701,
+  "municipality": "Milano",
+  "neighborhood": "Gratosoglio",
+  "propertyType": "chalet",
+  "multimedia": {
+    "images": [
+      {
+        "tag": "facade",
+        "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/fixture-photo.jpg"
+      },
+      {
+        "tag": "plan",
+        "url": "https://img4.idealista.it/blur/WEB_DETAIL_TOP-XL-P/fixture-plan.jpg"
+      }
+    ]
+  }
+}

@@ -6,6 +6,9 @@ import { buildImmobiliareSearchUrl } from '../lib/immobiliare-url-builder.js';
 import { syncSourceListingsRunToSupabase } from '../lib/supabase-source-listings-sync.js';
 import { buildStrategySearchName, compareShortlistItems, resolveSearchStrategy } from '../lib/search-strategies.js';
 import { findMilanIdealistaLocation } from '../lib/milan-idealista-locations.js';
+import { evaluateDataQuality } from '../lib/data-quality-gate.js';
+import { comparePropertyIdentity, propertyIdentityBlockKeys } from '../lib/property-identity.js';
+import { mergeUnifiedProperty, summarizePriceDifferences } from '../lib/source-offers.js';
 import fs from 'node:fs/promises';
 
 const INVESTOR_PROFILE_URL = new URL('../config/investor-profiles/max-doors-20k.json', import.meta.url);
@@ -65,6 +68,7 @@ export function resolveMassiveRunConfig(options = {}, env = process.env) {
   const modeDefaults = RUN_MODE_DEFAULTS[runMode] || RUN_MODE_DEFAULTS.scout;
   const requestedAreas = areaList(options.requestedAreas ?? env.TORIUM_MASSIVE_AREAS ?? modeDefaults.areas);
   const maxItemsPerQuery = Number(options.maxItemsPerQuery ?? env.TORIUM_MASSIVE_MAX_ITEMS_PER_QUERY ?? modeDefaults.maxItemsPerQuery);
+  const maxItemsPerSource = Number(options.maxItemsPerSource ?? env.TORIUM_MASSIVE_MAX_ITEMS_PER_SOURCE ?? maxItemsPerQuery);
   const maxPagesPerQuery = Number(options.maxPagesPerQuery ?? env.TORIUM_MASSIVE_MAX_PAGES_PER_QUERY ?? modeDefaults.maxPagesPerQuery);
   const defaultTotalRawListings = maxItemsPerQuery * Math.max(1, requestedAreas.length);
 
@@ -72,6 +76,7 @@ export function resolveMassiveRunConfig(options = {}, env = process.env) {
     runMode,
     requestedAreas,
     maxItemsPerQuery,
+    maxItemsPerSource,
     maxPagesPerQuery,
     maxTotalRawListings: Number(options.maxTotalRawListings ?? env.TORIUM_MASSIVE_MAX_TOTAL_RAW_LISTINGS ?? defaultTotalRawListings),
     topPrescoreLimit: Number(options.topPrescoreLimit ?? env.TORIUM_MASSIVE_TOP_PRESCORE_LIMIT ?? modeDefaults.topPrescoreLimit),
@@ -345,23 +350,32 @@ export function sourceAreaMatches(normalized, raw, area) {
   return Boolean(normalizedArea && rawLocationText.includes(normalizedArea));
 }
 
-function enrichWithPreScore(item, investorProfile) {
+export function enrichWithPreScore(item, investorProfile) {
   const exclusion = getPreTriageExclusion(item.listing);
   const doorEngine = runDoorEngine(item.listing, investorProfile, {
     includeEconomicSignals: SEARCH_STRATEGY.includeEconomicDoorSignals,
     scoringMode: SEARCH_STRATEGY.scoringMode,
   });
+  const dataQuality = evaluateDataQuality({
+    ...item,
+    listing: item.listing,
+    door_engine: doorEngine,
+  });
+  const qualityReasons = dataQuality.critical_flags.map((reason) => `data_quality:${reason}`);
+  const exclusionReasons = [...new Set([...exclusion.reasons, ...qualityReasons])];
 
   return {
     ...item,
-    pre_triage_excluded: exclusion.excluded,
-    pre_triage_exclusion_reason: exclusion.reasons.join(','),
+    pre_triage_excluded: exclusion.excluded || !dataQuality.valid,
+    pre_triage_exclusion_reason: exclusionReasons.join(','),
     door_score: doorEngine.doorScore,
     estimated_final_units: doorEngine.estimatedFinalUnits,
     new_units_created: doorEngine.newUnitsCreated,
     estimated_project_cost_eur: doorEngine.estimatedProjectCost,
     door_engine: doorEngine,
-    exclusion,
+    data_quality: dataQuality,
+    quality_flags: [...new Set([...(item.quality_flags || []), ...dataQuality.critical_flags, ...dataQuality.warning_flags])],
+    exclusion: { ...exclusion, excluded: exclusion.excluded || !dataQuality.valid, reasons: exclusionReasons },
   };
 }
 
@@ -374,24 +388,39 @@ export function canonicalPropertyKey(item) {
 }
 
 export function dedupeListings(items) {
-  const byKey = new Map();
+  const groups = [];
+  const groupsByBlock = new Map();
 
   for (const item of items) {
-    const key = item.canonical_source_key || canonicalPropertyKey(item);
-    const existing = byKey.get(key);
-    if (!existing) {
-      byKey.set(key, { ...item, origin_source_channels: [item.source_channel], origin_source_urls: item.source_url ? [item.source_url] : [] });
-      continue;
+    const blocks = [...new Set([
+      `legacy:${item.canonical_source_key || canonicalPropertyKey(item)}`,
+      ...propertyIdentityBlockKeys(item),
+    ])];
+    const candidateIndexes = [...new Set(blocks.flatMap((block) => [...(groupsByBlock.get(block) || [])]))];
+    let groupIndex = null;
+    for (const index of candidateIndexes) {
+      if (groups[index].some((member) => comparePropertyIdentity(member, item).auto_merge_eligible)) {
+        groupIndex = index;
+        break;
+      }
+      const exactLegacyKey = item.canonical_source_key || canonicalPropertyKey(item);
+      if (groups[index].some((member) => (member.canonical_source_key || canonicalPropertyKey(member)) === exactLegacyKey)) {
+        groupIndex = index;
+        break;
+      }
     }
-    const winner = (item.door_score ?? 0) > (existing.door_score ?? 0) ? item : existing;
-    byKey.set(key, {
-      ...winner,
-      origin_source_channels: [...new Set([...(existing.origin_source_channels || [existing.source_channel]), item.source_channel].filter(Boolean))],
-      origin_source_urls: [...new Set([...(existing.origin_source_urls || [existing.source_url]), item.source_url].filter(Boolean))],
-    });
+    if (groupIndex === null) {
+      groupIndex = groups.length;
+      groups.push([]);
+    }
+    groups[groupIndex].push(item);
+    for (const block of blocks) {
+      if (!groupsByBlock.has(block)) groupsByBlock.set(block, new Set());
+      groupsByBlock.get(block).add(groupIndex);
+    }
   }
 
-  return Array.from(byKey.values());
+  return groups.map((members) => mergeUnifiedProperty(members));
 }
 
 function buildResultLinks(items) {
@@ -410,6 +439,8 @@ function buildResultLinks(items) {
     condition: item.property_condition,
     features: item.features,
     quality_flags: item.quality_flags,
+    source_offers: item.source_offers,
+    price_comparison: item.price_comparison,
   }));
 }
 
@@ -442,6 +473,7 @@ export async function runMassiveTriage(options = {}) {
     immobiliare_actor: IMMOBILIARE_ACTOR,
     requested_areas: ACTIVE_RUN_CONFIG.requestedAreas,
     max_items_per_query: ACTIVE_RUN_CONFIG.maxItemsPerQuery,
+    max_items_per_source: ACTIVE_RUN_CONFIG.maxItemsPerSource,
     max_pages_per_query: ACTIVE_RUN_CONFIG.maxPagesPerQuery,
     max_total_raw_listings: ACTIVE_RUN_CONFIG.maxTotalRawListings,
     filters: {
@@ -467,11 +499,13 @@ export async function runMassiveTriage(options = {}) {
   }
 
   const collected = [];
+  const collectedBySource = Object.fromEntries(SOURCES.map((source) => [source, 0]));
   const queryPayloads = [];
   const queryErrors = [];
 
   for (const query of queries) {
     if (collected.length >= ACTIVE_RUN_CONFIG.maxTotalRawListings) break;
+    if ((collectedBySource[query.source_channel] || 0) >= ACTIVE_RUN_CONFIG.maxItemsPerSource) continue;
 
     console.log(`Running ${query.actor} query: ${query.query_name} / ${query.query_area || 'all'}`);
     let rawResults;
@@ -497,6 +531,7 @@ export async function runMassiveTriage(options = {}) {
     });
 
     for (const raw of rawItems) {
+      if ((collectedBySource[query.source_channel] || 0) >= ACTIVE_RUN_CONFIG.maxItemsPerSource) break;
       const normalized = {
         ...normalizeSourceListing(raw, {
         source_channel: query.source_channel,
@@ -521,6 +556,7 @@ export async function runMassiveTriage(options = {}) {
 
       const enriched = enrichWithPreScore(normalized, investorProfile);
       collected.push(enriched);
+      collectedBySource[query.source_channel] = (collectedBySource[query.source_channel] || 0) + 1;
       if (collected.length >= ACTIVE_RUN_CONFIG.maxTotalRawListings) break;
     }
   }
@@ -530,6 +566,7 @@ export async function runMassiveTriage(options = {}) {
   }
 
   const deduped = dedupeListings(collected);
+  const priceComparisonSummary = summarizePriceDifferences(deduped);
   const sourceFilteredOut = collected
     .filter((item) => item.pre_triage_excluded)
     .map((item, index) => ({ index, title: item.title, url: item.source_url, exclusion: item.exclusion }));
@@ -551,6 +588,7 @@ export async function runMassiveTriage(options = {}) {
     requested_areas: ACTIVE_RUN_CONFIG.requestedAreas,
     sample_config: {
       max_items_per_query: ACTIVE_RUN_CONFIG.maxItemsPerQuery,
+      max_items_per_source: ACTIVE_RUN_CONFIG.maxItemsPerSource,
       max_total_raw_listings: ACTIVE_RUN_CONFIG.maxTotalRawListings,
       top_prescore_limit: ACTIVE_RUN_CONFIG.topPrescoreLimit,
       min_size_mq: ACTIVE_RUN_CONFIG.minSize,
@@ -558,8 +596,10 @@ export async function runMassiveTriage(options = {}) {
     query_payloads: queryPayloads,
     query_errors: queryErrors,
     raw_source_count: collected.length,
+    raw_source_counts_by_channel: collectedBySource,
     scraped_count: collected.length,
     deduped_count: deduped.length,
+    price_comparison_summary: priceComparisonSummary,
     eligible_source_count: sourceEligible.length,
     eligible_count: dedupedEligible.length,
     filtered_out_count: sourceFilteredOut.length,
@@ -577,11 +617,13 @@ export async function runMassiveTriage(options = {}) {
     sources: output.source_channels,
     requested_areas: output.requested_areas,
     raw_source_count: output.raw_source_count,
+    raw_source_counts_by_channel: output.raw_source_counts_by_channel,
     deduped_count: output.deduped_count,
     eligible_count: output.eligible_count,
     filtered_out_count: output.filtered_out_count,
     pre_scored_count: output.pre_scored_count,
     top_30: output.result_links,
+    price_comparison_summary: output.price_comparison_summary,
   }, null, 2));
 
   return output;
