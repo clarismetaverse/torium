@@ -26,11 +26,25 @@ test('run endpoint requires same-origin', async () => {
   assert.equal(crossOrigin.statusCode, 403);
 });
 
-test('serious run limit defaults to 600 and is capped at 2000', () => {
+test('serious run limit defaults to 600 and supports up to 5000', () => {
   assert.equal(resolveRequestedLimit(undefined), 600);
-  assert.equal(resolveRequestedLimit(2000), 2000);
-  assert.equal(resolveRequestedLimit(3000), 2000);
+  assert.equal(resolveRequestedLimit(4000), 4000);
+  assert.equal(resolveRequestedLimit(5000), 5000);
+  assert.equal(resolveRequestedLimit(6000), 5000);
   assert.equal(resolveRequestedLimit('invalid'), 600);
+});
+
+test('multisource configuration can enforce an independent quota per portal', () => {
+  const config = resolveMassiveRunConfig({
+    runMode: 'serious',
+    requestedAreas: ['Milano'],
+    maxItemsPerQuery: 1000,
+    maxItemsPerSource: 1000,
+    maxTotalRawListings: 2000,
+  }, {});
+  assert.equal(config.maxItemsPerQuery, 1000);
+  assert.equal(config.maxItemsPerSource, 1000);
+  assert.equal(config.maxTotalRawListings, 2000);
 });
 
 test('Idealista scout targets the requested Milan location ID', () => {
@@ -59,3 +73,4 @@ test('serious Milan profile expands the sample without a neighborhood filter', (
   assert.equal(config.minSize, 100);
   assert.deepEqual(config.idealistaCondition, ['renew']);
 });
+

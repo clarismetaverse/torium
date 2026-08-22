@@ -4,7 +4,7 @@ export const maxDuration = 300;
 
 let activeRun = null;
 
-export function resolveRequestedLimit(value, fallback = 600, maximum = 2000) {
+export function resolveRequestedLimit(value, fallback = 600, maximum = 5000) {
   const numeric = Number(value ?? fallback);
   if (!Number.isFinite(numeric)) return fallback;
   return Math.max(1, Math.min(maximum, Math.floor(numeric)));
@@ -39,28 +39,31 @@ export default async function handler(request, response) {
   }
 
   const profile = request.body?.profile || 'scout';
-  if (!['scout', 'milano_broad'].includes(profile)) {
+  if (!['scout', 'milano_broad', 'milano_multisource'].includes(profile)) {
     return response.status(400).json({ error: 'Profilo run non valido' });
   }
 
   const requestedLimit = resolveRequestedLimit(request.body?.limit);
 
-  const profileOptions = profile === 'milano_broad'
+  const seriousProfile = profile === 'milano_broad' || profile === 'milano_multisource';
+  const sourceCount = profile === 'milano_multisource' ? 2 : 1;
+  const profileOptions = seriousProfile
     ? {
         runMode: 'serious',
         requestedAreas: ['Milano'],
         maxItemsPerQuery: requestedLimit,
-        maxTotalRawListings: requestedLimit,
-        topPrescoreLimit: requestedLimit,
+        maxItemsPerSource: requestedLimit,
+        maxTotalRawListings: requestedLimit * sourceCount,
+        topPrescoreLimit: requestedLimit * sourceCount,
         minSize: 100,
         idealistaCondition: ['renew'],
       }
     : {};
 
   activeRun = runMassiveTriage({
-    baseSearchName: profile === 'milano_broad' ? 'milanoFractioningSerious' : 'milanoFractioningMassive',
+    baseSearchName: profile === 'milano_multisource' ? 'milanoFractioningMultisource' : profile === 'milano_broad' ? 'milanoFractioningSerious' : 'milanoFractioningMassive',
     searchStrategy: strategy,
-    sources: 'idealista',
+    sources: profile === 'milano_multisource' ? 'idealista,immobiliare' : 'idealista',
     ...profileOptions,
   });
 
@@ -73,8 +76,10 @@ export default async function handler(request, response) {
       search_strategy: output.search_strategy,
       profile,
       requested_limit: requestedLimit,
+      requested_limit_per_source: requestedLimit,
       requested_areas: output.requested_areas,
       raw_source_count: output.raw_source_count,
+      raw_source_counts_by_channel: output.raw_source_counts_by_channel,
       eligible_count: output.eligible_count,
       pre_scored_count: output.pre_scored_count,
     });
@@ -85,3 +90,4 @@ export default async function handler(request, response) {
     activeRun = null;
   }
 }
+
