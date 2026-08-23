@@ -35,12 +35,23 @@ test('home exposes detailed neighborhood labels, distribution and filtering', ()
   assert.match(home, /id="neighborhoodFilter"/);
   assert.match(home, /id="neighborhoodCoverage"/);
   assert.match(home, /const neighborhood=r=>/);
+  assert.match(home, /canonical_zone_name\|\|r\?\.canonical_zone_name\|\|listing\(r\)\?\.area_label/);
   assert.match(home, /const macroArea=r=>/);
   assert.match(home, /const area=r=>neighborhood\(r\)\|\|macroArea\(r\)/);
   assert.match(home, /function drawNeighborhoodCoverage\(/);
   assert.match(home, /state\.neighborhood==='all'\|\|neighborhoodKey\(x\.r\)===state\.neighborhood/);
   assert.match(home, /chip area-primary/);
   assert.match(home, /chip area-secondary/);
+});
+
+test('home exposes shared portal statistics, filtering and listing badges', () => {
+  assert.match(home, /id="portalFilter"/);
+  assert.match(home, /Condivisi tra i portali/);
+  assert.match(home, /const portalPresence=r=>/);
+  assert.match(home, /state\.portal==='shared'/);
+  assert.match(home, /sharedListings:'Annunci condivisi'/);
+  assert.match(home, /class="chip signal-shared"/);
+  assert.match(home, /url\.searchParams\.set\('portal',state\.portal\)/);
 });
 
 test('home recomputes visible ROI statistics for the selected neighborhood', () => {
@@ -58,6 +69,16 @@ test('home exposes ROI base as the only ranking option', () => {
   assert.match(home, /criterion:'roiBase'/);
   assert.match(home, /const rankingCriteria=\(\)=>\(\{roiBase:criteria\(\)\.roiBase\}\)/);
   assert.doesNotMatch(home, /\|\|\(doorScore\(b\.r\)-doorScore\(a\.r\)\)/);
+});
+
+test('home supports 5000-item runs without rendering every card at once', () => {
+  assert.match(home, /profile:'milano_broad',limit:5000/);
+  assert.match(home, /run_id:runId,limit:5000,mode:'deterministic'/);
+  assert.match(home, /visibleLimit:100/);
+  assert.match(home, /state\.visibleLimit\+=200/);
+  assert.match(home, /id="loadMoreDeals"/);
+  assert.match(home, /api\/output\?summary=1&file=/);
+  assert.doesNotMatch(home, /slice\(0,60\)/);
 });
 
 test('deal previews expose only evidence-backed fractioning and floor-plan tags', () => {
@@ -138,3 +159,4 @@ test('home inline script is valid JavaScript', () => {
   assert.ok(script);
   assert.doesNotThrow(() => new Function(script));
 });
+
