@@ -44,6 +44,16 @@ test('home exposes detailed neighborhood labels, distribution and filtering', ()
   assert.match(home, /chip area-secondary/);
 });
 
+test('home exposes shared portal statistics, filtering and listing badges', () => {
+  assert.match(home, /id="portalFilter"/);
+  assert.match(home, /Condivisi tra i portali/);
+  assert.match(home, /const portalPresence=r=>/);
+  assert.match(home, /state\.portal==='shared'/);
+  assert.match(home, /sharedListings:'Annunci condivisi'/);
+  assert.match(home, /class="chip signal-shared"/);
+  assert.match(home, /url\.searchParams\.set\('portal',state\.portal\)/);
+});
+
 test('home recomputes visible ROI statistics for the selected neighborhood', () => {
   assert.match(home, /const o=state\.output\|\|\{\},rs=filteredResults\(\),rank=ranked\(\)/);
   assert.match(home, /roiValues=rs\.filter\(r=>dataQuality\(r\)\.valid\)/);
