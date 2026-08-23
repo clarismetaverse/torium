@@ -54,6 +54,14 @@ test('home exposes shared portal statistics, filtering and listing badges', () =
   assert.match(home, /url\.searchParams\.set\('portal',state\.portal\)/);
 });
 
+test('home groups shared listings with a cross-portal price spread', () => {
+  assert.match(home, /value="price_spread">Con spread di prezzo/);
+  assert.match(home, /state\.portal==='price_spread'/);
+  assert.match(home, /priceComparison\(r\)\?\.has_price_difference===true/);
+  assert.match(home, /priceSpreadListings:'Prezzi diversi tra portali'/);
+  assert.match(home, /priceSpreadPortals:'With price spread'/);
+});
+
 test('home recomputes visible ROI statistics for the selected neighborhood', () => {
   assert.match(home, /const o=state\.output\|\|\{\},rs=filteredResults\(\),rank=ranked\(\)/);
   assert.match(home, /roiValues=rs\.filter\(r=>dataQuality\(r\)\.valid\)/);
