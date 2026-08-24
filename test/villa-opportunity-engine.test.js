@@ -39,3 +39,21 @@ test('dynamic benchmark comes from current comparable asking prices', () => {
   assert.equal(assessment.asking_discount_to_benchmark_pct, 38.5);
   assert.ok(scored.door_score > 60);
 });
+
+test('Immobiliare isNewConstruction false is not mistaken for a new build', () => {
+  const item = villa({
+    property_type: 'Villetta a schiera',
+    property_condition: 'renew',
+    is_new: false,
+    raw_listing: { badge: { isNew: true, isNewConstruction: false } },
+    listing: {
+      propertyType: 'Villetta a schiera',
+      status: 'renew',
+      description: 'Villetta a schiera da ristrutturare con giardino.',
+      features: ['giardino'],
+      raw: { badge: { isNew: true, isNewConstruction: false } },
+    },
+  });
+
+  assert.deepEqual(getVillaPreTriageExclusion(item, 'renovation'), { excluded: false, reasons: [] });
+});
