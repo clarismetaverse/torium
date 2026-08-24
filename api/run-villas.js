@@ -31,7 +31,7 @@ export default async function handler(request, response) {
     return response.status(405).json({ error: 'Method not allowed' });
   }
   if (!isSameOrigin(request)) return response.status(403).json({ error: 'Cross-origin request denied' });
-  if (activeVillaRun) return response.status(409).json({ error: 'Una run ville � gi� in corso su questa istanza' });
+  if (activeVillaRun) return response.status(409).json({ error: 'Una run ville è già in corso su questa istanza' });
 
   let requestConfig;
   try {
@@ -80,4 +80,3 @@ export default async function handler(request, response) {
     activeVillaRun = null;
   }
 }
-
