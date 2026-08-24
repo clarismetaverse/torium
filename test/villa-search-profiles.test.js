@@ -46,4 +46,5 @@ test('Sardinia renovation uses four tiles and strict region validation', () => {
   assert.ok(queries.filter((query) => query.comparison_role === 'candidate').every((query) => query.payload.maxItems === 100));
   assert.ok(queries.filter((query) => query.comparison_role === 'candidate' && query.source_channel === 'idealista').every((query) => query.payload.condition.includes('renew')));
   assert.ok(queries.filter((query) => query.comparison_role === 'candidate' && query.source_channel === 'immobiliare').every((query) => query.payload.propertyCondition === 'toBeRenovated'));
+  assert.ok(queries.every((query) => query.payload.distanceKm <= 68));
 });
