@@ -34,4 +34,3 @@ test('Tuscany is a reusable tiled geography with region validation', () => {
   assert.equal(resolveVillaGeoProfile('toscana').city, 'Toscana');
   assert.equal(resolveVillaIntent('tourism').id, 'tourism');
 });
-

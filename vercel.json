@@ -13,4 +13,3 @@
     { "source": "/property/:property", "destination": "/index?property=:property" }
   ]
 }
-

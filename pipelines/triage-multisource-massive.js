@@ -724,4 +724,3 @@ if (process.argv[1]?.replaceAll('\\', '/').endsWith('pipelines/triage-multisourc
     process.exit(1);
   });
 }
-

@@ -32,4 +32,3 @@ export default async function handler(_request, response) {
     return response.status(500).json({ error: error.message });
   }
 }
-

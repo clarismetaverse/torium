@@ -14,4 +14,3 @@ test('villa run limit is bounded and invalid values fail closed', () => {
   assert.throws(() => resolveVillaRunRequest({ area: 'italia' }), /Area ville non valida/);
   assert.throws(() => resolveVillaRunRequest({ intent: 'flip' }), /Strategia ville non valida/);
 });
-

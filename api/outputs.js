@@ -86,4 +86,3 @@ export default async function handler(_request, response) {
     response.status(500).json({ error: error.message });
   }
 }
-

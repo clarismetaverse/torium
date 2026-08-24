@@ -172,4 +172,3 @@ test('home inline script is valid JavaScript', () => {
   assert.ok(script);
   assert.doesNotThrow(() => new Function(script));
 });
-

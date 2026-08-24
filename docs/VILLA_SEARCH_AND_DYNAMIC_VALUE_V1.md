@@ -54,4 +54,3 @@ transaction AVM, renovation exit value, rental forecast or ROI. Villas are
 heterogeneous and land, views, access, conservation constraints and hospitality
 licensing can dominate price. Future versions require geospatial comparables,
 closed transactions, capex scopes, seasonality, ADR/occupancy and legal checks.
-
