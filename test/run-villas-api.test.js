@@ -7,6 +7,7 @@ test('villa run request is dynamic across supported area and intent presets', ()
   assert.equal(request.geo.id, 'toscana');
   assert.equal(request.intent.id, 'tourism');
   assert.equal(request.limit, 500);
+  assert.equal(resolveVillaRunRequest({ area: 'sardegna', intent: 'renovation' }).geo.id, 'sardegna');
 });
 
 test('villa run limit is bounded and invalid values fail closed', () => {

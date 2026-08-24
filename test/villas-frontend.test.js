@@ -9,6 +9,7 @@ test('villas use a separate frontend with area, intent and feature filters', () 
   assert.match(page, /TORIUM · Ville/);
   assert.match(page, /Acquisto \+ ristrutturazione/);
   assert.match(page, /Turismo \/ hold/);
+  assert.match(page, /value="sardegna">Sardegna/);
   assert.match(page, /Con giardino/);
   assert.match(page, /Con piscina/);
   assert.match(page, /Sotto benchmark dinamico/);

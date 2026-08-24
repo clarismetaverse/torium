@@ -34,3 +34,16 @@ test('Tuscany is a reusable tiled geography with region validation', () => {
   assert.equal(resolveVillaGeoProfile('toscana').city, 'Toscana');
   assert.equal(resolveVillaIntent('tourism').id, 'tourism');
 });
+
+test('Sardinia renovation uses four tiles and strict region validation', () => {
+  const { geo, queries } = buildVillaSourceQueries({
+    area: 'sardegna', intent: 'renovation', maxItemsPerSource: 400,
+    idealistaActorId: 'idealista', immobiliareActorId: 'immobiliare',
+  });
+  assert.equal(geo.id, 'sardegna');
+  assert.equal(queries.length, 16);
+  assert.ok(queries.every((query) => query.region_filter === 'Sardegna'));
+  assert.ok(queries.filter((query) => query.comparison_role === 'candidate').every((query) => query.payload.maxItems === 100));
+  assert.ok(queries.filter((query) => query.comparison_role === 'candidate' && query.source_channel === 'idealista').every((query) => query.payload.condition.includes('renew')));
+  assert.ok(queries.filter((query) => query.comparison_role === 'candidate' && query.source_channel === 'immobiliare').every((query) => query.payload.propertyCondition === 'toBeRenovated'));
+});
