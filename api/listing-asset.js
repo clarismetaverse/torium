@@ -35,6 +35,16 @@ async function supabaseRest(pathname, options = {}) {
   return body ? JSON.parse(body) : null;
 }
 
+export function resolveSupabaseStorageUrl(rawUrl, supabaseUrl = SUPABASE_URL) {
+  if (!rawUrl || !supabaseUrl) throw new Error('Supabase signed URL missing');
+  if (/^https:\/\//i.test(rawUrl)) return rawUrl;
+  const baseUrl = supabaseUrl.replace(/\/$/, '');
+  const relativePath = rawUrl.startsWith('/') ? rawUrl : `/${rawUrl}`;
+  if (relativePath.startsWith('/storage/v1/')) return `${baseUrl}${relativePath}`;
+  if (relativePath.startsWith('/object/')) return `${baseUrl}/storage/v1${relativePath}`;
+  throw new Error('Supabase signed URL path non valido');
+}
+
 function encodeStoragePath(path) {
   return path.split('/').map(encodeURIComponent).join('/');
 }
@@ -52,7 +62,7 @@ async function createSignedUrl(storagePath, { download = false } = {}) {
   if (!result.ok) throw new Error(`Supabase signed URL failed: ${result.status}`);
   const raw = body.signedUrl || body.signedURL || body.url;
   if (!raw) throw new Error('Supabase signed URL missing');
-  const signedUrl = raw.startsWith('http') ? raw : `${SUPABASE_URL.replace(/\/$/, '')}${raw}`;
+  const signedUrl = resolveSupabaseStorageUrl(raw);
   if (!download) return signedUrl;
   const separator = signedUrl.includes('?') ? '&' : '?';
   return `${signedUrl}${separator}download=torium-asset`;
