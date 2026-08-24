@@ -325,6 +325,9 @@ async function readProjects(request, response) {
     collection.push(publicAsset);
     assetsByProject.set(asset.renewal_id, collection);
   }));
+  for (const collection of assetsByProject.values()) {
+    collection.sort((left, right) => left.sort_order - right.sort_order || left.asset_key.localeCompare(right.asset_key));
+  }
 
   const output = projects.map((project) => ({
     external_id: project.external_id,
@@ -360,3 +363,4 @@ export default async function handler(request, response) {
     return json(response, 500, { error: 'Renewals API non disponibile' });
   }
 }
+
