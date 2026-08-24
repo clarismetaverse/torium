@@ -29,6 +29,14 @@ Source filters:
 - Immobiliare.it: `propertyType=house`, `propertyCondition=toBeRenovated`,
   exclude auctions, minimum 140 sqm, most recent.
 
+Sardinia uses a broader value-add variant because the strict renovation sample
+is currently thin. Idealista candidates can be either `renew` or `good`, while
+Immobiliare.it runs separate `toBeRenovated` and `good` candidate queries under
+the same per-source collection budget. A villa in good condition is therefore
+eligible when it can still support lighter restyling, outdoor/pool improvements
+or tourism repositioning. The explicit renovation signal keeps its ranking
+bonus, and the control sample remains separate as `exit_comparable` data.
+
 Ranking signals include renovation condition, useful project scale, garden or
 land, destination view, historic character, parking, terrace, pool, bathrooms
 and floor plan.

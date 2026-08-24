@@ -7,7 +7,8 @@ const home = await fs.readFile(new URL('../public/home.html', import.meta.url), 
 
 test('villas use a separate frontend with area, intent and feature filters', () => {
   assert.match(page, /TORIUM · Ville/);
-  assert.match(page, /Acquisto \+ ristrutturazione/);
+  assert.match(page, /Value add \/ ristrutturazione/);
+  assert.match(page, /interventi leggeri, outdoor o riposizionamento turistico/);
   assert.match(page, /Turismo \/ hold/);
   assert.match(page, /value="sardegna">Sardegna/);
   assert.match(page, /Con giardino/);
