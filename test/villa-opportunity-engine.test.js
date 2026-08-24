@@ -39,4 +39,3 @@ test('dynamic benchmark comes from current comparable asking prices', () => {
   assert.equal(assessment.asking_discount_to_benchmark_pct, 38.5);
   assert.ok(scored.door_score > 60);
 });
-
