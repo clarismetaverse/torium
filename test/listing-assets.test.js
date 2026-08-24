@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
-import assetHandler from '../api/listing-asset.js';
+import assetHandler, { resolveSupabaseStorageUrl } from '../api/listing-asset.js';
 import { compactDashboardOutput, redactOutput } from '../api/output.js';
 import {
   extractSourceListingAssets,
@@ -102,6 +102,23 @@ test('listing asset endpoint rejects unsupported and cross-origin requests befor
   const crossOrigin = responseRecorder();
   await assetHandler({ method: 'POST', headers: { origin: 'https://bad.example', host: 'torium.example' }, body: { token: 'x' } }, crossOrigin);
   assert.equal(crossOrigin.statusCode, 403);
+});
+
+test('Supabase relative signed paths keep the required Storage API prefix', () => {
+  const base = 'https://project.supabase.co';
+  const tokenPath = '/object/sign/torium-listing-assets/run/photo.jpg?token=test';
+  assert.equal(
+    resolveSupabaseStorageUrl(tokenPath, base),
+    `${base}/storage/v1${tokenPath}`,
+  );
+  assert.equal(
+    resolveSupabaseStorageUrl(`/storage/v1${tokenPath}`, base),
+    `${base}/storage/v1${tokenPath}`,
+  );
+  assert.equal(
+    resolveSupabaseStorageUrl('https://cdn.example/photo.jpg', base),
+    'https://cdn.example/photo.jpg',
+  );
 });
 
 test('listing asset downloader runs near the Italian source CDNs', () => {
