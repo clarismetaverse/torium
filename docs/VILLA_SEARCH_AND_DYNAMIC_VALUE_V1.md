@@ -12,6 +12,8 @@ Initial geography presets:
 - `como`: Lake Como area, common 35 km radius for both sources.
 - `toscana`: four overlapping geographic tiles, followed by a strict Tuscany
   region check on the returned source data.
+- `sardegna`: four overlapping tiles covering north-east/Gallura, north-west,
+  central and southern Sardinia, followed by a strict Sardinia region check.
 
 The presets are data configuration. New geographies can be added without
 changing the ranking implementation.
