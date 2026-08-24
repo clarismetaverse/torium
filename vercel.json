@@ -4,7 +4,6 @@
   "functions": {
     "api/listing-asset.js": { "maxDuration": 30, "regions": ["fra1"] },
     "api/renewals.js": { "maxDuration": 30, "regions": ["fra1"] },
-    "api/renewal-upload-url.js": { "maxDuration": 30, "regions": ["fra1"] },
     "api/run-triage.js": { "maxDuration": 300 },
     "api/run-valuation.js": { "maxDuration": 300 },
     "api/run-villas.js": { "maxDuration": 300 }

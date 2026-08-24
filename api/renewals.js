@@ -4,6 +4,7 @@ import {
   normalizeRenewalAsset,
   normalizeRenewalProject,
   normalizeRenewalStyle,
+  normalizeRenewalUpload,
   RENEWAL_BUCKET,
 } from '../lib/renewals.js';
 
@@ -64,6 +65,24 @@ async function signedAssetUrl(asset) {
   const body = await result.json().catch(() => ({}));
   if (!result.ok) throw new Error(`Supabase renewal signing failed: ${result.status}`);
   return resolveStorageUrl(body.signedUrl || body.signedURL || body.url);
+}
+
+async function createSignedUpload(storagePath) {
+  const { url } = env();
+  const result = await fetch(
+    `${url}/storage/v1/object/upload/sign/${RENEWAL_BUCKET}/${encodeStoragePath(storagePath)}`,
+    {
+      method: 'POST',
+      headers: serviceHeaders({ 'Content-Type': 'application/json' }),
+      body: '{}',
+    },
+  );
+  const body = await result.json().catch(() => ({}));
+  if (!result.ok) throw new Error(`Supabase signed upload failed: ${result.status}`);
+  const uploadUrl = resolveStorageUrl(body.url || body.signedUrl || body.signedURL);
+  const token = body.token || new URL(uploadUrl).searchParams.get('token');
+  if (!token) throw new Error('Supabase signed upload token missing');
+  return { uploadUrl, token };
 }
 
 function json(response, status, data) {
@@ -206,6 +225,53 @@ async function writeProject(request, response) {
   return json(response, partial ? 200 : 201, { ok: true, project, style: style.value, assets: assets.value });
 }
 
+async function issueUploadUrl(request, response) {
+  if (!process.env.TORIUM_RENEWAL_AGENT_KEY || process.env.TORIUM_RENEWAL_AGENT_KEY.length < 32) {
+    return json(response, 503, { error: 'TORIUM_RENEWAL_AGENT_KEY non configurata' });
+  }
+  if (!isRenewalAgentAuthorized(request)) return json(response, 401, { error: 'Agent key non valida' });
+  const normalized = normalizeRenewalUpload(request.body);
+  if (normalized.error) return json(response, 400, { error: normalized.error });
+  const input = normalized.value;
+  const projects = await renewalRest(
+    `virtual_renewals?external_id=eq.${encodeURIComponent(input.external_id)}&select=id&limit=1`,
+  );
+  const project = projects?.[0];
+  if (!project) return json(response, 404, { error: 'Renewal non trovato: crea prima il progetto' });
+
+  const asset = normalizeRenewalAsset({
+    ...request.body,
+    asset_key: input.asset_key,
+    asset_kind: input.asset_kind,
+    storage_path: input.storage_path,
+    mime_type: input.mime_type,
+    size_bytes: input.size_bytes,
+    upload_status: 'pending',
+  });
+  if (asset.error) return json(response, 400, { error: asset.error });
+  const rows = await renewalRest('virtual_renewal_assets?on_conflict=renewal_id,asset_key', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=representation' },
+    body: JSON.stringify([{ ...asset.value, renewal_id: project.id }]),
+  });
+  const signed = await createSignedUpload(input.storage_path);
+  return json(response, 201, {
+    ok: true,
+    asset: rows?.[0],
+    upload: {
+      method: 'PUT',
+      url: signed.uploadUrl,
+      token: signed.token,
+      headers: {
+        'content-type': input.mime_type,
+        'cache-control': 'max-age=31536000',
+        'x-upsert': 'false',
+      },
+      expires_in: 7200,
+    },
+  });
+}
+
 async function readProjects(request, response) {
   const externalId = String(request.query.external_id || '').trim();
   const styleId = String(request.query.style_id || '').trim();
@@ -287,6 +353,7 @@ export default async function handler(request, response) {
   try {
     if (request.method === 'GET') return await readProjects(request, response);
     response.setHeader('Cache-Control', 'no-store');
+    if (request.method === 'POST' && request.query.action === 'upload-url') return await issueUploadUrl(request, response);
     return await writeProject(request, response);
   } catch (error) {
     console.error('Renewals API failed:', error);

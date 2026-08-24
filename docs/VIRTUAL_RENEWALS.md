@@ -73,7 +73,7 @@ Body minimo:
 
 ### 2. Richiedi un upload firmato per ogni render
 
-`POST /api/renewal-upload-url`
+`POST /api/renewals?action=upload-url`
 
 ```json
 {

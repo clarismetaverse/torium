@@ -2,7 +2,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import renewalsHandler from '../api/renewals.js';
-import uploadHandler from '../api/renewal-upload-url.js';
 import {
   isRenewalAgentAuthorized,
   normalizePortalUrl,
@@ -66,16 +65,11 @@ test('agent write authorization uses a dedicated bearer secret', () => {
   assert.equal(isRenewalAgentAuthorized({ headers: { authorization: 'Bearer wrong' } }, secret), false);
 });
 
-test('renewal endpoints expose only their supported methods before database access', async () => {
+test('renewal endpoint exposes only its supported methods before database access', async () => {
   const renewalResponse = responseRecorder();
   await renewalsHandler({ method: 'DELETE', headers: {}, query: {}, body: {} }, renewalResponse);
   assert.equal(renewalResponse.statusCode, 405);
   assert.equal(renewalResponse.headers.Allow, 'GET, POST, PATCH');
-
-  const uploadResponse = responseRecorder();
-  await uploadHandler({ method: 'GET', headers: {}, query: {}, body: {} }, uploadResponse);
-  assert.equal(uploadResponse.statusCode, 405);
-  assert.equal(uploadResponse.headers.Allow, 'POST');
 });
 
 test('renewal schema is private, RLS protected, and models projects, styles and ordered assets', () => {
@@ -104,5 +98,4 @@ test('independent renewal view renders DB-controlled mixed horizontal sequences'
 
 test('renewal APIs run in the Italian Vercel region', () => {
   assert.deepEqual(vercelConfig.functions['api/renewals.js'].regions, ['fra1']);
-  assert.deepEqual(vercelConfig.functions['api/renewal-upload-url.js'].regions, ['fra1']);
 });
