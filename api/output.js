@@ -73,14 +73,14 @@ function cleanItems(items) {
   return (Array.isArray(items) ? items : []).filter((item) => !String(item).toLowerCase().includes('idealista'));
 }
 
-function compactDashboardOutput(output) {
+export function compactDashboardOutput(output, { includeMedia = false } = {}) {
   return {
     ...output,
     result_links: [],
     results: (output.results || []).map((result) => ({
       ...result,
-      photos: undefined,
-      floor_plans: undefined,
+      photos: includeMedia ? (result.photos || []).slice(0, 20) : undefined,
+      floor_plans: includeMedia ? (result.floor_plans || []).slice(0, 6) : undefined,
       raw_listing: undefined,
       listing: result.listing && typeof result.listing === 'object' ? {
         ...result.listing,
@@ -648,18 +648,19 @@ export default async function handler(request, response) {
     // This is a public endpoint. Never allow a query parameter to bypass redaction.
     const publicView = true;
     const dashboardSummary = request.query.summary === 'true' || request.query.summary === '1';
+    const includeMedia = request.query.media === 'true' || request.query.media === '1';
 
     if (id.startsWith('combined:')) {
       const output = await readCombinedOutput(id, { publicView });
       response.setHeader('Cache-Control', publicView ? 'public, s-maxage=300, stale-while-revalidate=86400' : 'private, no-store');
-      response.status(200).json(dashboardSummary ? compactDashboardOutput(output) : output);
+      response.status(200).json(dashboardSummary ? compactDashboardOutput(output, { includeMedia }) : output);
       return;
     }
 
     if (id.startsWith('supabase:')) {
       const output = await readSupabaseOutput(id, { publicView });
       response.setHeader('Cache-Control', publicView ? 'public, s-maxage=300, stale-while-revalidate=86400' : 'private, no-store');
-      response.status(200).json(dashboardSummary ? compactDashboardOutput(output) : output);
+      response.status(200).json(dashboardSummary ? compactDashboardOutput(output, { includeMedia }) : output);
       return;
     }
 

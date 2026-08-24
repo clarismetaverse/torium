@@ -20,3 +20,18 @@ test('villas use a separate frontend with area, intent and feature filters', () 
 test('fractioning home links to the separate villa experience', () => {
   assert.match(home, /href="\/villas"/);
 });
+
+test('villa cards expose an explicit on-demand photo cache and download flow', () => {
+  assert.match(page, /summary=true&media=true/);
+  assert.match(page, /Apri e salva foto/);
+  assert.match(page, /Planimetrie/);
+  assert.match(page, /fetch\('\/api\/listing-asset'/);
+  assert.match(page, /id="viewerDownload"/);
+  assert.match(page, /Salvata nella cache privata TORIUM/);
+});
+
+test('villa frontend inline script is valid JavaScript', () => {
+  const script = page.match(/<script>([\s\S]*?)<\/script>/)?.[1];
+  assert.ok(script);
+  assert.doesNotThrow(() => new Function(script));
+});

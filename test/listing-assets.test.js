@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import assetHandler from '../api/listing-asset.js';
-import { redactOutput } from '../api/output.js';
+import { compactDashboardOutput, redactOutput } from '../api/output.js';
 import {
   extractSourceListingAssets,
   listingAssetExtension,
@@ -78,6 +78,17 @@ test('public output adds a signed on-demand token to listing media', () => {
     if (previousSecret === undefined) delete process.env.TORIUM_ASSET_TOKEN_SECRET;
     else process.env.TORIUM_ASSET_TOKEN_SECRET = previousSecret;
   }
+});
+
+test('compact output keeps bounded media only when explicitly requested', () => {
+  const photos = Array.from({ length: 25 }, (_, index) => ({ url: `https://pwm.im-cdn.it/image/${index}.jpg`, asset_token: `token-${index}` }));
+  const floorPlans = Array.from({ length: 8 }, (_, index) => ({ url: `https://pwm.im-cdn.it/plan/${index}.jpg`, asset_token: `plan-${index}` }));
+  const output = { results: [{ photos, floor_plans: floorPlans, listing: { photos, floor_plans: floorPlans } }] };
+  assert.equal(compactDashboardOutput(output).results[0].photos, undefined);
+  const withMedia = compactDashboardOutput(output, { includeMedia: true });
+  assert.equal(withMedia.results[0].photos.length, 20);
+  assert.equal(withMedia.results[0].floor_plans.length, 6);
+  assert.equal(withMedia.results[0].listing.photos, undefined);
 });
 
 test('listing asset endpoint rejects unsupported and cross-origin requests before fetching', async () => {
