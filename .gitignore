@@ -16,3 +16,4 @@ data/processed/*.json
 outputs/**/*.json
 .vercel
 .env*
+supabase/.temp/

@@ -10,6 +10,7 @@ import { runDoorEngine } from '../lib/door-engine.js';
 import { normalizeItalianFloor } from '../lib/italian-localization.js';
 import { evaluateDataQuality } from '../lib/data-quality-gate.js';
 import { mergeUnifiedProperty } from '../lib/source-offers.js';
+import { signListingAssetToken } from '../lib/listing-assets.js';
 
 const rootDir = process.cwd();
 const allowedPrefixes = ['triage-outputs/', 'outputs/triage/'];
@@ -399,11 +400,25 @@ function redactSourceRow(sourceRow, redactedTitle, photos, floorPlans, descripti
   };
 }
 
-function redactResult(result) {
+function assetRunId(result, fallbackRunId) {
+  const originRunId = Array.isArray(result?.origin_run_ids) ? result.origin_run_ids[0] : null;
+  return originRunId || fallbackRunId || null;
+}
+
+function addAssetTokens(items, type, runId) {
+  if (!runId) return items;
+  return items.map((item) => ({
+    ...item,
+    asset_token: signListingAssetToken({ run_id: runId, url: item.url, type }),
+  }));
+}
+
+function redactResult(result, fallbackRunId = null) {
   if (!result || typeof result !== 'object') return result;
   const redactedTitle = publicTitle(result);
-  const photos = extractPhotos(result);
-  const floorPlans = extractFloorPlans(result);
+  const runId = assetRunId(result, fallbackRunId);
+  const photos = addAssetTokens(extractPhotos(result), 'photo', runId);
+  const floorPlans = addAssetTokens(extractFloorPlans(result), 'floor_plan', runId);
   const description = extractDescription(result);
   const address = publicAddress(result);
   const sourceChannel = publicSourceChannel(result);
@@ -434,15 +449,15 @@ function redactResult(result) {
   };
 }
 
-function redactOutput(output) {
+export function redactOutput(output) {
   if (!output || typeof output !== 'object') return output;
   // filtered_out holds raw scraped listings (URLs, addresses, source tags) that the
   // public viewer never renders; it only uses filtered_out_count. Drop the raw array.
   const { filtered_out, ...rest } = output;
   const redacted = {
     ...rest,
-    result_links: Array.isArray(output.result_links) ? output.result_links.map(redactResult) : output.result_links,
-    results: Array.isArray(output.results) ? output.results.map(redactResult) : output.results,
+    result_links: Array.isArray(output.result_links) ? output.result_links.map((result) => redactResult(result, output.run_id)) : output.result_links,
+    results: Array.isArray(output.results) ? output.results.map((result) => redactResult(result, output.run_id)) : output.results,
   };
   const publicResults = Array.isArray(redacted.results) ? redacted.results : [];
   const qualityPassedResults = publicResults.filter((result) => result.data_quality?.valid !== false);
@@ -604,6 +619,7 @@ async function readSupabaseOutput(id, { publicView = true } = {}) {
 
   output.search_strategy = run.search_strategy ?? output.search_strategy ?? null;
   output.scoring_mode = run.scoring_mode ?? output.scoring_mode ?? null;
+  output.run_id = run.run_id;
 
   return publicView ? redactOutput(output) : output;
 }
