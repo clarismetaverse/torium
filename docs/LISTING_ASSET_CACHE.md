@@ -12,6 +12,8 @@ When a user opens a photo or floor plan in the property detail:
 4. The frontend receives a signed Storage URL valid for 10 minutes and exposes a download action.
 5. Later opens reuse the cached object and refresh only the signed URL.
 
+The downloader first contacts the original portal CDN from Vercel's Frankfurt region. If a portal CDN blocks that server request while still serving the public image to browsers, TORIUM makes one fallback request through the `wsrv.nl` image cache and immediately stores the returned file in its own private bucket. The fallback receives only the already-public source image URL; it never receives Supabase credentials, user data or signed Storage URLs.
+
 Only HTTPS media from Idealista-owned domains and Immobiliare's `im-cdn.it` domains is accepted. SVG and non-image content are rejected.
 
 ## Database and access model
