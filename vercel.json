@@ -3,7 +3,8 @@
   "outputDirectory": "public",
   "functions": {
     "api/run-triage.js": { "maxDuration": 300 },
-    "api/run-valuation.js": { "maxDuration": 300 }
+    "api/run-valuation.js": { "maxDuration": 300 },
+    "api/run-villas.js": { "maxDuration": 300 }
   },
   "redirects": [
     { "source": "/", "destination": "/home", "permanent": false }
@@ -12,3 +13,4 @@
     { "source": "/property/:property", "destination": "/index?property=:property" }
   ]
 }
+

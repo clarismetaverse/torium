@@ -32,7 +32,7 @@ async function readDirSafe(dirName) {
 
 async function readSupabaseRuns() {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) return null;
-  const query = 'triage_runs?select=run_id,filename,search_name,search_strategy,scoring_mode,city,created_at,top_result_title,raw_source_count,eligible_count&order=created_at.desc&limit=50';
+  const query = 'triage_runs?select=run_id,filename,search_name,search_strategy,scoring_mode,city,investor_profile,created_at,top_result_title,raw_source_count,eligible_count&order=created_at.desc&limit=50';
   const response = await fetch(`${SUPABASE_URL.replace(/\/$/, '')}/rest/v1/${query}`, {
     headers: {
       apikey: SUPABASE_SERVICE_ROLE_KEY,
@@ -41,7 +41,8 @@ async function readSupabaseRuns() {
   });
   if (!response.ok) throw new Error(`Supabase outputs failed: ${response.status}\n${await response.text()}`);
   const rows = await response.json();
-  const outputs = rows.map((row) => ({
+  const fractioningRows = rows.filter((row) => row.investor_profile !== 'villa-opportunity-v1');
+  const outputs = fractioningRows.map((row) => ({
     id: `supabase:${row.run_id}`,
     name: row.filename || row.run_id,
     dir: 'supabase/triage_runs',
@@ -52,8 +53,8 @@ async function readSupabaseRuns() {
     city: row.city,
     top_result_title: row.top_result_title,
   }));
-  const neutral = rows.find((row) => row.search_strategy === 'neutral_fractionability' && Number(row.raw_source_count) > 0);
-  const legacy = rows.find((row) => Number(row.raw_source_count) > 0 && (row.search_strategy === 'legacy_low_price_m2' || (!row.search_strategy && row.search_name === 'milanoFractioningMassive')));
+  const neutral = fractioningRows.find((row) => row.search_strategy === 'neutral_fractionability' && Number(row.raw_source_count) > 0);
+  const legacy = fractioningRows.find((row) => Number(row.raw_source_count) > 0 && (row.search_strategy === 'legacy_low_price_m2' || (!row.search_strategy && row.search_name === 'milanoFractioningMassive')));
   if (neutral && legacy) {
     outputs.unshift({
       id: `combined:${neutral.run_id}+${legacy.run_id}`,
@@ -85,3 +86,4 @@ export default async function handler(_request, response) {
     response.status(500).json({ error: error.message });
   }
 }
+

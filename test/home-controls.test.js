@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 
 const home = await fs.readFile(new URL('../public/home.html', import.meta.url), 'utf8');
+const outputsApi = await fs.readFile(new URL('../api/outputs.js', import.meta.url), 'utf8');
 const valuationMemory = await fs.readFile(new URL('../docs/TORIUM_VALUATION_STATE_AND_AVM_TARGET.md', import.meta.url), 'utf8');
 
 test('home run controls do not require a PIN or unsupported browser prompts', () => {
@@ -35,6 +36,7 @@ test('home exposes detailed neighborhood labels, distribution and filtering', ()
   assert.match(home, /id="neighborhoodFilter"/);
   assert.match(home, /id="neighborhoodCoverage"/);
   assert.match(home, /const neighborhood=r=>/);
+  assert.match(home, /canonical_zone_name\|\|r\?\.canonical_zone_name\|\|listing\(r\)\?\.area_label/);
   assert.match(home, /const macroArea=r=>/);
   assert.match(home, /const area=r=>neighborhood\(r\)\|\|macroArea\(r\)/);
   assert.match(home, /function drawNeighborhoodCoverage\(/);
@@ -76,6 +78,20 @@ test('home exposes ROI base as the only ranking option', () => {
   assert.match(home, /criterion:'roiBase'/);
   assert.match(home, /const rankingCriteria=\(\)=>\(\{roiBase:criteria\(\)\.roiBase\}\)/);
   assert.doesNotMatch(home, /\|\|\(doorScore\(b\.r\)-doorScore\(a\.r\)\)/);
+});
+
+test('fractioning run selector excludes the separate villa investor profile', () => {
+  assert.match(outputsApi, /investor_profile !== 'villa-opportunity-v1'/);
+});
+
+test('home supports 5000-item runs without rendering every card at once', () => {
+  assert.match(home, /profile:'milano_broad',limit:5000/);
+  assert.match(home, /run_id:runId,limit:5000,mode:'deterministic'/);
+  assert.match(home, /visibleLimit:100/);
+  assert.match(home, /state\.visibleLimit\+=200/);
+  assert.match(home, /id="loadMoreDeals"/);
+  assert.match(home, /api\/output\?summary=1&file=/);
+  assert.doesNotMatch(home, /slice\(0,60\)/);
 });
 
 test('deal previews expose only evidence-backed fractioning and floor-plan tags', () => {
@@ -156,3 +172,4 @@ test('home inline script is valid JavaScript', () => {
   assert.ok(script);
   assert.doesNotThrow(() => new Function(script));
 });
+
