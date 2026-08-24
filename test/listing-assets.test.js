@@ -12,6 +12,7 @@ import {
 } from '../lib/listing-assets.js';
 
 const propertyPage = await fs.readFile(new URL('../public/index.html', import.meta.url), 'utf8');
+const listingAssetApi = await fs.readFile(new URL('../api/listing-asset.js', import.meta.url), 'utf8');
 const vercelConfig = JSON.parse(await fs.readFile(new URL('../vercel.json', import.meta.url), 'utf8'));
 
 function responseRecorder() {
@@ -106,6 +107,8 @@ test('listing asset endpoint rejects unsupported and cross-origin requests befor
 test('listing asset downloader runs near the Italian source CDNs', () => {
   assert.deepEqual(vercelConfig.functions['api/listing-asset.js'].regions, ['fra1']);
   assert.equal(vercelConfig.functions['api/listing-asset.js'].maxDuration, 30);
+  assert.match(listingAssetApi, /https:\/\/wsrv\.nl\//);
+  assert.match(listingAssetApi, /successfulAttempt\?\.proxied/);
 });
 
 test('property page requests and downloads media only on interaction', () => {

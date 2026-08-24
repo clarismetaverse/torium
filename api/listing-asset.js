@@ -14,6 +14,7 @@ const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const FETCH_TIMEOUT_MS = 15_000;
 const SIGNED_URL_SECONDS = 10 * 60;
+const IMAGE_PROXY_ORIGIN = 'https://wsrv.nl/';
 
 function serviceHeaders(extra = {}) {
   return {
@@ -65,22 +66,41 @@ async function downloadSourceAsset(sourceUrl) {
     const referer = hostname === 'idealista.it' || hostname.endsWith('.idealista.it')
       ? 'https://www.idealista.it/'
       : 'https://www.immobiliare.it/';
-    const headerAttempts = [
-      { Accept: 'image/avif,image/webp,image/png,image/jpeg,image/gif,*/*;q=0.5' },
+    const fetchAttempts = [
       {
-        Accept: 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
-        Referer: referer,
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/140.0 Safari/537.36',
+        url: sourceUrl,
+        headers: { Accept: 'image/avif,image/webp,image/png,image/jpeg,image/gif,*/*;q=0.5' },
+      },
+      {
+        url: sourceUrl,
+        headers: {
+          Accept: 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+          Referer: referer,
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/140.0 Safari/537.36',
+        },
       },
     ];
+    const proxyUrl = new URL(IMAGE_PROXY_ORIGIN);
+    proxyUrl.searchParams.set('url', sourceUrl);
+    fetchAttempts.push({
+      url: proxyUrl.toString(),
+      headers: { Accept: 'image/avif,image/webp,image/png,image/jpeg,image/gif,*/*;q=0.5' },
+      proxied: true,
+    });
     let result;
-    for (const headers of headerAttempts) {
-      result = await fetch(sourceUrl, { redirect: 'follow', signal: controller.signal, headers });
+    let successfulAttempt;
+    for (const attempt of fetchAttempts) {
+      result = await fetch(attempt.url, { redirect: 'follow', signal: controller.signal, headers: attempt.headers });
+      successfulAttempt = attempt;
       if (result.ok) break;
       await result.body?.cancel().catch(() => {});
     }
     if (!result.ok) throw new Error(`Sorgente immagine non disponibile (${result.status})`);
-    if (!normalizeListingAssetUrl(result.url)) throw new Error('Redirect asset non consentito');
+    if (successfulAttempt?.proxied) {
+      if (new URL(result.url).hostname.toLowerCase() !== 'wsrv.nl') throw new Error('Proxy immagine non consentito');
+    } else if (!normalizeListingAssetUrl(result.url)) {
+      throw new Error('Redirect asset non consentito');
+    }
     const mimeType = String(result.headers.get('content-type') || '').split(';')[0].trim().toLowerCase();
     const extension = listingAssetExtension(mimeType);
     if (!extension) throw new Error('Formato immagine non supportato');
@@ -88,7 +108,7 @@ async function downloadSourceAsset(sourceUrl) {
     if (Number.isFinite(declaredSize) && declaredSize > MAX_LISTING_ASSET_BYTES) throw new Error('Immagine oltre il limite di 10 MB');
     const bytes = Buffer.from(await result.arrayBuffer());
     if (bytes.length > MAX_LISTING_ASSET_BYTES) throw new Error('Immagine oltre il limite di 10 MB');
-    return { bytes, mimeType, extension, finalUrl: result.url };
+    return { bytes, mimeType, extension, finalUrl: successfulAttempt?.proxied ? sourceUrl : result.url };
   } finally {
     clearTimeout(timeout);
   }
