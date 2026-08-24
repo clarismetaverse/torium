@@ -9,9 +9,17 @@ import { findMilanIdealistaLocation } from '../lib/milan-idealista-locations.js'
 import { evaluateDataQuality } from '../lib/data-quality-gate.js';
 import { comparePropertyIdentity, propertyIdentityBlockKeys } from '../lib/property-identity.js';
 import { mergeUnifiedProperty, summarizePriceDifferences } from '../lib/source-offers.js';
+import { buildVillaSourceQueries, resolveVillaGeoProfile, resolveVillaIntent } from '../lib/villa-search-profiles.js';
+import {
+  attachDynamicVillaBenchmarks,
+  evaluateVillaDataQuality,
+  getVillaPreTriageExclusion,
+  runVillaOpportunityEngine,
+} from '../lib/villa-opportunity-engine.js';
 import fs from 'node:fs/promises';
 
 const INVESTOR_PROFILE_URL = new URL('../config/investor-profiles/max-doors-20k.json', import.meta.url);
+const VILLA_PROFILE_URL = new URL('../config/investor-profiles/villa-opportunity-v1.json', import.meta.url);
 
 const APIFY_TOKEN = process.env.APIFY_TOKEN;
 const DEFAULT_CITY = process.env.TORIUM_CITY || 'Milano';
@@ -24,6 +32,8 @@ const APIFY_MAX_WAIT_SECONDS = Number(process.env.TORIUM_APIFY_MAX_WAIT_SECONDS 
 const APIFY_POLL_INTERVAL_SECONDS = Number(process.env.TORIUM_APIFY_POLL_INTERVAL_SECONDS || 10);
 const APIFY_DATASET_PAGE_SIZE = Number(process.env.TORIUM_APIFY_DATASET_PAGE_SIZE || 1000);
 let SEARCH_STRATEGY = resolveSearchStrategy(process.env.TORIUM_SEARCH_STRATEGY);
+let ACTIVE_USE_CASE = 'fractioning';
+let ACTIVE_VILLA_INTENT = null;
 
 const RUN_MODE_DEFAULTS = {
   scout: {
@@ -351,6 +361,31 @@ export function sourceAreaMatches(normalized, raw, area) {
 }
 
 export function enrichWithPreScore(item, investorProfile) {
+  if (ACTIVE_USE_CASE === 'villa') {
+    const exclusion = getVillaPreTriageExclusion(item, ACTIVE_VILLA_INTENT);
+    const villaEngine = runVillaOpportunityEngine(item, ACTIVE_VILLA_INTENT);
+    const dataQuality = evaluateVillaDataQuality(item);
+    const qualityReasons = dataQuality.critical_flags.map((reason) => `data_quality:${reason}`);
+    const exclusionReasons = [...new Set([...exclusion.reasons, ...qualityReasons])];
+    return {
+      ...item,
+      pre_triage_excluded: exclusion.excluded || !dataQuality.valid,
+      pre_triage_exclusion_reason: exclusionReasons.join(','),
+      door_score: villaEngine.score,
+      estimated_final_units: null,
+      new_units_created: null,
+      estimated_project_cost_eur: null,
+      door_engine: villaEngine,
+      data_quality: dataQuality,
+      quality_flags: [...new Set([...(item.quality_flags || []), ...dataQuality.critical_flags, ...dataQuality.warning_flags])],
+      renovation_features: { ...(item.renovation_features || {}), villa_opportunity: villaEngine },
+      listing: {
+        ...(item.listing || {}),
+        renovation_features: { ...(item.listing?.renovation_features || {}), villa_opportunity: villaEngine },
+      },
+      exclusion: { ...exclusion, excluded: exclusion.excluded || !dataQuality.valid, reasons: exclusionReasons },
+    };
+  }
   const exclusion = getPreTriageExclusion(item.listing);
   const doorEngine = runDoorEngine(item.listing, investorProfile, {
     includeEconomicSignals: SEARCH_STRATEGY.includeEconomicDoorSignals,
@@ -447,6 +482,8 @@ function buildResultLinks(items) {
 export async function runMassiveTriage(options = {}) {
   ACTIVE_RUN_CONFIG = resolveMassiveRunConfig(options);
   SEARCH_STRATEGY = resolveSearchStrategy(options.searchStrategy || process.env.TORIUM_SEARCH_STRATEGY);
+  ACTIVE_USE_CASE = options.useCase === 'villa' ? 'villa' : 'fractioning';
+  ACTIVE_VILLA_INTENT = ACTIVE_USE_CASE === 'villa' ? resolveVillaIntent(options.villaIntent || 'renovation').id : null;
   SOURCES = (options.sources || process.env.TORIUM_MASSIVE_SOURCES || 'immobiliare')
     .split(',')
     .map((source) => source.trim().toLowerCase())
@@ -456,15 +493,31 @@ export async function runMassiveTriage(options = {}) {
 
   const baseSearchName = options.baseSearchName || process.argv[2] || 'milanoFractioningMassive';
   const searchName = buildStrategySearchName(baseSearchName, SEARCH_STRATEGY);
-  const investorProfile = JSON.parse(await fs.readFile(INVESTOR_PROFILE_URL, 'utf8'));
+  const investorProfile = JSON.parse(await fs.readFile(ACTIVE_USE_CASE === 'villa' ? VILLA_PROFILE_URL : INVESTOR_PROFILE_URL, 'utf8'));
 
-  const queries = [];
-  if (SOURCES.includes('idealista')) queries.push(...buildIdealistaQueries(ACTIVE_RUN_CONFIG.requestedAreas));
-  if (SOURCES.includes('immobiliare')) queries.push(...buildImmobiliareQueries(ACTIVE_RUN_CONFIG.requestedAreas, SEARCH_STRATEGY));
+  let queries = [];
+  let villaGeo = null;
+  if (ACTIVE_USE_CASE === 'villa') {
+    villaGeo = resolveVillaGeoProfile(options.villaArea || 'como');
+    const built = buildVillaSourceQueries({
+      area: villaGeo.id,
+      intent: ACTIVE_VILLA_INTENT,
+      maxItemsPerSource: ACTIVE_RUN_CONFIG.maxItemsPerSource,
+      idealistaActorId: IDEALISTA_ACTOR_ID,
+      immobiliareActorId: IMMOBILIARE_STRUCTURED_ACTOR_ID,
+      sources: SOURCES,
+    });
+    queries = built.queries;
+  } else {
+    if (SOURCES.includes('idealista')) queries.push(...buildIdealistaQueries(ACTIVE_RUN_CONFIG.requestedAreas));
+    if (SOURCES.includes('immobiliare')) queries.push(...buildImmobiliareQueries(ACTIVE_RUN_CONFIG.requestedAreas, SEARCH_STRATEGY));
+  }
   if (!queries.length) throw new Error('No sources selected. Set TORIUM_MASSIVE_SOURCES=immobiliare or immobiliare,idealista.');
 
   console.log(JSON.stringify({
     run_mode: ACTIVE_RUN_CONFIG.runMode,
+    use_case: ACTIVE_USE_CASE,
+    investment_intent: ACTIVE_VILLA_INTENT,
     search_name: searchName,
     search_strategy: SEARCH_STRATEGY.id,
     scoring_mode: SEARCH_STRATEGY.scoringMode,
@@ -499,18 +552,34 @@ export async function runMassiveTriage(options = {}) {
   }
 
   const collected = [];
+  const marketComparables = [];
   const collectedBySource = Object.fromEntries(SOURCES.map((source) => [source, 0]));
+  const comparablesBySource = Object.fromEntries(SOURCES.map((source) => [source, 0]));
   const queryPayloads = [];
   const queryErrors = [];
 
-  for (const query of queries) {
-    if (collected.length >= ACTIVE_RUN_CONFIG.maxTotalRawListings) break;
-    if ((collectedBySource[query.source_channel] || 0) >= ACTIVE_RUN_CONFIG.maxItemsPerSource) continue;
+  const executions = ACTIVE_USE_CASE === 'villa'
+    ? await Promise.all(queries.map(async (query) => {
+        try {
+          return { query, rawResults: await runSourceQuery(query), error: null };
+        } catch (error) {
+          return { query, rawResults: [], error };
+        }
+      }))
+    : queries.map((query) => ({ query, rawResults: null, error: null }));
+
+  for (const execution of executions) {
+    const { query } = execution;
+    if (ACTIVE_USE_CASE !== 'villa' && collected.length >= ACTIVE_RUN_CONFIG.maxTotalRawListings) break;
+    const isComparable = query.comparison_role === 'exit_comparable';
+    if (!isComparable && (collectedBySource[query.source_channel] || 0) >= ACTIVE_RUN_CONFIG.maxItemsPerSource) continue;
+    if (isComparable && (comparablesBySource[query.source_channel] || 0) >= ACTIVE_RUN_CONFIG.maxItemsPerSource) continue;
 
     console.log(`Running ${query.actor} query: ${query.query_name} / ${query.query_area || 'all'}`);
-    let rawResults;
+    let rawResults = execution.rawResults;
     try {
-      rawResults = await runSourceQuery(query);
+      if (ACTIVE_USE_CASE !== 'villa') rawResults = await runSourceQuery(query);
+      if (execution.error) throw execution.error;
     } catch (error) {
       const message = String(error?.message || error);
       console.error(`Source query failed (${query.actor} / ${query.query_area || 'all'}): ${message}`);
@@ -542,6 +611,7 @@ export async function runMassiveTriage(options = {}) {
         query_province: query.query_province,
         query_payload: query.payload,
         }),
+        comparison_role: query.comparison_role || 'candidate',
         idealista_location_id: query.idealista_location_id,
         idealista_zone_id: query.idealista_zone_id,
         idealista_zone_name: query.idealista_zone_name,
@@ -549,11 +619,21 @@ export async function runMassiveTriage(options = {}) {
       };
       normalized.canonical_source_key = canonicalPropertyKey(normalized);
 
-      const mustValidateArea = query.source_channel === 'immobiliare' || (query.source_channel === 'idealista' && !query.source_area_enforced);
+      if (query.region_filter) {
+        const normalizedRaw = JSON.stringify(raw || {}).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        const normalizedRegion = String(query.region_filter).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        if (!normalizedRaw.includes(normalizedRegion)) continue;
+      }
+      const mustValidateArea = !query.source_area_enforced && (query.source_channel === 'immobiliare' || query.source_channel === 'idealista');
       if (mustValidateArea && !sourceAreaMatches(normalized, raw, query.query_area)) {
         continue;
       }
 
+      if (isComparable) {
+        marketComparables.push(normalized);
+        comparablesBySource[query.source_channel] = (comparablesBySource[query.source_channel] || 0) + 1;
+        continue;
+      }
       const enriched = enrichWithPreScore(normalized, investorProfile);
       collected.push(enriched);
       collectedBySource[query.source_channel] = (collectedBySource[query.source_channel] || 0) + 1;
@@ -565,12 +645,16 @@ export async function runMassiveTriage(options = {}) {
     throw new Error(`All source queries failed: ${queryErrors.map((item) => `${item.source_channel}/${item.query_area}: ${item.error}`).join(' | ')}`);
   }
 
-  const deduped = dedupeListings(collected);
+  const scoredCollected = ACTIVE_USE_CASE === 'villa'
+    ? attachDynamicVillaBenchmarks(collected, marketComparables)
+    : collected;
+
+  const deduped = dedupeListings(scoredCollected);
   const priceComparisonSummary = summarizePriceDifferences(deduped);
-  const sourceFilteredOut = collected
+  const sourceFilteredOut = scoredCollected
     .filter((item) => item.pre_triage_excluded)
     .map((item, index) => ({ index, title: item.title, url: item.source_url, exclusion: item.exclusion }));
-  const sourceEligible = collected.filter((item) => !item.pre_triage_excluded);
+  const sourceEligible = scoredCollected.filter((item) => !item.pre_triage_excluded);
   const dedupedEligible = deduped.filter((item) => !item.pre_triage_excluded);
   const preScored = dedupedEligible
     .sort((a, b) => compareShortlistItems(a, b, SEARCH_STRATEGY));
@@ -580,7 +664,10 @@ export async function runMassiveTriage(options = {}) {
     run_id: nowRunId(searchName),
     search_name: searchName,
     run_mode: ACTIVE_RUN_CONFIG.runMode,
-    city: DEFAULT_CITY,
+    city: villaGeo?.city || DEFAULT_CITY,
+    use_case: ACTIVE_USE_CASE,
+    investment_intent: ACTIVE_VILLA_INTENT,
+    valuation_mode: ACTIVE_USE_CASE === 'villa' ? 'dynamic_villa_asking_comparables_v1' : null,
     investor_profile: investorProfile.id,
     search_strategy: SEARCH_STRATEGY.id,
     scoring_mode: SEARCH_STRATEGY.scoringMode,
@@ -597,6 +684,8 @@ export async function runMassiveTriage(options = {}) {
     query_errors: queryErrors,
     raw_source_count: collected.length,
     raw_source_counts_by_channel: collectedBySource,
+    dynamic_comparable_count: marketComparables.length,
+    dynamic_comparable_counts_by_channel: comparablesBySource,
     scraped_count: collected.length,
     deduped_count: deduped.length,
     price_comparison_summary: priceComparisonSummary,
@@ -610,7 +699,7 @@ export async function runMassiveTriage(options = {}) {
     result_links: buildResultLinks(shortlist),
   };
 
-  await syncSourceListingsRunToSupabase(output, collected);
+  await syncSourceListingsRunToSupabase(output, scoredCollected);
 
   console.log(JSON.stringify({
     run_id: output.run_id,

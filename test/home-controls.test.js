@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 
 const home = await fs.readFile(new URL('../public/home.html', import.meta.url), 'utf8');
+const outputsApi = await fs.readFile(new URL('../api/outputs.js', import.meta.url), 'utf8');
 const valuationMemory = await fs.readFile(new URL('../docs/TORIUM_VALUATION_STATE_AND_AVM_TARGET.md', import.meta.url), 'utf8');
 
 test('home run controls do not require a PIN or unsupported browser prompts', () => {
@@ -77,6 +78,10 @@ test('home exposes ROI base as the only ranking option', () => {
   assert.match(home, /criterion:'roiBase'/);
   assert.match(home, /const rankingCriteria=\(\)=>\(\{roiBase:criteria\(\)\.roiBase\}\)/);
   assert.doesNotMatch(home, /\|\|\(doorScore\(b\.r\)-doorScore\(a\.r\)\)/);
+});
+
+test('fractioning run selector excludes the separate villa investor profile', () => {
+  assert.match(outputsApi, /investor_profile !== 'villa-opportunity-v1'/);
 });
 
 test('home supports 5000-item runs without rendering every card at once', () => {

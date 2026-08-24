@@ -1,0 +1,12 @@
+{
+  "id": "villa-opportunity-v1",
+  "name": "Villa value-add and tourism opportunity",
+  "description": "Search and ranking profile for villas and independent houses. It does not reuse fractioning unit economics.",
+  "strategy": "villa_dynamic_market",
+  "valuation_mode": "dynamic_villa_asking_comparables_v1",
+  "notes": [
+    "The dynamic benchmark is derived from current asking-price comparables collected in the same geography and run.",
+    "It is not a transaction AVM, rental forecast, renovation budget or investment ROI.",
+    "Renovation and tourism/hold use separate opportunity scores."
+  ]
+}
