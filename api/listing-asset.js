@@ -61,14 +61,24 @@ async function downloadSourceAsset(sourceUrl) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
   try {
-    const result = await fetch(sourceUrl, {
-      redirect: 'follow',
-      signal: controller.signal,
-      headers: {
-        Accept: 'image/avif,image/webp,image/png,image/jpeg,image/gif,*/*;q=0.5',
-        'User-Agent': 'Mozilla/5.0 (compatible; TORIUM-Asset-Cache/1.0)',
+    const hostname = new URL(sourceUrl).hostname.toLowerCase();
+    const referer = hostname === 'idealista.it' || hostname.endsWith('.idealista.it')
+      ? 'https://www.idealista.it/'
+      : 'https://www.immobiliare.it/';
+    const headerAttempts = [
+      { Accept: 'image/avif,image/webp,image/png,image/jpeg,image/gif,*/*;q=0.5' },
+      {
+        Accept: 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+        Referer: referer,
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/140.0 Safari/537.36',
       },
-    });
+    ];
+    let result;
+    for (const headers of headerAttempts) {
+      result = await fetch(sourceUrl, { redirect: 'follow', signal: controller.signal, headers });
+      if (result.ok) break;
+      await result.body?.cancel().catch(() => {});
+    }
     if (!result.ok) throw new Error(`Sorgente immagine non disponibile (${result.status})`);
     if (!normalizeListingAssetUrl(result.url)) throw new Error('Redirect asset non consentito');
     const mimeType = String(result.headers.get('content-type') || '').split(';')[0].trim().toLowerCase();
