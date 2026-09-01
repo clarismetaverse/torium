@@ -12,6 +12,11 @@
     { "source": "/", "destination": "/home", "permanent": false }
   ],
   "rewrites": [
+    { "source": "/api/auth-session", "destination": "/api/account?resource=session" },
+    { "source": "/api/investor-preferences", "destination": "/api/account?resource=preferences" },
+    { "source": "/api/triage-runs", "destination": "/api/triage?resource=runs" },
+    { "source": "/api/triage-properties", "destination": "/api/triage?resource=properties" },
+    { "source": "/api/triage-source-listings", "destination": "/api/triage?resource=source-listings" },
     { "source": "/property/:property", "destination": "/index?property=:property" }
   ]
 }

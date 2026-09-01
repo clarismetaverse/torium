@@ -79,6 +79,9 @@ Status on 2026-09-01:
   not only a frontend redirect;
 - renewal-agent POST/PATCH remains a separate server-to-server channel protected
   by TORIUM_RENEWAL_AGENT_KEY.
+- the Vercel Hobby deployment stays below the 12-function limit by multiplexing
+  account routes through api/account.js and Supabase debug routes through
+  api/triage.js; vercel.json preserves the existing public endpoint URLs.
 
 The preference surface intentionally includes only:
 

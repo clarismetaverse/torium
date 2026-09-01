@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { Script } from 'node:vm';
-import { normalizePreferences } from '../api/investor-preferences.js';
+import { normalizePreferences } from '../api/_investor-preferences.js';
 
 test('investor preferences accept only canonical essential filters', () => {
   const value = normalizePreferences({
