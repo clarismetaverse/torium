@@ -1,3 +1,5 @@
+import { requireAuthenticatedUser } from './_auth.js';
+
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const MAX_NOTE_LENGTH = 4000;
@@ -60,6 +62,7 @@ export default async function handler(request, response) {
 
   const target = parseNoteTarget(request.method === 'GET' ? request.query : request.body);
   if (target.error) return response.status(400).json({ error: target.error });
+  if (!await requireAuthenticatedUser(request, response)) return;
   const { runId, listingIndex } = target;
 
   try {

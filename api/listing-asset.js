@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { isSameOrigin } from './property-note.js';
+import { requireAuthenticatedUser } from './_auth.js';
 import {
   LISTING_ASSET_BUCKET,
   LISTING_ASSET_RETENTION_DAYS,
@@ -152,6 +153,7 @@ export default async function handler(request, response) {
     return response.status(405).json({ error: 'Method not allowed' });
   }
   if (!isSameOrigin(request)) return response.status(403).json({ error: 'Cross-origin request denied' });
+  if (!await requireAuthenticatedUser(request, response)) return;
 
   const verified = verifyListingAssetToken(request.body?.token);
   if (verified.error) return response.status(400).json({ error: verified.error });

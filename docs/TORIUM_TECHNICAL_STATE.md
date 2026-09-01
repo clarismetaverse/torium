@@ -1,7 +1,7 @@
 # TORIUM — Technical State
 
-**Version:** 0.2  
-**Last updated:** 2026-08
+**Version:** 0.3
+**Last updated:** 2026-09-01
 
 ## Purpose
 
@@ -9,7 +9,7 @@ This document is the current technical snapshot for developers and AI agents. It
 
 ## Stack
 
-- **Frontend:** React, deployed on Vercel
+- **Frontend:** static HTML/JavaScript views and Vercel Functions, deployed on Vercel
 - **Backend and database:** Supabase / PostgreSQL
 - **AI:** GPT
 - **Scraping:** Apify Actors
@@ -56,10 +56,110 @@ Implemented:
 
 - run dashboard and statistics;
 - property detail viewer;
+- separate villa and virtual-renewal views;
 - GPT analysis;
 - cost estimation;
 - low/base/high exit scenarios;
-- profit/loss and ROI panel.
+- profit/loss and ROI panel;
+- invite-only email/password access;
+- investor alert-preference editor.
+
+## Investor access and alert-preference V1
+
+Status on 2026-09-01:
+
+- Supabase Auth email/password is used for invite-only accounts;
+- there is no public sign-up flow;
+- the Vercel Function exchanges credentials with Supabase Auth and stores access
+  and refresh tokens in HttpOnly, SameSite=Lax cookies;
+- the browser never receives the Supabase service-role key;
+- /home, property detail, /villas, /renewals, and /account use the shared
+  authentication guard;
+- their data APIs also validate the authenticated session, so the restriction is
+  not only a frontend redirect;
+- renewal-agent POST/PATCH remains a separate server-to-server channel protected
+  by TORIUM_RENEWAL_AGENT_KEY.
+
+The preference surface intentionally includes only:
+
+- canonical Milan neighborhoods;
+- minimum and maximum asking price;
+- minimum and maximum surface;
+- maximum price per square meter;
+- minimum Door Score;
+- minimum base-case ROI.
+
+The preference model intentionally excludes:
+
+- presence on both portals;
+- cross-portal price spread;
+- notification frequency.
+
+Dual-portal presence and price spread remain internal discovery/ranking signals.
+Notification frequency belongs to the future delivery layer, not to the first
+investor matching profile.
+
+Supabase table:
+
+- public.investor_alert_preferences;
+- one row per auth.users.id;
+- foreign key with on delete cascade;
+- primary key on user_id;
+- value and range constraints;
+- RLS enabled and forced;
+- four ownership policies for select, insert, update, and delete;
+- anon has no table privileges.
+
+Migration:
+
+- supabase/migrations/20260901154307_investor_alert_preferences.sql;
+- applied to Supabase project wboeyszksqtcjnaiiofe;
+- verified live with RLS enabled, forced RLS, 4 policies, and the expected 11
+  columns.
+
+Required Vercel variables:
+
+- SUPABASE_URL;
+- SUPABASE_PUBLISHABLE_KEY (preferred) or legacy SUPABASE_ANON_KEY;
+- SUPABASE_SERVICE_ROLE_KEY, server-side only.
+
+Current caveats:
+
+- account creation/invitation is still managed from Supabase Auth;
+- preferences are persisted but no scheduler, matching job, email, or push
+  delivery is active yet;
+- expensive run/valuation endpoints need a separate admin role before they are
+  exposed again in the interface;
+- Supabase advisors reported pre-existing issues outside this migration:
+  security-definer views, mutable function search paths, and duplicate indexes.
+  They should be handled in a separate audited migration.
+
+Target notification flow:
+
+    New normalized listing
+           |
+           v
+    Data-quality gate
+           |
+           v
+    Canonical neighborhood + financial/physical signals
+           |
+           v
+    Match against investor_alert_preferences
+           |
+           v
+    Deduplicate per investor and listing
+           |
+           v
+    Notification outbox
+           |
+           v
+    Email / push delivery with audit trail
+
+Validation:
+
+- node --check passed for all new and modified server modules;
+- full repository suite passed: 133/133 tests.
 
 Planned:
 

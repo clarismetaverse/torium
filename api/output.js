@@ -1,4 +1,5 @@
 import { readFile } from 'node:fs/promises';
+import { requireAuthenticatedUser } from './_auth.js';
 import { resolve, relative, sep } from 'node:path';
 import {
   DEFAULT_UNDERWRITING_ASSUMPTIONS,
@@ -643,6 +644,7 @@ async function readCombinedOutput(id, { publicView = true } = {}) {
 }
 
 export default async function handler(request, response) {
+  if (!await requireAuthenticatedUser(request, response)) return;
   try {
     const id = normalizeId(request.query.file);
     // This is a public endpoint. Never allow a query parameter to bypass redaction.

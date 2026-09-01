@@ -1,7 +1,10 @@
+import { requireAuthenticatedUser } from './_auth.js';
+
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-export default async function handler(_request, response) {
+export default async function handler(request, response) {
+  if (!await requireAuthenticatedUser(request, response)) return;
   try {
     if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) throw new Error('Missing Supabase env vars');
     const query = 'triage_runs?investor_profile=eq.villa-opportunity-v1&select=run_id,search_name,search_strategy,scoring_mode,city,created_at,raw_source_count,eligible_count,source_channels,requested_areas&order=created_at.desc&limit=50';

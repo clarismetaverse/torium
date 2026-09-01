@@ -5,15 +5,132 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#11130f">
   <title>TORIUM · Imagine</title>
+  <script src="/auth-client.js"></script>
   <style>
-    :root{--bg:#10120f;--ink:#f5f1e7;--muted:#aaa99f;--line:#ffffff24;--glass:#171914dc;--sage:#bacbb2;--sand:#dfc9a7;--plan:#a8bed1}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif}.shell{max-width:1500px;margin:auto;padding:24px 0 90px}.top{position:sticky;top:0;z-index:20;margin:0 22px;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:14px 16px;border:1px solid var(--line);border-radius:17px;background:var(--glass);backdrop-filter:blur(18px)}.brand{text-decoration:none;color:inherit;font-weight:800;letter-spacing:.08em;font-size:13px}.nav{display:flex;gap:8px;align-items:center}.nav a{text-decoration:none;color:var(--muted);font-size:12px;padding:8px 10px;border-radius:999px}.nav a.active{background:#f5f1e7;color:#11130f}.hero{min-height:68vh;padding:9vh 7vw 7vh;display:flex;flex-direction:column;justify-content:flex-end;max-width:1150px}.eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--sage);margin-bottom:18px}.hero h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;font-size:clamp(52px,10vw,130px);line-height:.82;letter-spacing:-.07em;margin:0;max-width:950px}.hero p{max-width:650px;color:#c8c7bf;font-size:clamp(16px,2vw,22px);line-height:1.45;margin:30px 0 0}.filters{display:flex;gap:8px;overflow:auto;padding:0 7vw 30px;scrollbar-width:none}.filter{white-space:nowrap;border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:999px;padding:9px 13px;cursor:pointer}.filter.active{background:var(--ink);color:var(--bg)}.feed{display:grid;gap:90px}.project{display:grid;gap:20px}.project-head{padding:0 7vw;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(220px,.7fr);gap:30px;align-items:end}.project h2{font-family:Georgia,"Times New Roman",serif;font-weight:400;font-size:clamp(34px,6vw,76px);line-height:.95;letter-spacing:-.045em;margin:0}.project-meta{display:grid;gap:10px;color:var(--muted);font-size:13px;line-height:1.5}.style-name{color:var(--sand);text-transform:uppercase;letter-spacing:.12em;font-size:10px}.source{color:var(--ink);text-underline-offset:4px}.rail{display:flex;gap:12px;overflow-x:auto;overscroll-behavior-inline:contain;scroll-snap-type:x proximity;padding:0 7vw 14px;scrollbar-width:thin;scrollbar-color:#ffffff33 transparent}.frame{position:relative;flex:0 0 min(72vw,880px);height:min(58vw,680px);min-height:360px;overflow:hidden;border-radius:3px;background:#252720;scroll-snap-align:center}.frame.portrait{flex-basis:min(42vw,500px)}.frame.plan{flex-basis:min(52vw,650px);background:#ece9e0}.frame.detail{flex-basis:min(35vw,430px)}.frame img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s ease}.frame.plan img{object-fit:contain}.frame:hover img{transform:scale(1.015)}.asset-tag{position:absolute;top:14px;left:14px;background:#10120fca;border:1px solid #ffffff30;backdrop-filter:blur(8px);padding:7px 9px;border-radius:999px;font-size:9px;letter-spacing:.14em;text-transform:uppercase}.asset-tag.original{color:var(--sage)}.asset-tag.floor_plan{color:var(--plan)}.asset-tag.renewal{color:var(--sand)}.caption{position:absolute;left:16px;right:16px;bottom:14px;display:flex;justify-content:space-between;gap:20px;align-items:end;color:#fff;text-shadow:0 1px 12px #000;font-size:11px}.story{padding:0 7vw;max-width:850px;color:#c1c0b8;line-height:1.65;font-size:15px}.empty{margin:40px 7vw;padding:80px 24px;border:1px solid var(--line);color:var(--muted);text-align:center}.status{padding:30px 7vw;color:var(--muted)}.viewer{position:fixed;inset:0;z-index:50;background:#050605f2;display:none;place-items:center;padding:20px}.viewer.open{display:grid}.viewer img{max-width:95vw;max-height:90vh;object-fit:contain}.viewer button{position:absolute;right:22px;top:20px;background:#ffffff18;color:#fff;border:1px solid #ffffff44;border-radius:999px;padding:10px 13px;cursor:pointer}@media(max-width:720px){.shell{padding-top:10px}.top{margin:0 10px}.nav a:not(.active){display:none}.hero{min-height:58vh;padding:9vh 20px 5vh}.filters{padding-left:20px}.project-head{padding:0 20px;grid-template-columns:1fr}.rail{padding-left:20px;padding-right:20px}.frame{flex-basis:88vw;height:70vh;min-height:440px}.frame.portrait,.frame.plan,.frame.detail{flex-basis:78vw}.story{padding:0 20px}.feed{gap:65px}}
+    :root{--bg:#10120f;--ink:#f5f1e7;--muted:#aaa99f;--line:#ffffff24;--glass:#171914dc;--sage:#bacbb2;--sand:#dfc9a7;--plan:#a8bed1;--gutter:clamp(22px,7vw,105px)}
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+    body{margin:0;overflow-x:hidden;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif;-webkit-font-smoothing:antialiased}
+    body.viewer-open{overflow:hidden}
+    button,a{-webkit-tap-highlight-color:transparent}
+    .shell{max-width:1500px;margin:auto;padding:24px 0 calc(90px + env(safe-area-inset-bottom))}
+    .top{position:sticky;top:max(10px,env(safe-area-inset-top));z-index:20;margin:0 22px;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:14px 16px;border:1px solid var(--line);border-radius:17px;background:var(--glass);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+    .brand{text-decoration:none;color:inherit;font-weight:800;letter-spacing:.08em;font-size:13px;white-space:nowrap}
+    .nav{display:flex;gap:8px;align-items:center;min-width:0}
+    .nav a{text-decoration:none;color:var(--muted);font-size:12px;padding:8px 10px;border-radius:999px;white-space:nowrap}
+    .nav a.active{background:var(--ink);color:var(--bg)}
+    .hero{min-height:68vh;min-height:68svh;padding:9vh var(--gutter) 7vh;display:flex;flex-direction:column;justify-content:flex-end;max-width:1150px}
+    .eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--sage);margin-bottom:18px}
+    .hero h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;font-size:clamp(52px,10vw,130px);line-height:.82;letter-spacing:-.07em;margin:0;max-width:950px}
+    .hero p{max-width:650px;color:#c8c7bf;font-size:clamp(16px,2vw,22px);line-height:1.45;margin:30px 0 0}
+    .filters{display:flex;gap:8px;overflow-x:auto;padding:0 var(--gutter) 30px;scroll-behavior:smooth;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+    .filters::-webkit-scrollbar,.rail::-webkit-scrollbar{display:none}
+    .filter{white-space:nowrap;border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:999px;padding:9px 13px;cursor:pointer}
+    .filter.active{background:var(--ink);color:var(--bg)}
+    .view-toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 var(--gutter) 38px;color:var(--muted);font-size:10px;letter-spacing:.12em;text-transform:uppercase}
+    .view-switch{display:flex;gap:3px;padding:3px;border:1px solid var(--line);border-radius:999px;background:#171914}
+    .view-toggle{border:0;border-radius:999px;background:transparent;color:var(--muted);padding:8px 12px;font:inherit;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+    .view-toggle.active{background:var(--ink);color:var(--bg)}
+    .feed{display:grid;gap:90px}
+    .project{display:grid;gap:20px;content-visibility:auto;contain-intrinsic-size:auto 850px}
+    .project-head{padding:0 var(--gutter);display:grid;grid-template-columns:minmax(0,1.3fr) minmax(220px,.7fr);gap:30px;align-items:end}
+    .project h2{font-family:Georgia,"Times New Roman",serif;font-weight:400;font-size:clamp(34px,6vw,76px);line-height:.95;letter-spacing:-.045em;margin:0}
+    .project-meta{display:grid;gap:10px;color:var(--muted);font-size:13px;line-height:1.5}
+    .style-name{color:var(--sand);text-transform:uppercase;letter-spacing:.12em;font-size:10px;margin-bottom:8px}
+    .source{color:var(--ink);text-underline-offset:4px}
+    .rail{display:flex;gap:12px;overflow-x:auto;overscroll-behavior-inline:contain;scroll-snap-type:x mandatory;scroll-padding-inline:var(--gutter);scroll-behavior:smooth;padding:0 var(--gutter) 14px;scrollbar-width:none;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y}
+    .frame{position:relative;flex:0 0 min(72vw,880px);aspect-ratio:16/10;min-width:0;margin:0;overflow:hidden;border-radius:4px;background:#252720;scroll-snap-align:center;scroll-snap-stop:always;contain:layout paint;cursor:zoom-in}
+    .frame::after{content:"";position:absolute;inset:auto 0 0;height:32%;background:linear-gradient(transparent,#080a0790);pointer-events:none}
+    .frame.portrait{flex-basis:min(42vw,500px);aspect-ratio:4/5}
+    .frame.plan{flex-basis:min(52vw,650px);background:#ece9e0}
+    .frame.detail{flex-basis:min(35vw,430px);aspect-ratio:4/5}
+    .frame img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s ease;user-select:none;-webkit-user-drag:none}
+    .frame.plan img{object-fit:contain}
+    @media(hover:hover){.frame:hover img{transform:scale(1.015)}}
+    .asset-tag{position:absolute;z-index:2;top:14px;left:14px;background:#10120fca;border:1px solid #ffffff30;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);padding:7px 9px;border-radius:999px;font-size:9px;letter-spacing:.14em;text-transform:uppercase}
+    .asset-tag.original{color:var(--sage)}
+    .asset-tag.floor_plan{color:var(--plan)}
+    .asset-tag.renewal{color:var(--sand)}
+    .caption{position:absolute;z-index:2;left:16px;right:16px;bottom:14px;display:flex;justify-content:space-between;gap:20px;align-items:end;color:#fff;text-shadow:0 1px 12px #000;font-size:11px}
+    .compare-grid{display:grid;gap:clamp(22px,3vw,42px);padding:0 var(--gutter)}
+    .comparison{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0}
+    .comparison-title{grid-column:1/-1;display:flex;align-items:center;gap:10px;color:var(--muted);font-size:10px;letter-spacing:.12em;text-transform:uppercase}
+    .comparison-title::after{content:"";height:1px;flex:1;background:var(--line)}
+    .comparison .frame{width:100%;max-width:none;aspect-ratio:4/3;cursor:zoom-in}
+    .comparison .frame-placeholder{display:grid;place-items:center;aspect-ratio:4/3;border:1px solid var(--line);border-radius:4px;color:var(--muted);font-size:11px}
+    .compare-extras{margin-top:4px}
+    .story{padding:0 var(--gutter);max-width:850px;color:#c1c0b8;line-height:1.65;font-size:15px}
+    .empty{margin:40px var(--gutter);padding:80px 24px;border:1px solid var(--line);color:var(--muted);text-align:center}
+    .status{padding:30px var(--gutter);color:var(--muted)}
+    .viewer{position:fixed;inset:0;z-index:50;background:#050605f2;display:none;place-items:center;padding:max(20px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));touch-action:pinch-zoom}
+    .viewer.open{display:grid}
+    .viewer img{max-width:100%;max-height:calc(100svh - 40px);object-fit:contain}
+    .viewer button{position:absolute;z-index:2;right:max(16px,env(safe-area-inset-right));top:max(16px,env(safe-area-inset-top));background:#10120fcc;color:#fff;border:1px solid #ffffff44;border-radius:999px;padding:10px 13px;cursor:pointer}
+
+    @media(min-width:721px) and (max-width:1100px){
+      :root{--gutter:32px}
+      .shell{padding-top:16px}
+      .top{margin:0 16px}
+      .hero{min-height:62vh;min-height:62svh;padding-top:7vh;padding-bottom:6vh}
+      .project-head{grid-template-columns:minmax(0,1fr) minmax(210px,.55fr);gap:24px}
+      .rail{gap:10px}
+      .frame{flex-basis:min(82vw,820px);aspect-ratio:4/3}
+      .frame.portrait,.frame.detail{flex-basis:min(55vw,540px)}
+      .frame.plan{flex-basis:min(70vw,690px)}
+    }
+
+    @media(max-width:720px){
+      :root{--gutter:16px}
+      .shell{padding-top:max(8px,env(safe-area-inset-top))}
+      .top{top:max(8px,env(safe-area-inset-top));margin:0 8px;padding:10px 11px;border-radius:15px;gap:8px}
+      .brand{font-size:11px;letter-spacing:.06em}
+      .nav{gap:2px;overflow-x:auto;scrollbar-width:none}
+      .nav::-webkit-scrollbar{display:none}
+      .nav a{font-size:10px;padding:7px 6px}
+      .hero{min-height:56vh;min-height:56svh;padding-top:9vh;padding-bottom:5vh}
+      .hero h1{font-size:clamp(48px,17vw,76px);line-height:.86}
+      .hero p{font-size:15px;line-height:1.5;margin-top:24px}
+      .filters{padding-bottom:24px}
+      .view-toolbar{padding-bottom:28px}
+      .view-toolbar>span{display:none}
+      .view-switch{width:100%}
+      .view-toggle{flex:1;padding-block:9px}
+      .project-head{grid-template-columns:1fr;gap:14px}
+      .project h2{font-size:clamp(34px,12vw,50px)}
+      .project-meta{font-size:12px}
+      .rail{gap:10px;padding-bottom:8px}
+      .frame,.frame.portrait,.frame.plan,.frame.detail{flex-basis:calc(100vw - 32px);aspect-ratio:4/3;border-radius:12px;scroll-snap-align:start}
+      .asset-tag{top:10px;left:10px;padding:6px 8px}
+      .caption{left:12px;right:12px;bottom:11px;gap:10px;font-size:10px}
+      .caption span:last-child{max-width:58%;text-align:right}
+      .compare-grid{gap:24px}
+      .comparison{gap:6px}
+      .comparison .frame,.comparison .frame-placeholder{aspect-ratio:4/3;border-radius:8px}
+      .comparison .asset-tag{font-size:7px;letter-spacing:.09em;padding:5px 6px}
+      .comparison .caption{font-size:9px;left:8px;right:8px;bottom:7px}
+      .comparison .caption span:last-child{display:none}
+      .story{font-size:14px;line-height:1.55}
+      .feed{gap:64px}
+      .empty{padding:56px 18px}
+    }
+
+    @media(max-width:380px){
+      .brand{max-width:95px;overflow:hidden;text-overflow:ellipsis}
+      .nav a{font-size:9px;padding-inline:5px}
+      .caption span:last-child{display:none}
+    }
+
+    @media(prefers-reduced-motion:reduce){
+      html,.filters,.rail{scroll-behavior:auto}
+      .frame img{transition:none}
+    }
   </style>
 </head>
 <body>
   <main class="shell">
     <header class="top">
       <a class="brand" href="/renewals">TORIUM IMAGINE</a>
-      <nav class="nav"><a href="/home">Operazioni</a><a href="/villas">Ville</a><a class="active" href="/renewals">Renewals</a></nav>
+      <nav class="nav"><a href="/home">Operazioni</a><a href="/villas">Ville</a><a class="active" href="/renewals">Renewals</a><a href="/account">Account</a></nav>
     </header>
     <section class="hero">
       <div class="eyebrow">Virtual renewal studio</div>
@@ -21,18 +138,95 @@
       <p>Una lettura editoriale delle trasformazioni possibili: render, stato attuale e planimetrie convivono nella stessa sequenza, senza perdere il collegamento con l’annuncio reale.</p>
     </section>
     <section id="filters" class="filters" aria-label="Filtra per stile"></section>
+    <section class="view-toolbar" aria-label="Modalità di visualizzazione">
+      <span>Visualizzazione</span>
+      <div id="view-switch" class="view-switch">
+        <button class="view-toggle" type="button" data-layout="compare">Prima / Dopo</button>
+        <button class="view-toggle" type="button" data-layout="sequence">Sequenza</button>
+      </div>
+    </section>
     <section id="feed" class="feed"><div class="status">Caricamento progetti…</div></section>
   </main>
   <div id="viewer" class="viewer" aria-hidden="true"><button type="button" aria-label="Chiudi">Chiudi ✕</button><img alt="Immagine ingrandita"></div>
   <script>
-    const state={projects:[],style:'all'};const $=id=>document.getElementById(id);const h=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+    const params=new URLSearchParams(location.search);
+    const state={projects:[],style:'all',layout:params.get('layout')==='sequence'?'sequence':'compare'};
+    const $=id=>document.getElementById(id);
+    const h=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
     const labels={renewal:'Renewal',original:'Stato attuale',floor_plan:'Planimetria',material:'Material study',detail:'Dettaglio'};
-    function styles(){return [...new Map(state.projects.filter(p=>p.style).map(p=>[p.style.id,p.style])).values()]}
-    function drawFilters(){const values=styles();$('filters').innerHTML=[`<button class="filter ${state.style==='all'?'active':''}" data-style="all">Tutti</button>`,...values.map(s=>`<button class="filter ${state.style===s.id?'active':''}" data-style="${h(s.id)}">${h(s.name)}</button>`)].join('')}
-    function projectCard(project){const assets=(project.assets||[]).filter(asset=>asset.url);const listing=project.listing||{};const meta=[project.location_label,listing.size_mq?`${listing.size_mq} mq`:null,listing.price_eur?new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(listing.price_eur):null].filter(Boolean).join(' · ');return `<article class="project"><header class="project-head"><div><div class="style-name">${h(project.style?.name||'Renewal study')}</div><h2>${h(project.title||listing.title||'Virtual renewal')}</h2></div><div class="project-meta"><span>${h(project.subtitle||meta)}</span>${project.source_url?`<a class="source" href="${h(project.source_url)}" target="_blank" rel="noopener">Apri annuncio ${h(project.source_channel||'sorgente')} ↗</a>`:''}</div></header>${assets.length?`<div class="rail">${assets.map(asset=>{const kind=asset.asset_kind||'renewal',layout=asset.layout_type==='portrait'?'portrait':asset.layout_type==='plan'||kind==='floor_plan'?'plan':asset.layout_type==='detail'?'detail':'';return `<figure class="frame ${layout}" data-url="${h(asset.url)}"><img src="${h(asset.url)}" loading="lazy" alt="${h(asset.alt_text||asset.caption||labels[kind]||'Renewal')}"><span class="asset-tag ${h(kind)}">${h(labels[kind]||kind)}</span><figcaption class="caption"><span>${h(asset.view_name||asset.room_type||'')}</span><span>${h(asset.caption||'')}</span></figcaption></figure>`}).join('')}</div>`:'<div class="empty">Le immagini di questo progetto sono ancora in elaborazione.</div>'}${project.narrative?`<p class="story">${h(project.narrative)}</p>`:''}</article>`}
-    function draw(){drawFilters();const selected=state.projects.filter(project=>state.style==='all'||project.style?.id===state.style);$('feed').innerHTML=selected.length?selected.map(projectCard).join(''):'<div class="empty">Nessun renewal pubblicato per questo filtro.</div>'}
-    async function load(){const params=new URLSearchParams(location.search),external=params.get('project');const query=external?`?external_id=${encodeURIComponent(external)}`:'';const response=await fetch('/api/renewals'+query);const body=await response.json().catch(()=>({}));if(!response.ok)throw new Error(body.error||'Impossibile caricare i renewal');state.projects=body.projects||[];draw()}
-    $('filters').onclick=event=>{const button=event.target.closest('[data-style]');if(!button)return;state.style=button.dataset.style;draw()};$('feed').onclick=event=>{const frame=event.target.closest('.frame');if(!frame)return;const viewer=$('viewer');viewer.querySelector('img').src=frame.dataset.url;viewer.classList.add('open');viewer.setAttribute('aria-hidden','false')};$('viewer').onclick=()=>{$('viewer').classList.remove('open');$('viewer').setAttribute('aria-hidden','true')};addEventListener('keydown',event=>{if(event.key==='Escape')$('viewer').click()});load().catch(error=>$('feed').innerHTML=`<div class="empty">${h(error.message)}</div>`);
+
+    function styles(){return [...new Map(state.projects.filter(project=>project.style).map(project=>[project.style.id,project.style])).values()]}
+    function drawFilters(){
+      const values=styles();
+      $('filters').innerHTML=[
+        `<button class="filter ${state.style==='all'?'active':''}" data-style="all">Tutti</button>`,
+        ...values.map(style=>`<button class="filter ${state.style===style.id?'active':''}" data-style="${h(style.id)}">${h(style.name)}</button>`),
+      ].join('');
+    }
+    function drawLayoutSwitch(){
+      document.querySelectorAll('[data-layout]').forEach(button=>{
+        const active=button.dataset.layout===state.layout;
+        button.classList.toggle('active',active);
+        button.setAttribute('aria-pressed',String(active));
+      });
+    }
+    function assetFrame(asset){
+      const kind=asset.asset_kind||'renewal';
+      const layout=asset.layout_type==='portrait'?'portrait':asset.layout_type==='plan'||kind==='floor_plan'?'plan':asset.layout_type==='detail'?'detail':'';
+      return `<figure class="frame ${layout}" data-url="${h(asset.url)}" role="button" tabindex="0" aria-label="Apri ${h(asset.view_name||labels[kind]||'immagine')}"><img src="${h(asset.url)}" loading="lazy" decoding="async" draggable="false" alt="${h(asset.alt_text||asset.caption||labels[kind]||'Renewal')}"><span class="asset-tag ${h(kind)}">${h(labels[kind]||kind)}</span><figcaption class="caption"><span>${h(asset.view_name||asset.room_type||'')}</span><span>${h(asset.caption||'')}</span></figcaption></figure>`;
+    }
+    function sequenceView(assets,project){
+      return `<div class="rail" aria-label="Galleria immagini di ${h(project.title||'questo progetto')}">${assets.map(assetFrame).join('')}</div>`;
+    }
+    function compareView(assets,project){
+      const comparable=assets.filter(asset=>asset.asset_kind==='original'||asset.asset_kind==='renewal');
+      const extras=assets.filter(asset=>asset.asset_kind!=='original'&&asset.asset_kind!=='renewal');
+      const groups=[...comparable.reduce((map,asset)=>{
+        const key=asset.view_id||asset.asset_key;
+        if(!map.has(key))map.set(key,{name:asset.view_name||asset.room_type||'Vista',assets:[]});
+        map.get(key).assets.push(asset);
+        return map;
+      },new Map()).values()];
+      const comparisons=groups.map(group=>{
+        const original=group.assets.find(asset=>asset.asset_kind==='original');
+        const renewal=group.assets.find(asset=>asset.asset_kind==='renewal');
+        return `<section class="comparison" aria-label="Confronto ${h(group.name)}"><div class="comparison-title">${h(group.name)}</div>${original?assetFrame(original):'<div class="frame-placeholder">Originale non disponibile</div>'}${renewal?assetFrame(renewal):'<div class="frame-placeholder">Renewal in elaborazione</div>'}</section>`;
+      }).join('');
+      const extraRail=extras.length?`<div class="rail compare-extras" aria-label="Altri contenuti di ${h(project.title||'questo progetto')}">${extras.map(assetFrame).join('')}</div>`:'';
+      return `<div class="compare-grid">${comparisons}</div>${extraRail}`;
+    }
+    function projectCard(project){
+      const assets=(project.assets||[]).filter(asset=>asset.url);
+      const listing=project.listing||{};
+      const meta=[project.location_label,listing.size_mq?`${listing.size_mq} mq`:null,listing.price_eur?new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(listing.price_eur):null].filter(Boolean).join(' · ');
+      const media=assets.length?(state.layout==='compare'?compareView(assets,project):sequenceView(assets,project)):'<div class="empty">Le immagini di questo progetto sono ancora in elaborazione.</div>';
+      return `<article class="project"><header class="project-head"><div><div class="style-name">${h(project.style?.name||'Renewal study')}</div><h2>${h(project.title||listing.title||'Virtual renewal')}</h2></div><div class="project-meta"><span>${h(project.subtitle||meta)}</span>${project.source_url?`<a class="source" href="${h(project.source_url)}" target="_blank" rel="noopener">Apri annuncio ${h(project.source_channel||'sorgente')} ↗</a>`:''}</div></header>${media}${project.narrative?`<p class="story">${h(project.narrative)}</p>`:''}</article>`;
+    }
+    function draw(){
+      drawFilters();
+      drawLayoutSwitch();
+      const selected=state.projects.filter(project=>state.style==='all'||project.style?.id===state.style);
+      $('feed').innerHTML=selected.length?selected.map(projectCard).join(''):'<div class="empty">Nessun renewal pubblicato per questo filtro.</div>';
+    }
+    async function load(){
+      const external=params.get('project');
+      const query=external?`?external_id=${encodeURIComponent(external)}`:'';
+      const response=await fetch('/api/renewals'+query);
+      const body=await response.json().catch(()=>({}));
+      if(!response.ok)throw new Error(body.error||'Impossibile caricare i renewal');
+      state.projects=body.projects||[];
+      draw();
+    }
+    function openViewer(frame){const viewer=$('viewer');viewer.querySelector('img').src=frame.dataset.url;viewer.classList.add('open');viewer.setAttribute('aria-hidden','false');document.body.classList.add('viewer-open')}
+    function closeViewer(){const viewer=$('viewer');viewer.classList.remove('open');viewer.setAttribute('aria-hidden','true');document.body.classList.remove('viewer-open')}
+
+    $('filters').onclick=event=>{const button=event.target.closest('[data-style]');if(!button)return;state.style=button.dataset.style;draw()};
+    $('view-switch').onclick=event=>{const button=event.target.closest('[data-layout]');if(!button)return;state.layout=button.dataset.layout;const next=new URL(location.href);next.searchParams.set('layout',state.layout);history.replaceState(null,'',next);draw()};
+    $('feed').onclick=event=>{const frame=event.target.closest('.frame[data-url]');if(frame)openViewer(frame)};
+    $('feed').onkeydown=event=>{const frame=event.target.closest('.frame[data-url]');if(frame&&(event.key==='Enter'||event.key===' ')){event.preventDefault();openViewer(frame)}};
+    $('viewer').onclick=closeViewer;
+    addEventListener('keydown',event=>{if(event.key==='Escape')closeViewer()});
+    load().catch(error=>$('feed').innerHTML=`<div class="empty">${h(error.message)}</div>`);
   </script>
 </body>
 </html>

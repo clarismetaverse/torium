@@ -1,5 +1,6 @@
 import { jsonResponse, latestRunId, numberParam, sendError, supabaseGet } from './_supabase-debug.js';
 import { evaluateDataQuality } from '../lib/data-quality-gate.js';
+import { requireAuthenticatedUser } from './_auth.js';
 
 function appendFilter(parts, name, operator, value) {
   if (value !== undefined && value !== null && value !== '') parts.push(`${name}=${operator}.${encodeURIComponent(value)}`);
@@ -150,6 +151,7 @@ function redactRow(row) {
 }
 
 export default async function handler(request, response) {
+  if (!await requireAuthenticatedUser(request, response)) return;
   try {
     const limit = numberParam(request.query.limit, 100, 1000);
     const offset = numberParam(request.query.offset, 0, 100000);

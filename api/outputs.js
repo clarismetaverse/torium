@@ -1,5 +1,6 @@
 import { readdir, stat } from 'node:fs/promises';
 import { join, relative, sep } from 'node:path';
+import { requireAuthenticatedUser } from './_auth.js';
 
 const rootDir = process.cwd();
 const dirs = ['triage-outputs', 'outputs/triage'];
@@ -71,7 +72,8 @@ async function readSupabaseRuns() {
   return outputs;
 }
 
-export default async function handler(_request, response) {
+export default async function handler(request, response) {
+  if (!await requireAuthenticatedUser(request, response)) return;
   try {
     const supabaseOutputs = await readSupabaseRuns();
     if (supabaseOutputs) {

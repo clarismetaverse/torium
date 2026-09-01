@@ -1,6 +1,8 @@
 import { jsonResponse, numberParam, sendError, supabaseGet } from './_supabase-debug.js';
+import { requireAuthenticatedUser } from './_auth.js';
 
 export default async function handler(request, response) {
+  if (!await requireAuthenticatedUser(request, response)) return;
   try {
     const limit = numberParam(request.query.limit, 20, 100);
     const raw = request.query.raw === '1' || request.query.raw === 'true';

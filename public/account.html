@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f3efe7">
+  <title>TORIUM · Preferenze investitore</title>
+  <script src="/auth-client.js"></script>
+  <style>
+    :root{--bg:#f3efe7;--card:#fffdf8;--ink:#171713;--muted:#716d64;--line:#ded5c6;--green:#254f36}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink)}.shell{width:min(1040px,100%);margin:auto;padding:24px}.top{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:44px}.brand{font-weight:900;letter-spacing:.08em}.nav{display:flex;gap:8px;align-items:center}.nav a,.nav button{border:1px solid var(--line);border-radius:999px;background:#fff;color:inherit;padding:9px 12px;text-decoration:none;font:inherit;font-size:12px;cursor:pointer}
+    .hero{max-width:730px;margin-bottom:28px}.eyebrow{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--green);font-weight:800}.hero h1{font-family:Georgia,serif;font-size:clamp(42px,7vw,76px);font-weight:400;line-height:.94;letter-spacing:-.055em;margin:15px 0}.hero p{color:var(--muted);line-height:1.55}.card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:clamp(20px,4vw,34px);margin-bottom:18px}.card h2{margin:0 0 8px}.card>p{margin:0 0 22px;color:var(--muted)}
+    .zones{display:flex;flex-wrap:wrap;gap:8px}.zone input{position:absolute;opacity:0;pointer-events:none}.zone span{display:block;border:1px solid var(--line);border-radius:999px;padding:9px 11px;background:#fff;cursor:pointer;font-size:12px}.zone input:checked+span{background:var(--green);border-color:var(--green);color:#fff}.numbers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.field{display:grid;gap:7px}.field label{font-size:12px;font-weight:700}.field input{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px;font:inherit;background:#fff}.actions{display:flex;align-items:center;gap:14px;margin-top:22px}.save{border:0;border-radius:13px;background:#171713;color:#fff;padding:12px 18px;font:inherit;font-weight:800;cursor:pointer}.save:disabled{opacity:.55}.status{font-size:12px;color:var(--muted)}.note{padding:14px;border-radius:14px;background:#eef3ea;color:#38513c;font-size:12px;line-height:1.5;margin-top:18px}
+    @media(max-width:650px){.shell{padding:16px}.top{align-items:flex-start}.nav{flex-wrap:wrap;justify-content:flex-end}.numbers{grid-template-columns:1fr}.card{border-radius:18px}.hero{margin-top:26px}}
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="top"><div class="brand">TORIUM</div><nav class="nav"><a href="/home">Operazioni</a><a href="/villas">Ville</a><a href="/renewals">Renewals</a><button id="logout">Esci</button></nav></header>
+    <section class="hero"><div class="eyebrow" id="identity">Investor preferences</div><h1>Solo i segnali che contano.</h1><p>Questi criteri preparano il profilo per le future notifiche sugli appartamenti frazionabili. Le notifiche non sono ancora attive: per ora salviamo una preferenza pulita e utilizzabile nei test.</p></section>
+    <form id="preferencesForm">
+      <section class="card"><h2>Quartieri di Milano</h2><p>Seleziona tutte le zone compatibili con la tua strategia.</p><div id="zones" class="zones"></div></section>
+      <section class="card"><h2>Economics e dimensione</h2><p>Lascia vuoto un campo se non vuoi imporre quel limite.</p><div class="numbers">
+        <div class="field"><label for="min_price_eur">Prezzo minimo (EUR)</label><input id="min_price_eur" type="number" min="0" step="10000"></div>
+        <div class="field"><label for="max_price_eur">Budget massimo (EUR)</label><input id="max_price_eur" type="number" min="0" step="10000"></div>
+        <div class="field"><label for="min_size_mq">Superficie minima (mq)</label><input id="min_size_mq" type="number" min="1" step="1"></div>
+        <div class="field"><label for="max_size_mq">Superficie massima (mq)</label><input id="max_size_mq" type="number" min="1" step="1"></div>
+        <div class="field"><label for="max_price_per_sqm_eur">Prezzo massimo al mq (EUR)</label><input id="max_price_per_sqm_eur" type="number" min="1" step="100"></div>
+        <div class="field"><label for="min_door_score">Door Score minimo</label><input id="min_door_score" type="number" min="0" max="100" step="1"></div>
+        <div class="field"><label for="min_roi_base_pct">ROI base minimo (%)</label><input id="min_roi_base_pct" type="number" min="-100" max="1000" step="0.1"></div>
+      </div><div class="note">Non includiamo presenza su entrambi i portali, spread di prezzo o frequenza: sono segnali interni di screening e decisioni di delivery, non preferenze dell'investitore.</div><div class="actions"><button id="save" class="save" type="submit">Salva preferenze</button><span id="status" class="status" role="status"></span></div></section>
+    </form>
+  </div>
+  <script>
+    const fields=['min_price_eur','max_price_eur','min_size_mq','max_size_mq','max_price_per_sqm_eur','min_door_score','min_roi_base_pct'];
+    const form=document.getElementById('preferencesForm'),status=document.getElementById('status'),save=document.getElementById('save');
+    const h=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+    async function load(){
+      const [user,response]=await Promise.all([window.toriumSessionReady,fetch('/api/investor-preferences',{cache:'no-store'})]);
+      const body=await response.json();if(!response.ok)throw new Error(body.error||'Caricamento non riuscito');
+      document.getElementById('identity').textContent=user?.email||'Investor preferences';
+      const selected=new Set(body.preferences?.neighborhood_ids||[]);
+      document.getElementById('zones').innerHTML=body.zones.map(zone=>`<label class="zone"><input type="checkbox" name="neighborhood" value="${h(zone.id)}" ${selected.has(zone.id)?'checked':''}><span>${h(zone.name)}</span></label>`).join('');
+      for(const field of fields)document.getElementById(field).value=body.preferences?.[field]??'';
+    }
+    form.addEventListener('submit',async event=>{
+      event.preventDefault();save.disabled=true;status.textContent='Salvataggio...';
+      const payload={neighborhood_ids:[...form.querySelectorAll('[name=neighborhood]:checked')].map(input=>input.value)};
+      for(const field of fields)payload[field]=document.getElementById(field).value;
+      try{const response=await fetch('/api/investor-preferences',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const body=await response.json();if(!response.ok)throw new Error(body.error||'Salvataggio non riuscito');status.textContent='Preferenze salvate'}
+      catch(error){status.textContent=error.message}finally{save.disabled=false}
+    });
+    document.getElementById('logout').onclick=async()=>{await fetch('/api/auth-session',{method:'DELETE'});location.replace('/login')};
+    load().catch(error=>status.textContent=error.message);
+  </script>
+</body>
+</html>

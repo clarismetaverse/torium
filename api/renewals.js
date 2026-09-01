@@ -7,6 +7,7 @@ import {
   normalizeRenewalUpload,
   RENEWAL_BUCKET,
 } from '../lib/renewals.js';
+import { requireAuthenticatedUser } from './_auth.js';
 
 const SIGNED_URL_SECONDS = 60 * 60;
 
@@ -354,7 +355,10 @@ export default async function handler(request, response) {
     return json(response, 405, { error: 'Method not allowed' });
   }
   try {
-    if (request.method === 'GET') return await readProjects(request, response);
+    if (request.method === 'GET') {
+      if (!await requireAuthenticatedUser(request, response)) return;
+      return await readProjects(request, response);
+    }
     response.setHeader('Cache-Control', 'no-store');
     if (request.method === 'POST' && request.query.action === 'upload-url') return await issueUploadUrl(request, response);
     return await writeProject(request, response);

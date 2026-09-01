@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f3efe7">
+  <title>TORIUM · Accesso investitori</title>
+  <style>
+    :root{--bg:#f3efe7;--card:#fffdf8;--ink:#171713;--muted:#716d64;--line:#ded5c6}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 15% 10%,#dce9d5,transparent 34%),var(--bg);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink)}
+    main{width:min(430px,100%);background:var(--card);border:1px solid var(--line);border-radius:26px;padding:clamp(26px,6vw,44px);box-shadow:0 28px 80px #2e35231a}
+    .eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#52704b;font-weight:800}h1{margin:18px 0 9px;font-family:Georgia,serif;font-size:44px;line-height:.95;letter-spacing:-.045em;font-weight:400}p{color:var(--muted);line-height:1.55;margin:0 0 28px}
+    label{display:grid;gap:7px;margin-top:15px;font-size:12px;font-weight:700}input{border:1px solid var(--line);border-radius:13px;background:#fff;padding:13px 14px;font:inherit;color:inherit}button{width:100%;margin-top:22px;border:0;border-radius:13px;background:#171713;color:#fff;padding:13px 16px;font:inherit;font-weight:800;cursor:pointer}button:disabled{opacity:.55;cursor:wait}.status{min-height:20px;margin-top:14px;color:#9b2d21;font-size:12px}.small{font-size:11px;margin-top:20px;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <main>
+    <div class="eyebrow">TORIUM Investor Club</div>
+    <h1>Accesso riservato.</h1>
+    <p>Accedi per consultare operazioni, ville, renewal e impostare i criteri degli annunci di tuo interesse.</p>
+    <form id="loginForm">
+      <label>Email<input id="email" name="email" type="email" autocomplete="username" required></label>
+      <label>Password<input id="password" name="password" type="password" autocomplete="current-password" required></label>
+      <button id="submit" type="submit">Accedi</button>
+      <div id="status" class="status" role="alert"></div>
+    </form>
+    <div class="small">Gli account vengono creati su invito. Non e disponibile la registrazione pubblica.</div>
+  </main>
+  <script>
+    const params=new URLSearchParams(location.search);
+    const requested=params.get('next')||'/home';
+    const next=requested.startsWith('/')&&!requested.startsWith('//')?requested:'/home';
+    const form=document.getElementById('loginForm');
+    const submit=document.getElementById('submit');
+    const status=document.getElementById('status');
+    fetch('/api/auth-session',{cache:'no-store'}).then(response=>{if(response.ok)location.replace(next)});
+    form.addEventListener('submit',async event=>{
+      event.preventDefault();submit.disabled=true;status.textContent='';
+      try{
+        const response=await fetch('/api/auth-session',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:form.email.value,password:form.password.value})});
+        const body=await response.json().catch(()=>({}));
+        if(!response.ok)throw new Error(body.error||'Accesso non riuscito');
+        location.replace(next);
+      }catch(error){status.textContent=error.message;submit.disabled=false}
+    });
+  </script>
+</body>
+</html>
