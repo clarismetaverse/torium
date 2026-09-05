@@ -1,4 +1,5 @@
 import { runMassiveTriage } from '../pipelines/triage-multisource-massive.js';
+import { isSameOrigin, requireRole } from './_auth.js';
 
 export const maxDuration = 300;
 
@@ -10,17 +11,6 @@ export function resolveRequestedLimit(value, fallback = 600, maximum = 5000) {
   return Math.max(1, Math.min(maximum, Math.floor(numeric)));
 }
 
-function isSameOrigin(request) {
-  const origin = request.headers.origin;
-  if (!origin) return true;
-  const host = request.headers['x-forwarded-host'] || request.headers.host;
-  try {
-    return new URL(origin).host === host;
-  } catch {
-    return false;
-  }
-}
-
 export default async function handler(request, response) {
   response.setHeader('Cache-Control', 'no-store');
 
@@ -30,6 +20,7 @@ export default async function handler(request, response) {
   }
 
   if (!isSameOrigin(request)) return response.status(403).json({ error: 'Cross-origin request denied' });
+  if (!await requireRole(request, response, 'admin')) return;
 
   if (activeRun) return response.status(409).json({ error: 'Una run e gia in corso su questa istanza' });
 

@@ -12,18 +12,18 @@ const NUMERIC_FIELDS = {
   min_roi_base_pct: { min: -100, max: 1000 },
 };
 
-function serviceConfig() {
+function apiConfig() {
   const url = String(process.env.SUPABASE_URL || '').replace(/\/+$/, '');
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) throw new Error('Supabase persistence is not configured');
+  const key = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY;
+  if (!url || !key) throw new Error('Supabase API is not configured');
   return { url, key };
 }
 
-function serviceHeaders(extra = {}) {
-  const { key } = serviceConfig();
+function userHeaders(accessToken, extra = {}) {
+  const { key } = apiConfig();
   return {
     apikey: key,
-    Authorization: 'Bearer ' + key,
+    Authorization: 'Bearer ' + accessToken,
     'Content-Type': 'application/json',
     ...extra,
   };
@@ -62,25 +62,25 @@ export function normalizePreferences(input = {}) {
   return result;
 }
 
-async function readPreferences(userId) {
-  const { url } = serviceConfig();
+async function readPreferences(userId, accessToken) {
+  const { url } = apiConfig();
   const query = new URLSearchParams({
     select: 'user_id,neighborhood_ids,min_price_eur,max_price_eur,min_size_mq,max_size_mq,max_price_per_sqm_eur,min_door_score,min_roi_base_pct,updated_at',
     user_id: 'eq.' + userId,
     limit: '1',
   });
   const result = await fetch(url + '/rest/v1/investor_alert_preferences?' + query, {
-    headers: serviceHeaders(),
+    headers: userHeaders(accessToken),
   });
   if (!result.ok) throw new Error(await result.text());
   return (await result.json())[0] || null;
 }
 
-async function upsertPreferences(userId, preferences) {
-  const { url } = serviceConfig();
+async function upsertPreferences(userId, accessToken, preferences) {
+  const { url } = apiConfig();
   const result = await fetch(url + '/rest/v1/investor_alert_preferences?on_conflict=user_id', {
     method: 'POST',
-    headers: serviceHeaders({
+    headers: userHeaders(accessToken, {
       Prefer: 'resolution=merge-duplicates,return=representation',
     }),
     body: JSON.stringify({
@@ -101,7 +101,7 @@ export default async function handler(request, response) {
     if (request.method === 'GET') {
       return response.status(200).json({
         zones: MILAN_CANONICAL_ZONES.map(({ id, name }) => ({ id, name })),
-        preferences: await readPreferences(session.user.id),
+        preferences: await readPreferences(session.user.id, session.accessToken),
       });
     }
 
@@ -110,7 +110,7 @@ export default async function handler(request, response) {
         return response.status(403).json({ error: 'Invalid request origin' });
       }
       const preferences = normalizePreferences(request.body);
-      const saved = await upsertPreferences(session.user.id, preferences);
+      const saved = await upsertPreferences(session.user.id, session.accessToken, preferences);
       return response.status(200).json({ preferences: saved });
     }
   } catch (error) {

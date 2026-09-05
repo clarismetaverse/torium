@@ -1,127 +1,70 @@
 # TORIUM
 
-TORIUM is an experimental AI intelligence system for real estate opportunity analysis.
+TORIUM is a real-estate intelligence system for sourcing, screening, valuing and operating residential value-add opportunities.
 
-The long-term vision is to build an Urban Operating System capable of combining public property data, expert knowledge, scraped information, and AI reasoning into a decision-support layer for real estate investors and operators.
+Current product domains:
 
-At the current stage, TORIUM is intentionally much smaller.
+- Milano apartment fractioning;
+- multisource Idealista/Immobiliare discovery and price comparison;
+- villa renovation and tourism opportunity search;
+- deterministic unit economics and ROI scenarios;
+- private listing media cache;
+- virtual before/after renewal feeds;
+- invite-only investor access and alert preferences.
 
-The first goal is to build a practical intelligence MVP that can take a property, enrich it with available data, retrieve relevant expert knowledge, and generate a structured investment brief.
-
----
-
-## Current MVP
-
-The current version of TORIUM is based on a simple pipeline:
-
-```text
-Apify Scraper 1
-Apify Scraper 2
-        ↓
-Raw property data
-        ↓
-OpenAPI enrichment
-        ↓
-WhatsApp expert corpus
-        ↓
-RAG retrieval
-        ↓
-GPT + Gemini + Claude in parallel
-        ↓
-Deal brief / risk brief / opportunity score
-```
-
-The system does not try to automate real estate investing.
-
-It tries to produce a better first analysis than a human operator could produce manually in a short amount of time.
-
----
-
-## Inputs
-
-TORIUM may use:
-
-- Property listings
-- Scraped real estate data
-- Publicly available property information
-- WhatsApp conversations with experienced operators
-- Investor notes
-- Renovation and construction heuristics
-- Legal, technical, and commercial red flags
-
----
-
-## Outputs
-
-The MVP should generate a structured brief containing:
-
-- Property summary
-- Opportunity assessment
-- Technical red flags
-- Legal and condominium red flags
-- Transformation hypotheses
-- Questions for due diligence
-- Risk assessment
-- Confidence score
-- Model comparison across GPT, Gemini, and Claude
-
----
-
-## What TORIUM Is Not Yet
-
-TORIUM is not yet:
-
-- A full Urban OS
-- A predictive investment engine
-- A complete due diligence platform
-- A construction risk model
-- A legal decision system
-- A replacement for architects, surveyors, engineers, or lawyers
-
-At this stage, TORIUM is an intelligence assistant.
-
----
-
-## Core Principle
-
-Most real estate tools store information.
-
-TORIUM should transform fragmented information into actionable intelligence.
-
-The MVP is successful if, given a property, it can generate a clear, useful, and operationally relevant report that helps decide whether the opportunity deserves further human investigation.
-
----
-
-## Initial Repository Structure
+## Architecture
 
 ```text
-torium/
-├── README.md
-├── docs/
-│   └── mvp-scope.md
-├── data/
-│   ├── raw/
-│   ├── processed/
-│   └── whatsapp/
-├── scrapers/
-│   └── apify/
-├── enrichment/
-│   └── openapi/
-├── rag/
-│   ├── chunking/
-│   ├── retrieval/
-│   └── prompts/
-├── outputs/
-│   ├── deal-briefs/
-│   └── risk-reports/
-└── evals/
-    └── model-comparison.md
+Apify listing sources
+  -> source adapters and normalized observations
+  -> quality, pre-triage and conservative deduplication
+  -> physical/villa scoring
+  -> deterministic valuation and underwriting
+  -> Supabase Postgres/Auth/Storage
+  -> Vercel Functions
+  -> static authenticated web application
 ```
 
----
+TORIUM is decision support. Its current market values are provisional asking-price benchmarks, and its physical, legal, tax and financial outputs require professional validation before investment.
 
-## Status
+## Documentation
 
-Early-stage prototype.
+Start with [the technical documentation index](docs/README.md).
 
-The current priority is to build the first intelligence pipeline before expanding into deeper datasets, causal graphs, technical failure libraries, or operational acquisition workflows.
+Core references:
+
+- [Infrastructure overview](docs/TECHNICAL_INFRASTRUCTURE_OVERVIEW.md)
+- [Current technical state](docs/TORIUM_TECHNICAL_STATE.md)
+- [Data pipelines and domain model](docs/DATA_PIPELINES_AND_DOMAIN_MODEL.md)
+- [Supabase data, security and storage](docs/SUPABASE_DATA_SECURITY_AND_STORAGE.md)
+- [API, frontend and deployment](docs/API_FRONTEND_AND_DEPLOYMENT.md)
+- [Operations and runbook](docs/OPERATIONS_TESTING_AND_RUNBOOK.md)
+- [Vision and roadmap](docs/TORIUM_VISION_AND_ROADMAP.md)
+- [Architectural decisions](docs/ARCHITECTURAL_DECISIONS.md)
+
+## Local validation
+
+```powershell
+npm install
+npm test
+vercel build --prod
+```
+
+In Node.js environments where default test isolation is process-spawn based, prefer the repository default script:
+
+```powershell
+npm test   # executes `node --test --test-isolation=none`
+```
+
+Use dry-run mode to inspect final source payloads before a paid actor call:
+
+```powershell
+$env:TORIUM_DRY_RUN='true'
+$env:TORIUM_SEARCH_STRATEGY='neutral_fractionability'
+$env:TORIUM_MASSIVE_SOURCES='idealista,immobiliare'
+npm run triage:massive
+```
+
+Never commit service credentials or expose the Supabase service-role, Apify or renewal-agent keys to browser code.
+
+Last documentation verification: **2026-09-04**.

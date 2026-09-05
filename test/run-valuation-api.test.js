@@ -32,5 +32,5 @@ test('frontend valuation endpoint permits deterministic mode only', async () => 
     headers: { host: 'torium.example' },
     body: { run_id: 'valid-run', mode: 'ai' },
   }, response);
-  assert.equal(response.statusCode, 400);
+  assert.equal(response.statusCode, 401);
 });

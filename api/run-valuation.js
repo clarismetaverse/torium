@@ -1,19 +1,9 @@
 import { runValuationFromSupabase } from '../lib/valuation-runner.js';
+import { isSameOrigin, requireRole } from './_auth.js';
 
 export const maxDuration = 300;
 
 let activeValuation = null;
-
-function isSameOrigin(request) {
-  const origin = request.headers.origin;
-  if (!origin) return true;
-  const host = request.headers['x-forwarded-host'] || request.headers.host;
-  try {
-    return new URL(origin).host === host;
-  } catch {
-    return false;
-  }
-}
 
 export default async function handler(request, response) {
   response.setHeader('Cache-Control', 'no-store');
@@ -22,6 +12,7 @@ export default async function handler(request, response) {
     return response.status(405).json({ error: 'Method not allowed' });
   }
   if (!isSameOrigin(request)) return response.status(403).json({ error: 'Cross-origin request denied' });
+  if (!await requireRole(request, response, 'admin')) return;
 
   if (activeValuation) return response.status(409).json({ error: 'Una valuation e gia in corso su questa istanza' });
 

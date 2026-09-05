@@ -26,6 +26,16 @@ test('run endpoint requires same-origin', async () => {
   assert.equal(crossOrigin.statusCode, 403);
 });
 
+test('run endpoint rejects anonymous same-origin callers', async () => {
+  const response = responseRecorder();
+  await handler({
+    method: 'POST',
+    headers: { origin: 'https://torium.example', host: 'torium.example', 'x-forwarded-proto': 'https' },
+    body: {},
+  }, response);
+  assert.equal(response.statusCode, 401);
+});
+
 test('serious run limit defaults to 600 and supports up to 5000', () => {
   assert.equal(resolveRequestedLimit(undefined), 600);
   assert.equal(resolveRequestedLimit(4000), 4000);

@@ -114,7 +114,7 @@ La risposta contiene `upload.method`, `upload.url` e gli header da usare. L'URL 
 
 La pubblicazione è late-binding: finché il progetto non passa a `published` e gli asset a `ready`, non vengono mostrati nella view pubblica.
 
-## Lettura pubblica
+## Lettura applicativa
 
 - `GET /api/renewals`: ultimi progetti pubblicati.
 - `GET /api/renewals?external_id=...`: singolo progetto.
@@ -130,4 +130,4 @@ Gli URL degli asset privati scadono dopo un'ora e vengono rigenerati dal server.
 - I file ammessi sono JPEG, PNG, WebP e AVIF, massimo 15 MB ciascuno.
 - La relazione tra una vista originale e il suo render usa `view_id`; non viene ancora verificata con computer vision.
 - La pubblicazione e l'ordine sono controllati dall'agente tramite `status`, `upload_status` e `sort_order`.
-- Il frontend è pubblico in lettura; gli endpoint POST/PATCH sono server-to-server e non espongono la chiave nel browser.
+- La view e il GET sono protetti dall'accesso TORIUM nella release Auth in working tree; gli endpoint POST/PATCH restano server-to-server e non espongono la chiave nel browser. Finché tale release non viene deployata, verificare il comportamento effettivo della produzione prima di condividere un link.
