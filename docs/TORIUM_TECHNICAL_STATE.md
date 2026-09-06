@@ -1,14 +1,14 @@
 # TORIUM technical state
 
-**Version:** 1.0
-**Snapshot:** 2026-09-04
+**Version:** 1.1
+**Snapshot:** 2026-09-06
 **Detailed index:** [docs/README.md](README.md)
 
 ## Executive status
 
 TORIUM is an operational prototype with real multisource data, deterministic fractioning/valuation, villa discovery, private media handling and virtual renewals. Supabase persistence is active and the Vercel application is live.
 
-The next release is primarily a security and reproducibility release, not a new scoring feature. Auth hardening is implemented and tested in the working tree, and its database migrations are live, but the matching application code is not yet in the current production deployment.
+The hardened authentication release is now live. The first active admin membership was created on 2026-09-06 and a production login was verified end to end, including return to the requested protected Villas route. Remaining Phase 0 work is security and operational hardening rather than basic access enablement.
 
 ## Deployment state
 
@@ -17,15 +17,17 @@ The next release is primarily a security and reproducibility release, not a new 
 - project: `torium`;
 - domain: `https://torium-nu.vercel.app`;
 - Node.js: 24.x;
-- production deployment: `dpl_GN845jsDyS5pyY7cWBBdLSFqPY9v`;
+- production deployment: `dpl_C6GGRUEuuhpbb1US6vPEnFrexu2a`;
 - state: READY;
-- commit: `6bbb260e7e8ce48cff74e7f38122fd7a84af4930`;
+- commit: `e7e3032cac31ad1922e80c59e497ea0b8edd8a86`;
 - functions: 11;
 - deployment source: GitHub `main`.
 
 ### Supabase production
 
 - project ref: `wboeyszksqtcjnaiiofe`;
+- dashboard name: `clarismetaverse's Project` (generic legacy name; rename recommended);
+- GitHub integration: `clarismetaverse/torium`, working directory `.`;
 - 12 public tables, all with RLS enabled;
 - 19 live migrations;
 - Auth hardening migrations applied;
@@ -33,9 +35,9 @@ The next release is primarily a security and reproducibility release, not a new 
 - security advisor: 0 errors, 2 legacy-function warnings, 9 informational closed-table notices;
 - performance advisor: 10 duplicate-index warnings plus informational unused-index notices.
 
-### Working tree
+### Released Auth baseline
 
-Unreleased changes include:
+Production now includes:
 
 - active membership authorization;
 - admin/investor roles;
@@ -46,14 +48,14 @@ Unreleased changes include:
 - refreshed account/login pages;
 - comprehensive infrastructure documents.
 
-The last completed validation for this working tree was:
+The release validation recorded before deployment was:
 
 - syntax checks passed;
 - full tests passed: 138/138;
 - production-equivalent Vercel build passed;
 - generated Function count: 11.
 
-This validation must be rerun after the current documentation change before release.
+The repository was clean at `e7e3032` before this documentation-only update. The production deployment is READY and exposes 11 Functions.
 
 ## Product surfaces
 
@@ -63,7 +65,7 @@ This validation must be rerun after the current documentation change before rele
 | Multisource | Idealista + Immobiliare normalization, conservative match, dual offers and price spread | atomic reconciliation and temporal observations |
 | Villas | Como/Toscana/Sardegna, renovation/tourism scores and dynamic asking benchmark | renovation/rental underwriting and stronger geography data |
 | Renewals | paired original/render/plan feed, styles, signed upload/publication | stable canonical property link and supplier/procurement references |
-| Investor account | invite-only Auth and preferences in working tree | SMTP, MFA, first users, matcher and delivery |
+| Investor account | production invite-only Auth, active admin membership and preferences | custom SMTP, MFA, investor onboarding, matcher and delivery |
 
 ## Main data flow
 
@@ -147,7 +149,7 @@ Remaining:
 
 ## Security state
 
-Implemented in working tree:
+Implemented in production:
 
 - Supabase Auth identity;
 - active `torium_memberships` authorization;
@@ -163,15 +165,15 @@ Implemented in working tree:
 - product/API guards;
 - renewal agent kept as separate machine credential.
 
-Production completion needed:
+Production hardening still needed:
 
-- deploy matching application code;
-- configure custom SMTP and redirects;
-- create first admin/member;
+- configure custom SMTP and verify invite/recovery delivery;
+- re-verify and document all redirect allowlist entries;
 - enable MFA;
 - add rate limits;
 - review shared CDN caching on authenticated output routes;
-- add browser end-to-end tests.
+- add automated browser end-to-end tests;
+- test the full investor/admin/denied authorization matrix.
 
 ## Reliability and scale state
 
@@ -211,7 +213,7 @@ Priority:
 
 ## Highest-priority next work
 
-1. Release and smoke-test hardened Auth.
+1. Finish the remaining Auth security/operations gate: SMTP, MFA, rate limits and full role matrix.
 2. Reconstruct migration baseline and add CI.
 3. Complete stable property identity and reconciliation.
 4. Implement durable 5,000-result orchestration.

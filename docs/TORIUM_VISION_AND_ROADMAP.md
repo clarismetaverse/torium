@@ -2,7 +2,7 @@
 
 **Version:** 1.0
 **Status:** active development
-**Last updated:** 2026-09-04
+**Last updated:** 2026-09-06
 
 ## 1. Vision
 
@@ -49,7 +49,10 @@ An operator should be able to run controlled acquisition, compare source/strateg
 - data-quality gate and cross-source price-spread signal;
 - private on-demand listing media cache;
 - virtual-renewal feed and protected publisher channel;
-- production commit on 2026-09-04: `6bbb260`.
+- production commit on 2026-09-06: `e7e3032`;
+- hardened invite-only Auth, membership-based roles and protected product routes;
+- first active admin membership with successful production login;
+- Supabase project linked to `clarismetaverse/torium` from repository root `.`.
 
 ### Live database
 
@@ -61,7 +64,7 @@ An operator should be able to run controlled acquisition, compare source/strateg
 - RLS on every public table;
 - Auth/security migrations applied.
 
-### Working tree, not yet production
+### Production Auth baseline
 
 - hardened invite-only Auth release;
 - membership-based admin/investor authorization;
@@ -69,7 +72,7 @@ An operator should be able to run controlled acquisition, compare source/strateg
 - password invitation/recovery/set flow;
 - server-only Auth events;
 - admin restrictions for expensive run endpoints;
-- this comprehensive documentation.
+- first administrator provisioned and login-smoke-tested.
 
 ### Validated but provisional
 
@@ -132,9 +135,9 @@ The order is deliberate: first reliable and reproducible infrastructure, then sc
 
 Deliverables:
 
-- deploy working-tree Auth hardening;
-- configure custom SMTP and Auth redirect URLs;
-- invite first admin and test lifecycle;
+- [x] deploy Auth hardening;
+- [x] provision the first admin and verify login plus protected-route return;
+- [ ] configure custom SMTP and verify Auth redirect URLs;
 - verify investor/admin authorization matrix;
 - review authenticated output CDN caching;
 - rate-limit login, recovery and mutations;
@@ -461,9 +464,9 @@ Every derived result must carry:
 
 Retention classes distinguish immutable investment evidence, renewable market observations, Auth/security records, preferences, licensed media, generated content and temporary cache.
 
-## 9. Priority order from 2026-09-04
+## 9. Priority order from 2026-09-06
 
-1. Secure Auth production release.
+1. Close remaining Auth operations: SMTP, MFA, rate limits and full role matrix.
 2. Reconstruct migration baseline and add CI.
 3. Stable property ID and multisource reconciliation.
 4. Durable two-run orchestration and 5,000-result delivery.

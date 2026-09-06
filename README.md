@@ -67,4 +67,4 @@ npm run triage:massive
 
 Never commit service credentials or expose the Supabase service-role, Apify or renewal-agent keys to browser code.
 
-Last documentation verification: **2026-09-04**.
+Last documentation verification: **2026-09-06**. Auth is live, the first admin login is verified, and Supabase is linked to `clarismetaverse/torium` from working directory `.`.

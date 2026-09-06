@@ -38,4 +38,4 @@ This folder is the technical source of truth for TORIUM. The documents distingui
 - Update the roadmap and technical state whenever a milestone changes state.
 - When code and prose disagree, code plus live infrastructure inspection wins; fix the document in the same change.
 
-Last verified against the repository, live Supabase project and Vercel project on **2026-09-04**.
+Last verified against the repository, live Supabase project and Vercel project on **2026-09-06**.

@@ -230,7 +230,7 @@ Future hardening:
 
 ## 9. Production deployment state
 
-Verified production on 2026-09-04:
+Verified production on 2026-09-06:
 
 | Field | Value |
 | --- | --- |
@@ -238,15 +238,15 @@ Verified production on 2026-09-04:
 | Project ID | `prj_iUNYNTe87Yq5TSButgwBL6FYOe6O` |
 | Team ID | `team_NyJzt1O0AJ9BHWshNKf1uBex` |
 | Node version | 24.x |
-| Deployment | `dpl_GN845jsDyS5pyY7cWBBdLSFqPY9v` |
+| Deployment | `dpl_C6GGRUEuuhpbb1US6vPEnFrexu2a` |
 | State | READY |
 | Target | production |
 | Git ref | `main` |
-| Commit | `6bbb260e7e8ce48cff74e7f38122fd7a84af4930` |
+| Commit | `e7e3032cac31ad1922e80c59e497ea0b8edd8a86` |
 | Function count | 11 |
 | Primary domain | `torium-nu.vercel.app` |
 
-The current local working tree contains later Auth hardening and documentation changes. Do not describe them as deployed until a production deployment contains their commit.
+The hardened Auth application is included in this production baseline. The first active admin login and safe return to a protected Villas URL were smoke-tested on 2026-09-06. Later documentation-only edits remain local until committed.
 
 ## 10. Environment variables
 

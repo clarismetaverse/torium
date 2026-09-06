@@ -1,7 +1,7 @@
 # TORIUM technical infrastructure overview
 
-**Version:** 1.0
-**Verified:** 2026-09-04
+**Version:** 1.1
+**Verified:** 2026-09-06
 **Repository:** `clarismetaverse/torium`
 **Production application:** `https://torium-nu.vercel.app`
 **Supabase project ref:** `wboeyszksqtcjnaiiofe`
@@ -30,7 +30,7 @@ This documentation uses the following labels:
 | **Target** | Direction or design not yet fully implemented and validated. |
 | **Legacy** | Retained for compatibility or historical comparison; not the preferred path. |
 
-The distinction matters because the live database can be ahead of the deployed frontend. On 2026-09-04 the authentication hardening migrations are live in Supabase, while the matching Vercel code remains in the working tree pending release.
+The distinction matters because the live database can be ahead of the deployed frontend. As of 2026-09-06 the Auth migrations and matching Vercel application code are both live; later documentation-only edits remain working-tree changes until committed and deployed.
 
 ## 3. System context
 
@@ -74,7 +74,7 @@ External generation agents use a separate server-to-server channel to publish vi
 | UI | Static HTML, CSS and vanilla JavaScript | No frontend framework or build step. |
 | HTTP/API | Vercel Node.js Functions | Project runtime is Node.js 24.x; configured long operations have a 300-second ceiling. |
 | Hosting | Vercel | GitHub-connected production deployment from `main`. |
-| Database | Supabase Postgres | Primary persistence and relational source of truth. |
+| Database | Supabase Postgres | Primary persistence; project `wboeyszksqtcjnaiiofe`, linked to `clarismetaverse/torium` with working directory `.`. |
 | Identity | Supabase Auth | Email/password, invite and recovery flows. |
 | Object storage | Supabase Storage | Two private buckets for listing cache and renewals. |
 | Scraping | Apify Actors | Idealista and Immobiliare.it adapters; actor IDs are configurable. |
@@ -225,7 +225,7 @@ The live public schema contains 12 tables:
 - `torium_memberships`;
 - `torium_auth_events`.
 
-On 2026-09-04 the live row counts were respectively 6, 2,966, 659, 0, 0, 64, 4, 4, 32, 0, 0 and 0. Row counts are observational and will change.
+On 2026-09-04 the live row counts were respectively 6, 2,966, 659, 0, 0, 64, 4, 4, 32, 0, 0 and 0. On 2026-09-06 the first active admin membership was added. Row counts are observational and will change.
 
 The current model is run-centric. A major target change is stable global property identity plus run-scoped revisions, so notes and history no longer depend on `run_id + listing_index`.
 
@@ -233,13 +233,13 @@ The current model is run-centric. A major target change is stable global propert
 
 The Vercel project is `torium`, project ID `prj_iUNYNTe87Yq5TSButgwBL6FYOe6O`, team ID `team_NyJzt1O0AJ9BHWshNKf1uBex`.
 
-The production deployment inspected on 2026-09-04:
+The production deployment inspected on 2026-09-06:
 
-- deployment `dpl_GN845jsDyS5pyY7cWBBdLSFqPY9v`;
+- deployment `dpl_C6GGRUEuuhpbb1US6vPEnFrexu2a`;
 - state `READY`;
+- commit `e7e3032cac31ad1922e80c59e497ea0b8edd8a86`;
 - Git ref `main`;
-- commit `6bbb260e7e8ce48cff74e7f38122fd7a84af4930`;
-- commit message `Consolidate functions for Vercel Hobby`;
+- commit message `Complete registration and auth flow; finalize phase 0 hardening`;
 - 11 Node.js Functions;
 - production alias `torium-nu.vercel.app`.
 
@@ -329,7 +329,7 @@ Missing:
 - Purchase costs are a single 12% assumption rather than a transaction-specific tax/notary/brokerage model.
 - No time/holding/financing/contingency model by current product decision.
 - No notification matcher, outbox or delivery channel.
-- No custom SMTP/MFA production completion for the new Auth release.
+- No custom SMTP/MFA production completion for the Auth release; only the first-admin login path has been manually smoke-tested.
 - `dotenv` is unpinned.
 - Static frontend files are large and contain substantial embedded logic.
 

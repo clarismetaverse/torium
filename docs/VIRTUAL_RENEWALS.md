@@ -130,4 +130,4 @@ Gli URL degli asset privati scadono dopo un'ora e vengono rigenerati dal server.
 - I file ammessi sono JPEG, PNG, WebP e AVIF, massimo 15 MB ciascuno.
 - La relazione tra una vista originale e il suo render usa `view_id`; non viene ancora verificata con computer vision.
 - La pubblicazione e l'ordine sono controllati dall'agente tramite `status`, `upload_status` e `sort_order`.
-- La view e il GET sono protetti dall'accesso TORIUM nella release Auth in working tree; gli endpoint POST/PATCH restano server-to-server e non espongono la chiave nel browser. Finché tale release non viene deployata, verificare il comportamento effettivo della produzione prima di condividere un link.
+- La view e il GET sono protetti dall'accesso TORIUM nella release Auth ora in produzione; gli endpoint POST/PATCH restano server-to-server e non espongono la chiave nel browser. Il login e il ritorno a una rotta protetta sono stati verificati il 2026-09-06; resta da completare la matrice E2E di ruoli e casi negati.

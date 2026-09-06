@@ -1,8 +1,10 @@
 # TORIUM Supabase data, security and storage
 
-**Version:** 1.0
-**Live project verified:** 2026-09-04
+**Version:** 1.1
+**Live project verified:** 2026-09-06
 **Project ref:** `wboeyszksqtcjnaiiofe`
+
+The Supabase GitHub integration targets `clarismetaverse/torium` with working directory `.`. The dashboard currently uses the generic legacy display name `clarismetaverse's Project`; the project ref above is the stable identifier.
 
 ## 1. Responsibilities
 
@@ -35,6 +37,8 @@ Observed row counts are a point-in-time diagnostic, not contractual limits.
 | `investor_alert_preferences` | One investor preference row per Auth user | 0 | enabled + forced |
 | `torium_memberships` | Application allowlist, role and status | 0 | enabled + forced |
 | `torium_auth_events` | Minimal server-side Auth audit | 0 | enabled + forced |
+
+The table counts above remain the 2026-09-04 baseline. On 2026-09-06 the first active `admin` membership was added and verified against its Supabase Auth identity; credentials and personal identifiers are intentionally excluded from this document.
 
 ## 3. Core triage entities
 

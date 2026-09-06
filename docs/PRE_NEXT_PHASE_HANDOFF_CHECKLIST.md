@@ -2,11 +2,11 @@
 
 **Purpose:** close, verify and release the current authentication/infrastructure work before starting another product feature.
 
-**Prepared:** 2026-09-05  
-**Repository:** `clarismetaverse/torium`  
-**Current branch at handoff:** `main`  
-**Current production commit at handoff:** `6bbb260`  
-**Production URL:** `https://torium-nu.vercel.app`  
+**Prepared:** 2026-09-05; updated with production evidence 2026-09-06
+**Repository:** `clarismetaverse/torium`
+**Current branch at handoff:** `main`
+**Current production commit:** `e7e3032`
+**Production URL:** `https://torium-nu.vercel.app`
 **Supabase project ref:** `wboeyszksqtcjnaiiofe`
 
 This is an execution checklist, not a statement that every item is already implemented. Every completed checkbox must be backed by command output, a database/API result, a browser observation or a deployment URL.
@@ -59,10 +59,11 @@ When documentation and code disagree, verify the code and live infrastructure, t
 
 ### 4.1 Production versus working tree
 
-- Production currently points to commit `6bbb260`.
-- The hardened Auth application code is in the working tree and is **not** in that production commit.
+- Production currently points to commit `e7e3032`.
+- The hardened Auth application code is live in production deployment `dpl_C6GGRUEuuhpbb1US6vPEnFrexu2a`.
 - The two Auth hardening migrations are already present in the live Supabase migration history.
-- At the last live inspection there were no Auth users and no membership rows; verify this again rather than assuming it remains true.
+- On 2026-09-06 the first Auth user and matching active `admin` membership were created and verified. No credentials or personal identifiers are stored in this file.
+- The Supabase GitHub integration now targets `clarismetaverse/torium` with working directory `.`.
 - The latest full local test run after environment correction reported **138 passing tests**.
 - The latest `vercel build --prod` attempt in this session exits `0`; retain `.vercel/output` only when regenerated in the same session.
 
@@ -245,9 +246,9 @@ These items may require credentials, DNS access or email delivery and therefore 
 
 ### 8.3 Create the first accounts
 
-- [ ] **Approval/input required:** obtain the exact first admin email and explicit approval to send the invite.
-- [ ] Use `npm run auth:invite -- <approved-email> admin` from a trusted environment.
-- [ ] Verify both Supabase Auth user and active `torium_memberships` row exist.
+- [x] **Approval/input obtained:** first administrator address and explicit creation approval received on 2026-09-06.
+- [x] Create and auto-confirm the first administrator from the trusted Supabase dashboard.
+- [x] Verify both Supabase Auth user and active `torium_memberships` row exist.
 - [ ] Complete invite and password creation in a clean browser session.
 - [ ] Create an investor test account only if approved, so role boundaries can be tested end-to-end.
 - [ ] Verify suspended status immediately revokes product access on the next authorized request/session refresh.
@@ -264,7 +265,7 @@ These items may require credentials, DNS access or email delivery and therefore 
 - [ ] Function count is within plan.
 - [ ] Required migrations are present/applied in the correct order.
 - [ ] Current READY production deployment is recorded as rollback candidate.
-- [ ] Release notes state that working-tree Auth behavior was not in `6bbb260` and identify the new commit that will contain it.
+- [x] Release notes identify `e7e3032` as the production Auth baseline and distinguish later documentation-only changes.
 
 ### 9.2 Commit and push
 
@@ -290,16 +291,16 @@ Run against preview first, then repeat the critical subset against production. U
 
 ### 10.1 Unauthenticated
 
-- [ ] `/login` loads without console errors.
-- [ ] Protected pages redirect to `/login?next=<safe-path>`.
-- [ ] A successful login returns only to an allowed internal `next` path.
+- [ ] `/login` loads without console errors (page load verified; console inspection still pending).
+- [x] Protected pages redirect to `/login?next=<safe-path>`.
+- [x] A successful login returns only to the tested allowed internal Villas path.
 - [ ] `/forgot-password` always shows a generic response.
 - [ ] Direct run API calls return unauthorized and do not start Apify work.
 - [ ] Protected data APIs do not leak run, property, note, preference or renewal data.
 
 ### 10.2 Investor
 
-- [ ] Login succeeds with active membership.
+- [x] Login succeeds with active admin membership.
 - [ ] Home loads and the expected run is visible.
 - [ ] One property detail loads with address/source links/media as allowed.
 - [ ] Notes can be created, reloaded and updated according to the chosen ownership model; verify the row in Supabase.

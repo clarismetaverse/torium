@@ -1,6 +1,18 @@
 # TORIUM authentication and authorization
 
-Status: production-hardening implementation, 2026-09-02.
+Status: production baseline live and smoke-tested, 2026-09-06.
+
+## Production verification
+
+On 2026-09-06:
+
+- the Auth release at commit `e7e3032` was live on `https://torium-nu.vercel.app`;
+- one email/password Auth user was created and auto-confirmed by an authorized operator;
+- the matching `public.torium_memberships` row was verified as `role = admin` and `status = active`;
+- production login succeeded and returned to the requested protected Villas route;
+- no password, email address, access token or service credential is recorded in repository documentation.
+
+This proves the first-admin login path. It does not yet prove the complete investor/admin/denied matrix, email delivery, recovery delivery, logout or MFA.
 
 ## Security model
 
@@ -109,7 +121,7 @@ view owner's ability to bypass RLS.
 ## Remaining production work
 
 - connect and verify the custom SMTP provider;
-- create the first admin invite;
+- test invitation and recovery delivery after SMTP configuration;
 - enable stronger Supabase password rules and leaked-password protection when
   the plan supports it;
 - add TOTP MFA for admins first, then optionally require it for investors;
