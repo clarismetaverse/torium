@@ -1,19 +1,8 @@
-import { requireAuthenticatedUser } from './_auth.js';
+import { isSameOrigin, noStore, requireAuthenticatedUser } from './_auth.js';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const MAX_NOTE_LENGTH = 4000;
-
-export function isSameOrigin(request) {
-  const origin = request.headers?.origin;
-  if (!origin) return false;
-  const host = request.headers?.['x-forwarded-host'] || request.headers?.host;
-  try {
-    return new URL(origin).host === host;
-  } catch {
-    return false;
-  }
-}
 
 export function parseNoteTarget(input = {}) {
   const runId = String(input.run_id || '').replace(/^supabase:/, '').trim();
@@ -54,7 +43,7 @@ async function supabaseRest(pathname, options = {}) {
 }
 
 export default async function handler(request, response) {
-  response.setHeader('Cache-Control', 'no-store');
+  noStore(response);
   if (!['GET', 'POST'].includes(request.method)) {
     response.setHeader('Allow', 'GET, POST');
     return response.status(405).json({ error: 'Method not allowed' });

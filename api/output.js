@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import { requireAuthenticatedUser } from './_auth.js';
+import { noStore, requireAuthenticatedUser } from './_auth.js';
 import { resolve, relative, sep } from 'node:path';
 import {
   DEFAULT_UNDERWRITING_ASSUMPTIONS,
@@ -654,14 +654,14 @@ export default async function handler(request, response) {
 
     if (id.startsWith('combined:')) {
       const output = await readCombinedOutput(id, { publicView });
-      response.setHeader('Cache-Control', publicView ? 'public, s-maxage=300, stale-while-revalidate=86400' : 'private, no-store');
+      noStore(response);
       response.status(200).json(dashboardSummary ? compactDashboardOutput(output, { includeMedia }) : output);
       return;
     }
 
     if (id.startsWith('supabase:')) {
       const output = await readSupabaseOutput(id, { publicView });
-      response.setHeader('Cache-Control', publicView ? 'public, s-maxage=300, stale-while-revalidate=86400' : 'private, no-store');
+      noStore(response);
       response.status(200).json(dashboardSummary ? compactDashboardOutput(output, { includeMedia }) : output);
       return;
     }
@@ -686,6 +686,7 @@ export default async function handler(request, response) {
     response.setHeader('Content-Type', 'application/json; charset=utf-8');
     response.status(200).send(content);
   } catch (error) {
-    response.status(500).json({ error: error.message });
+    console.error('Output API failed:', error);
+    response.status(500).json({ error: 'Output non disponibile' });
   }
 }

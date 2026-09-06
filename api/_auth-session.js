@@ -3,11 +3,14 @@ import {
   clearAuthCookies,
   isSameOrigin,
   membershipForUser,
+  noStore,
   passwordSession,
+  pseudonymize,
   recordAuthEvent,
   revokeSession,
   setAuthCookies,
 } from './_auth.js';
+import { enforceRateLimit } from './_rate-limit.js';
 
 function safeUser(user, membership) {
   return user ? {
@@ -18,8 +21,7 @@ function safeUser(user, membership) {
 }
 
 export default async function handler(request, response) {
-  response.setHeader('Cache-Control', 'no-store, private');
-  response.setHeader('Pragma', 'no-cache');
+  noStore(response);
 
   if (request.method === 'GET') {
     const session = await authenticatedSession(request, response);
@@ -28,7 +30,11 @@ export default async function handler(request, response) {
     if (!membership) {
       await revokeSession(session.accessToken).catch(() => {});
       clearAuthCookies(response);
-      return response.status(403).json({ authenticated: false, error: 'TORIUM membership is not active' });
+      return response.status(403).json({
+        authenticated: false,
+        error: 'TORIUM membership is not active',
+        code: 'membership_inactive',
+      });
     }
     return response.status(200).json({
       authenticated: true,
@@ -49,12 +55,19 @@ export default async function handler(request, response) {
     if (email.length > 254 || password.length > 256) {
       return response.status(400).json({ error: 'Email or password not valid' });
     }
+    if (!await enforceRateLimit(request, response, 'login', email)) return;
     try {
       const session = await passwordSession(email, password);
       const membership = await membershipForUser(session.user?.id);
       if (!membership) {
         await revokeSession(session.access_token).catch(() => {});
-        return response.status(403).json({ error: 'TORIUM membership is not active' });
+        await recordAuthEvent(session.user?.id || null, 'login_denied_membership');
+        // The caller has already proven this credential, so naming the state
+        // leaks nothing they do not know and avoids a dead-end login loop.
+        return response.status(403).json({
+          error: 'Accesso TORIUM non ancora attivo. Attendi la conferma di un operatore.',
+          code: 'membership_inactive',
+        });
       }
       setAuthCookies(response, session);
       await recordAuthEvent(session.user.id, 'login_succeeded', { role: membership.role });
@@ -64,6 +77,9 @@ export default async function handler(request, response) {
       });
     } catch (error) {
       const invalidCredentials = [400, 401].includes(error.statusCode);
+      if (invalidCredentials) {
+        await recordAuthEvent(null, 'login_failed', { subject: pseudonymize(email) });
+      }
       return response.status(invalidCredentials ? 401 : 503).json({
         error: invalidCredentials ? 'Email or password not valid' : 'Authentication service unavailable',
       });

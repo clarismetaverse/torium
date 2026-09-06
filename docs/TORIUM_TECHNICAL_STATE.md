@@ -1,6 +1,6 @@
 # TORIUM technical state
 
-**Version:** 1.1
+**Version:** 1.2
 **Snapshot:** 2026-09-06
 **Detailed index:** [docs/README.md](README.md)
 
@@ -8,7 +8,9 @@
 
 TORIUM is an operational prototype with real multisource data, deterministic fractioning/valuation, villa discovery, private media handling and virtual renewals. Supabase persistence is active and the Vercel application is live.
 
-The hardened authentication release is now live. The first active admin membership was created on 2026-09-06 and a production login was verified end to end, including return to the requested protected Villas route. Remaining Phase 0 work is security and operational hardening rather than basic access enablement.
+The hardened authentication release is now live. The first active admin membership was created on 2026-09-06 and a production login was verified end to end, including return to the requested protected Villas route.
+
+A second Phase 0 hardening change is complete in the working tree and **not yet deployed**. It closes an open redirect on the login return path, stops authenticated API bodies from declaring shared-cache directives, repairs the self-service invite (which could never send, and would have granted membership to any anonymous visitor if naively fixed), adds durable rate limiting, extends the audit vocabulary to failed and denied logins, and replaces static auth assertions with a behavioural authorization matrix. Per-item status is in [TORIUM authentication and authorization](TORIUM_AUTH.md).
 
 ## Deployment state
 
@@ -29,10 +31,10 @@ The hardened authentication release is now live. The first active admin membersh
 - dashboard name: `clarismetaverse's Project` (generic legacy name; rename recommended);
 - GitHub integration: `clarismetaverse/torium`, working directory `.`;
 - 12 public tables, all with RLS enabled;
-- 19 live migrations;
+- 19 live migrations, plus 1 validated but not yet applied;
 - Auth hardening migrations applied;
 - private listing-assets and renewals buckets;
-- security advisor: 0 errors, 2 legacy-function warnings, 9 informational closed-table notices;
+- security advisor: 0 errors, 3 warnings (2 mutable-`search_path` functions, closed by the pending migration, and leaked-password protection disabled, which needs an operator), 9 informational closed-table notices;
 - performance advisor: 10 duplicate-index warnings plus informational unused-index notices.
 
 ### Released Auth baseline
@@ -48,12 +50,21 @@ Production now includes:
 - refreshed account/login pages;
 - comprehensive infrastructure documents.
 
-The release validation recorded before deployment was:
+The release validation recorded before the live deployment was:
 
 - syntax checks passed;
 - full tests passed: 138/138;
 - production-equivalent Vercel build passed;
 - generated Function count: 11.
+
+Validation for the pending hardening change:
+
+- full tests passed: 176/176;
+- `vercel build --prod` exit 0;
+- generated Function count: 11, unchanged and within the Hobby budget;
+- the new migration was executed inside a transaction against production and
+  rolled back, proving it applies cleanly and that the limiter denies past its
+  threshold; production state was re-verified unchanged afterwards.
 
 The repository was clean at `e7e3032` before this documentation-only update. The production deployment is READY and exposes 11 Functions.
 
@@ -65,7 +76,7 @@ The repository was clean at `e7e3032` before this documentation-only update. The
 | Multisource | Idealista + Immobiliare normalization, conservative match, dual offers and price spread | atomic reconciliation and temporal observations |
 | Villas | Como/Toscana/Sardegna, renovation/tourism scores and dynamic asking benchmark | renovation/rental underwriting and stronger geography data |
 | Renewals | paired original/render/plan feed, styles, signed upload/publication | stable canonical property link and supplier/procurement references |
-| Investor account | production invite-only Auth, active admin membership and preferences | custom SMTP, MFA, investor onboarding, matcher and delivery |
+| Investor account | production invite-only Auth, active admin membership, preferences, rate limiting and a tested role matrix | custom SMTP, MFA enrolment, investor onboarding, matcher and delivery |
 
 ## Main data flow
 
@@ -165,15 +176,28 @@ Implemented in production:
 - product/API guards;
 - renewal agent kept as separate machine credential.
 
-Production hardening still needed:
+Implemented and tested, awaiting review and deployment:
 
-- configure custom SMTP and verify invite/recovery delivery;
-- re-verify and document all redirect allowlist entries;
-- enable MFA;
-- add rate limits;
-- review shared CDN caching on authenticated output routes;
-- add automated browser end-to-end tests;
-- test the full investor/admin/denied authorization matrix.
+- durable cross-instance rate limiting on login, recovery, invite, password
+  update, session adoption and preference writes;
+- `no-store, private` plus `Vary: Cookie` on every authenticated API response;
+- one fail-closed same-origin check shared by every handler;
+- an allowlisted login return path that rejects `/\host`, `//host`, absolute
+  URLs and control characters;
+- self-service invite through the GoTrue admin endpoint, granting no membership;
+- audit coverage for failed and membership-denied logins;
+- logout reachable from every protected page;
+- an MFA-ready admin guard behind `TORIUM_REQUIRE_ADMIN_MFA`, default off;
+- the full investor/admin/denied authorization matrix in automated tests.
+
+Still requiring an operator action in the Supabase or Vercel dashboard:
+
+- configure custom SMTP and verify invite and recovery delivery;
+- set the Site URL and the exact redirect allowlist;
+- enable leaked-password protection and the password policy;
+- define session inactivity and maximum lifetime;
+- enrol TOTP factors for admins before enabling the MFA gate;
+- run browser end-to-end smoke tests against a preview deployment.
 
 ## Reliability and scale state
 
@@ -213,7 +237,7 @@ Priority:
 
 ## Highest-priority next work
 
-1. Finish the remaining Auth security/operations gate: SMTP, MFA, rate limits and full role matrix.
+1. Finish the remaining Auth operations gate: SMTP, redirect allowlist, leaked-password protection, session limits and MFA enrolment. Rate limiting and the full role matrix are implemented and awaiting deployment.
 2. Reconstruct migration baseline and add CI.
 3. Complete stable property identity and reconciliation.
 4. Implement durable 5,000-result orchestration.

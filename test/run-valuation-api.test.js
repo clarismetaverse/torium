@@ -25,11 +25,25 @@ test('valuation endpoint requires same-origin', async () => {
   assert.equal(crossOrigin.statusCode, 403);
 });
 
-test('frontend valuation endpoint permits deterministic mode only', async () => {
+test('valuation endpoint fails closed when no origin evidence is supplied', async () => {
   const response = responseRecorder();
   await handler({
     method: 'POST',
     headers: { host: 'torium.example' },
+    body: { run_id: 'valid-run', mode: 'ai' },
+  }, response);
+  assert.equal(response.statusCode, 403);
+});
+
+test('a same-origin valuation request still requires authentication', async () => {
+  const response = responseRecorder();
+  await handler({
+    method: 'POST',
+    headers: {
+      host: 'torium.example',
+      'x-forwarded-proto': 'https',
+      origin: 'https://torium.example',
+    },
     body: { run_id: 'valid-run', mode: 'ai' },
   }, response);
   assert.equal(response.statusCode, 401);

@@ -137,13 +137,21 @@ Deliverables:
 
 - [x] deploy Auth hardening;
 - [x] provision the first admin and verify login plus protected-route return;
-- [ ] configure custom SMTP and verify Auth redirect URLs;
-- verify investor/admin authorization matrix;
-- review authenticated output CDN caching;
-- rate-limit login, recovery and mutations;
-- enable TOTP MFA for admins;
-- define session-lifetime policy;
-- add browser smoke tests.
+- [x] verify the investor/admin/denied authorization matrix (36 automated tests
+  driving the real handlers and browser scripts);
+- [x] review authenticated output CDN caching — `/api/output`,
+  `/api/villa-runs` and `/api/renewals` GET declared `public, s-maxage` after
+  the auth guard; all authenticated responses are now `no-store, private` with
+  `Vary: Cookie`;
+- [x] rate-limit login, recovery and mutations (durable cross-instance counters);
+- [x] close the login open redirect and make the same-origin check fail closed;
+- [x] repair the self-service invite so it sends through the admin endpoint and
+  grants no membership;
+- [ ] configure custom SMTP and verify Auth redirect URLs — **operator action**;
+- [ ] enable leaked-password protection and the password policy — **operator action**;
+- [ ] enrol TOTP factors for admins, then enable `TORIUM_REQUIRE_ADMIN_MFA`;
+- [ ] define session-lifetime policy in Supabase — **operator action**;
+- [ ] add browser smoke tests against a preview deployment.
 
 Exit:
 
@@ -466,7 +474,7 @@ Retention classes distinguish immutable investment evidence, renewable market ob
 
 ## 9. Priority order from 2026-09-06
 
-1. Close remaining Auth operations: SMTP, MFA, rate limits and full role matrix.
+1. Close remaining Auth operations: SMTP, redirect allowlist, leaked-password protection, session limits and MFA enrolment. Rate limiting and the full role matrix are implemented and awaiting review and deployment.
 2. Reconstruct migration baseline and add CI.
 3. Stable property ID and multisource reconciliation.
 4. Durable two-run orchestration and 5,000-result delivery.

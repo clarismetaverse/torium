@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
-import handler, { isSameOrigin, normalizeNote, parseNoteTarget } from '../api/property-note.js';
+import handler, { normalizeNote, parseNoteTarget } from '../api/property-note.js';
+import { isSameOrigin } from '../api/_auth.js';
 
 const propertyPage = await fs.readFile(new URL('../public/index.html', import.meta.url), 'utf8');
 
@@ -32,9 +33,15 @@ test('property note text is normalized and length-limited', () => {
 });
 
 test('property note writes require an explicit same-origin request', () => {
-  assert.equal(isSameOrigin({ headers: { origin: 'https://torium.example', host: 'torium.example' } }), true);
-  assert.equal(isSameOrigin({ headers: { origin: 'https://attacker.example', host: 'torium.example' } }), false);
-  assert.equal(isSameOrigin({ headers: { host: 'torium.example' } }), false);
+  const site = { host: 'torium.example', 'x-forwarded-proto': 'https' };
+  assert.equal(isSameOrigin({ headers: { ...site, origin: 'https://torium.example' } }), true);
+  assert.equal(isSameOrigin({ headers: { ...site, origin: 'https://attacker.example' } }), false);
+  // The scheme is part of the identity: an http origin is not the site.
+  assert.equal(isSameOrigin({ headers: { ...site, origin: 'http://torium.example' } }), false);
+  // Fails closed when the caller supplies no origin evidence at all.
+  assert.equal(isSameOrigin({ headers: site }), false);
+  assert.equal(isSameOrigin({ headers: { ...site, 'sec-fetch-site': 'same-origin' } }), true);
+  assert.equal(isSameOrigin({ headers: { ...site, origin: 'https://torium.example', 'sec-fetch-site': 'cross-site' } }), false);
 });
 
 test('property note endpoint rejects unsupported methods before database access', async () => {

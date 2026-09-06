@@ -1,4 +1,4 @@
-import { requireAuthenticatedUser } from './_auth.js';
+import { noStore, requireAuthenticatedUser } from './_auth.js';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -16,7 +16,7 @@ export default async function handler(request, response) {
     });
     if (!result.ok) throw new Error(`Supabase villa runs failed: ${result.status}\n${await result.text()}`);
     const rows = await result.json();
-    response.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
+    noStore(response);
     return response.status(200).json({
       outputs: rows.map((row) => ({
         id: `supabase:${row.run_id}`,
@@ -32,6 +32,7 @@ export default async function handler(request, response) {
       })),
     });
   } catch (error) {
-    return response.status(500).json({ error: error.message });
+    console.error('Villa runs API failed:', error);
+    return response.status(500).json({ error: 'Elenco run ville non disponibile' });
   }
 }
