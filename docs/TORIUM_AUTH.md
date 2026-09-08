@@ -194,11 +194,18 @@ not secrets; no credential belongs in this repository.
    of invite or recovery mail not arriving. Verify the TORIUM sending domain in
    Resend, then set Supabase → Authentication → SMTP Settings to the Resend host,
    port 587, the Resend SMTP username, and an API key stored only in Supabase.
-2. **Site URL.** Supabase → Authentication → URL Configuration → Site URL:
-   `https://torium-nu.vercel.app`
-3. **Redirect allowlist.** Exactly these entries, and no wildcard host:
-   - `https://torium-nu.vercel.app/set-password`
-   - `https://torium-nu.vercel.app/login`
+2. ~~**Site URL.**~~ **Done 2026-09-08.** Set to `https://torium-nu.vercel.app`.
+   It previously pointed at the technical alias
+   `torium-clarismetaverses-projects.vercel.app`, which is why recovery links
+   from the production domain fell back to the alias and were discarded at the
+   login guard.
+3. ~~**Redirect allowlist.**~~ **Partly done 2026-09-08.** Added
+   `https://torium-nu.vercel.app/set-password` and
+   `https://torium-nu.vercel.app/login`. Four pre-existing alias entries remain,
+   two of them wildcards (`https://torium-*-clarismetaverses-projects.vercel.app/**`).
+   **Open risk:** those wildcards authorise *any* preview deployment of the
+   project as a recovery-link destination. Narrow or remove them once the
+   preview workflow no longer needs them.
 4. **Leaked-password protection.** Supabase → Authentication → Policies → enable
    "Prevent use of leaked passwords" (HaveIBeenPwned). The security advisor
    currently reports this as disabled.
@@ -229,3 +236,15 @@ fail-closed origin checks.
 Not yet proven: real email delivery, MFA enrolment, and browser end-to-end
 behaviour against a deployed preview. These need the operator actions in §10 and
 a deployment.
+
+## 12. Domains
+
+| Domain | Role |
+| --- | --- |
+| `https://torium-nu.vercel.app` | the application. Site URL, and the domain all documentation refers to |
+| `https://torium-clarismetaverses-projects.vercel.app` | technical Vercel alias for the same deployment |
+| `https://torium-git-main-clarismetaverses-projects.vercel.app` | git-branch preview alias |
+
+All three serve the same build. Only the first is canonical: use it in
+documentation, Supabase configuration and anything sent to a user. The mismatch
+between them was the direct cause of the 2026-09-08 password-recovery failure.
