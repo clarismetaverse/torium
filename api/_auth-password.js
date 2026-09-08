@@ -90,7 +90,15 @@ export default async function handler(request, response) {
     const type = String(request.body?.type || '');
     const accessToken = String(request.body?.access_token || '');
     const refreshToken = String(request.body?.refresh_token || '');
-    if (!['invite', 'recovery'].includes(type) || accessToken.length < 40 || refreshToken.length < 20) {
+    // Shape check only: Supabase is the authority on whether the token is
+    // valid. A Supabase refresh token is a short opaque string - 12 characters
+    // in current GoTrue - so a length floor borrowed from JWTs rejected every
+    // legitimate recovery and invite link with a 400.
+    const accessTokenLooksLikeJwt = /^[\w-]+\.[\w-]+\.[\w-]+$/.test(accessToken);
+    if (!['invite', 'recovery'].includes(type)
+      || !accessTokenLooksLikeJwt
+      || refreshToken.length < 8
+      || refreshToken.length > 512) {
       return response.status(400).json({ error: 'Link non valido o incompleto' });
     }
     const user = await userForAccessToken(accessToken);
