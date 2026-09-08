@@ -256,3 +256,45 @@ test('the login page loads the return-path allowlist before the login script', a
   );
   assert.doesNotMatch(html, /src="\/auth-client\.js"/);
 });
+
+// --- recovery links landing on the wrong page ------------------------------
+
+test('a recovery link that lands on a protected page is forwarded, not discarded', async () => {
+  // GoTrue falls back to the Site URL when redirect_to is not allowlisted, so
+  // the one-time token arrives on /home instead of /set-password.
+  const fragment = 'access_token=abcdefghijklmnopqrstuvwxyz0123456789abcd&refresh_token=rt-000000000000&expires_in=3600&type=recovery';
+  const location = fakeLocation('/home', '', '#' + fragment);
+  let sessionProbes = 0;
+  await runInPage({
+    scripts: ['auth-client.js'],
+    location,
+    fetchImpl: async () => { sessionProbes += 1; return jsonResponse(401, {}); },
+  });
+  await flush();
+
+  assert.equal(location.replaced.at(0), '/set-password#' + fragment);
+  assert.equal(sessionProbes, 0, 'the guard must not run before forwarding the token');
+});
+
+test('an expired recovery link is forwarded so the page can explain it', async () => {
+  const fragment = 'error=access_denied&error_code=otp_expired&error_description=Email+link+is+invalid+or+has+expired';
+  const location = fakeLocation('/home', '', '#' + fragment);
+  await runInPage({
+    scripts: ['auth-client.js'],
+    location,
+    fetchImpl: async () => jsonResponse(401, {}),
+  });
+  await flush();
+  assert.equal(location.replaced.at(0), '/set-password#' + fragment);
+});
+
+test('an ordinary protected page visit is untouched by the forwarding rule', async () => {
+  const location = fakeLocation('/home', '?run=abc', '#top');
+  await runInPage({
+    scripts: ['auth-client.js'],
+    location,
+    fetchImpl: async () => jsonResponse(401, {}),
+  });
+  await flush();
+  assert.equal(location.replaced.at(0), '/login?next=' + encodeURIComponent('/home?run=abc#top'));
+});
