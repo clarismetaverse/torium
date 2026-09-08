@@ -167,25 +167,25 @@ export function installSupabaseStub(options = {}) {
 }
 
 export const ACTIVE_INVESTOR = {
-  token: 'access-token-investor-0000000000000000000000',
+  token: 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJinvestoriLCJhYWwiOiJhYWwxIn0.c2lnbmF0dXJlLXBsYWNlaG9sZGVy',
   user: { id: 'investor-1', email: 'investor@example.test' },
   membership: { user_id: 'investor-1', role: 'investor', status: 'active' },
 };
 
 export const ACTIVE_ADMIN = {
-  token: 'access-token-admin-00000000000000000000000000',
+  token: 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJadminiLCJhYWwiOiJhYWwxIn0.c2lnbmF0dXJlLXBsYWNlaG9sZGVy',
   user: { id: 'admin-1', email: 'admin@example.test' },
   membership: { user_id: 'admin-1', role: 'admin', status: 'active' },
 };
 
 export const SUSPENDED_MEMBER = {
-  token: 'access-token-suspended-000000000000000000000',
+  token: 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJsuspendediLCJhYWwiOiJhYWwxIn0.c2lnbmF0dXJlLXBsYWNlaG9sZGVy',
   user: { id: 'suspended-1', email: 'suspended@example.test' },
   membership: { user_id: 'suspended-1', role: 'investor', status: 'suspended' },
 };
 
 export const NO_MEMBERSHIP = {
-  token: 'access-token-nomember-0000000000000000000000',
+  token: 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJnomemberiLCJhYWwiOiJhYWwxIn0.c2lnbmF0dXJlLXBsYWNlaG9sZGVy',
   user: { id: 'invited-1', email: 'invited@example.test' },
 };
 

@@ -463,3 +463,50 @@ test('the account multiplexer rejects an unknown resource', async () => {
   await accountHandler(browserRequest({ method: 'GET', query: { resource: 'anything-else' } }), response);
   assert.equal(response.statusCode, 404);
 });
+
+// --- recovery link shape ---------------------------------------------------
+
+test('a real Supabase refresh token is accepted by the adopt guard', async () => {
+  // Supabase refresh tokens are 12-character opaque strings. A length floor
+  // borrowed from JWTs rejected every legitimate recovery and invite link with
+  // a 400, so password recovery could never complete in production.
+  const stub = installSupabaseStub(stubFor(ACTIVE_INVESTOR));
+  try {
+    const response = responseRecorder();
+    await passwordHandler(browserRequest({
+      method: 'POST',
+      body: {
+        action: 'adopt',
+        type: 'recovery',
+        access_token: ACTIVE_INVESTOR.token,
+        refresh_token: 'kzxq7hbzvxbn',
+        expires_in: 3600,
+      },
+    }), response);
+
+    assert.equal(response.statusCode, 200, 'a 12-character refresh token is legitimate');
+    assert.equal(response.body.mode, 'recovery');
+    assert.ok(response.cookies().some((cookie) => cookie.includes('torium_refresh_token')));
+  } finally {
+    stub.restore();
+  }
+});
+
+test('the adopt guard still refuses malformed link payloads', async () => {
+  const stub = installSupabaseStub(stubFor(ACTIVE_INVESTOR));
+  try {
+    const rejected = [
+      ['unsupported type', { type: 'signup', access_token: ACTIVE_INVESTOR.token, refresh_token: 'kzxq7hbzvxbn' }],
+      ['access token is not a JWT', { type: 'recovery', access_token: 'not-a-jwt-at-all', refresh_token: 'kzxq7hbzvxbn' }],
+      ['refresh token too short', { type: 'recovery', access_token: ACTIVE_INVESTOR.token, refresh_token: 'short' }],
+      ['refresh token absurdly long', { type: 'recovery', access_token: ACTIVE_INVESTOR.token, refresh_token: 'x'.repeat(600) }],
+    ];
+    for (const [label, body] of rejected) {
+      const response = responseRecorder();
+      await passwordHandler(browserRequest({ method: 'POST', body: { action: 'adopt', ...body } }), response);
+      assert.equal(response.statusCode, 400, label);
+    }
+  } finally {
+    stub.restore();
+  }
+});
