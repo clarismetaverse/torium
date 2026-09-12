@@ -1,5 +1,6 @@
 import { runValuationFromSupabase } from '../lib/valuation-runner.js';
 import { reconcileInvestorAlerts, supabaseAlertStore } from '../lib/investor-alert-reconciler.js';
+import { deliverWeeklyDigests } from '../lib/investor-digest-schedule.js';
 import { isSameOrigin, requireRole } from './_auth.js';
 
 export const maxDuration = 300;
@@ -38,6 +39,28 @@ export async function reconcileAlertsForRun(runId, {
   }
 }
 
+/**
+ * Sends this week's digest to every investor holding undelivered alerts.
+ *
+ * Called after every reconciliation on purpose. The cadence is enforced by the
+ * ledger - one row per investor, channel and week - so a second run in the same
+ * week claims nothing and sends nothing. That is what removes the need for a
+ * scheduler and a thirteenth serverless function.
+ *
+ * Like the reconciliation, it never fails the request: a valuation that
+ * completed must not be discarded because an email provider was unavailable,
+ * and an undelivered alert simply stays pending for the next pass.
+ */
+export async function deliverDigestsForRun({ deliver = deliverWeeklyDigests, logger = console } = {}) {
+  try {
+    const summary = await deliver();
+    return { status: 'ok', considered: summary.considered, sent: summary.sent, skipped: summary.skipped, failed: summary.failed };
+  } catch (error) {
+    logger.error('Weekly digest delivery failed:', error.message);
+    return { status: 'failed', retryable: true };
+  }
+}
+
 export default async function handler(request, response) {
   response.setHeader('Cache-Control', 'no-store');
   if (request.method !== 'POST') {
@@ -58,8 +81,9 @@ export default async function handler(request, response) {
   // existing run - would mean paying for the whole valuation again.
   if (request.body?.action === 'reconcile_alerts') {
     const alerts = await reconcileAlertsForRun(runId);
+    const digests = alerts.status === 'ok' ? await deliverDigestsForRun() : { status: 'skipped' };
     const status = alerts.status === 'ok' ? 200 : 503;
-    return response.status(status).json({ run_id: runId, investor_alerts: alerts });
+    return response.status(status).json({ run_id: runId, investor_alerts: alerts, weekly_digests: digests });
   }
 
   if (activeValuation) return response.status(409).json({ error: 'Una valuation e gia in corso su questa istanza' });
@@ -85,7 +109,8 @@ export default async function handler(request, response) {
   try {
     const valuation = await activeValuation;
     const investorAlerts = await reconcileAlertsForRun(runId);
-    return response.status(200).json({ ...valuation, investor_alerts: investorAlerts });
+    const weeklyDigests = investorAlerts.status === 'ok' ? await deliverDigestsForRun() : { status: 'skipped' };
+    return response.status(200).json({ ...valuation, investor_alerts: investorAlerts, weekly_digests: weeklyDigests });
   } catch (error) {
     console.error('Frontend valuation failed:', error);
     const message = String(error?.message || 'Valuation failed');

@@ -76,3 +76,26 @@ test('the run id is passed through untouched', async () => {
   });
   assert.deepEqual(seen, ['1787412983325-milanoFractioningMultisource-neutral_fractionability']);
 });
+
+// --- weekly digest delivery -------------------------------------------------
+
+test('digest delivery reports its outcome', async () => {
+  const { deliverDigestsForRun } = await import('../api/run-valuation.js');
+  const result = await deliverDigestsForRun({
+    deliver: async () => ({ considered: 2, sent: 1, skipped: 1, failed: 0 }),
+  });
+  assert.deepEqual(result, { status: 'ok', considered: 2, sent: 1, skipped: 1, failed: 0 });
+});
+
+test('a digest failure never discards a completed valuation', async () => {
+  const { deliverDigestsForRun } = await import('../api/run-valuation.js');
+  const result = await deliverDigestsForRun({
+    deliver: async () => { throw new Error('resend unreachable using key re_abc123'); },
+    logger: SILENT,
+  });
+
+  assert.equal(result.status, 'failed');
+  assert.equal(result.retryable, true);
+  // An undelivered alert stays pending; the cause never reaches the client.
+  assert.doesNotMatch(JSON.stringify(result), /resend|re_abc123/i);
+});
