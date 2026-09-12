@@ -17,7 +17,7 @@
 <body>
   <div class="shell">
     <header class="top"><div class="brand">TORIUM</div><nav class="nav"><a href="/home">Operazioni</a><a href="/villas">Ville</a><a href="/renewals">Renewals</a><button id="logout">Esci</button></nav></header>
-    <section class="hero"><div class="eyebrow" id="identity">Investor preferences</div><h1>Solo i segnali che contano.</h1><p>Questi criteri preparano il profilo per le future notifiche sugli appartamenti frazionabili. Le notifiche non sono ancora attive: per ora salviamo una preferenza pulita e utilizzabile nei test.</p></section>
+    <section class="hero"><div class="eyebrow" id="identity">Investor preferences</div><h1>Solo i segnali che contano.</h1><p>Questi criteri decidono quali appartamenti da frazionare finiscono nei tuoi avvisi. Un criterio che lasci vuoto non filtra nulla; un criterio che imposti esclude anche gli immobili su cui TORIUM non ha il dato per valutarlo.</p></section>
     <form id="preferencesForm">
       <section class="card"><h2>Quartieri di Milano</h2><p>Seleziona tutte le zone compatibili con la tua strategia.</p><div id="zones" class="zones"></div></section>
       <section class="card"><h2>Economics e dimensione</h2><p>Lascia vuoto un campo se non vuoi imporre quel limite.</p><div class="numbers">
@@ -30,8 +30,32 @@
         <div class="field"><label for="min_roi_base_pct">ROI base minimo (%)</label><input id="min_roi_base_pct" type="number" min="-100" max="1000" step="0.1"></div>
       </div><div class="note">Non includiamo presenza su entrambi i portali, spread di prezzo o frequenza: sono segnali interni di screening e decisioni di delivery, non preferenze dell'investitore.</div><div class="actions"><button id="save" class="save" type="submit">Salva preferenze</button><span id="status" class="status" role="status"></span></div></section>
     </form>
+    <section class="card" id="alertsCard">
+      <h2>Avvisi <span id="alertsBadge" class="badge" hidden></span></h2>
+      <p>Gli immobili che hanno superato i tuoi criteri. Ogni immobile compare una volta sola, anche se torna in una run successiva.</p>
+      <div id="alertsList" class="alerts">Caricamento...</div>
+    </section>
     <section class="card"><h2>Sicurezza account</h2><p>Il cambio password avviene tramite un link monouso inviato alla mail verificata e revoca le sessioni attive.</p><a class="security-link" href="/forgot-password">Cambia password</a></section>
   </div>
+  <style>
+    .alerts{display:flex;flex-direction:column;gap:2px}
+    .alert{display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-top:1px solid rgba(0,0,0,.08)}
+    .alert:first-child{border-top:0}
+    .alert.unseen{position:relative}
+    .alert.unseen::before{content:"";position:absolute;left:-12px;top:20px;width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.55}
+    .alert-main{flex:1;min-width:0}
+    .alert-title{font-weight:600;line-height:1.35}
+    .alert-zone{font-size:13px;opacity:.65;margin-top:2px}
+    .alert-metrics{display:flex;flex-wrap:wrap;gap:14px;margin-top:8px;font-size:13px}
+    .alert-metrics b{font-weight:600}
+    .alert-links{display:flex;gap:12px;margin-top:8px;font-size:13px}
+    .alert-actions{display:flex;flex-direction:column;gap:6px;flex-shrink:0}
+    .alert-actions button{font:inherit;font-size:12px;padding:4px 10px;cursor:pointer;border-radius:999px;border:1px solid rgba(0,0,0,.18);background:transparent;color:inherit}
+    .alert-actions button:disabled{opacity:.4;cursor:default}
+    .badge{font-size:12px;padding:2px 9px;border-radius:999px;background:currentColor;vertical-align:middle}
+    .badge>span{color:#fff;mix-blend-mode:normal}
+    .alerts-empty{opacity:.7;font-size:14px;padding:10px 0}
+  </style>
   <script>
     const fields=['min_price_eur','max_price_eur','min_size_mq','max_size_mq','max_price_per_sqm_eur','min_door_score','min_roi_base_pct'];
     const form=document.getElementById('preferencesForm'),status=document.getElementById('status'),save=document.getElementById('save');
@@ -52,7 +76,72 @@
       catch(error){status.textContent=error.message}finally{save.disabled=false}
     });
     document.getElementById('logout').onclick=async()=>{await fetch('/api/auth-session',{method:'DELETE'});location.replace('/login')};
+    const euro=value=>Number.isFinite(Number(value))&&value!==null&&value!==''?new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(Number(value)):'';
+    const pct=value=>value===null||value===undefined||value===''?'':Number(value).toFixed(1).replace('.',',')+'%';
+    // Only the two portals TORIUM scrapes may be linked from a rendered alert.
+    const safeUrl=value=>{try{const url=new URL(String(value));if(url.protocol!=='https:')return null;const host=url.hostname.toLowerCase();
+      return ['idealista.it','immobiliare.it'].some(s=>host===s||host.endsWith('.'+s))?url.href:null}catch{return null}};
+
+    function renderAlerts(alerts){
+      const list=document.getElementById('alertsList');
+      const badge=document.getElementById('alertsBadge');
+      const unseen=alerts.filter(alert=>!alert.seen_at).length;
+      badge.hidden=unseen===0;
+      badge.innerHTML='<span>'+unseen+'</span>';
+      if(!alerts.length){
+        list.className='alerts-empty';
+        list.textContent='Nessun avviso per ora. Salva dei criteri qui sopra: gli immobili che li superano compariranno qui dopo la prossima run.';
+        return;
+      }
+      list.className='alerts';
+      list.innerHTML=alerts.map(alert=>{
+        const portal=safeUrl(alert.source_url);
+        const run=alert.run_id?'/home?run='+encodeURIComponent('supabase:'+alert.run_id):'/home';
+        return '<div class="alert'+(alert.seen_at?'':' unseen')+'" data-key="'+h(alert.property_key)+'">'
+          +'<div class="alert-main">'
+          +'<div class="alert-title">'+h(alert.title||'Immobile senza titolo')+'</div>'
+          +'<div class="alert-zone">'+h(alert.neighborhood||'Zona non indicata')+'</div>'
+          +'<div class="alert-metrics">'
+          +'<span>'+h(euro(alert.price_eur))+'</span>'
+          +'<span>'+(alert.size_mq?h(alert.size_mq)+' m²':'')+'</span>'
+          +'<span>'+h(euro(alert.price_by_area))+'/m²</span>'
+          +'<span>Door <b>'+(alert.door_score??'')+'</b></span>'
+          +'<span>ROI <b>'+h(pct(alert.roi_base_pct))+'</b></span>'
+          +'</div>'
+          +'<div class="alert-links"><a href="'+h(run)+'">Apri in TORIUM</a>'
+          +(portal?'<a href="'+h(portal)+'" rel="noopener noreferrer" target="_blank">Annuncio</a>':'')+'</div>'
+          +'</div>'
+          +'<div class="alert-actions">'
+          +(alert.seen_at?'':'<button type="button" data-action="seen">Letto</button>')
+          +'<button type="button" data-action="dismissed">Archivia</button>'
+          +'</div></div>';
+      }).join('');
+    }
+
+    async function loadAlerts(){
+      try{
+        const response=await fetch('/api/investor-alerts',{cache:'no-store'});
+        if(!response.ok)throw new Error();
+        renderAlerts((await response.json()).alerts||[]);
+      }catch{document.getElementById('alertsList').textContent='Avvisi non disponibili al momento.'}
+    }
+
+    document.getElementById('alertsList').addEventListener('click',async event=>{
+      const button=event.target.closest('button[data-action]');
+      if(!button)return;
+      const key=button.closest('.alert')?.dataset.key;
+      if(!key)return;
+      button.disabled=true;
+      try{
+        const response=await fetch('/api/investor-alerts',{method:'PATCH',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({property_key:key,action:button.dataset.action})});
+        if(!response.ok)throw new Error();
+        await loadAlerts();
+      }catch{button.disabled=false}
+    });
+
     load().catch(error=>status.textContent=error.message);
+    loadAlerts();
   </script>
 </body>
 </html>
