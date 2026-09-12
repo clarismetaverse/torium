@@ -57,7 +57,7 @@ function fakeStore({ investors = [], properties = [], failOn = null } = {}) {
 const INVESTOR = {
   user_id: 'investor-1',
   role: 'investor',
-  preferences: { neighborhood_ids: ['navigli'], min_door_score: 60 },
+  profiles: [{ name: 'Navigli', neighborhood_ids: ['navigli'], min_door_score: 60 }],
 };
 
 test('a run produces one alert per matching property', async () => {
@@ -114,8 +114,8 @@ test('each investor is matched against their own preferences', async () => {
   const store = fakeStore({
     investors: [
       INVESTOR,
-      { user_id: 'investor-2', role: 'investor', preferences: { neighborhood_ids: ['centro'] } },
-      { user_id: 'admin-1', role: 'admin', preferences: { min_door_score: 10 } },
+      { user_id: 'investor-2', role: 'investor', profiles: [{ name: 'Centro', neighborhood_ids: ['centro'] }] },
+      { user_id: 'admin-1', role: 'admin', profiles: [{ name: 'Tutto', min_door_score: 10 }] },
     ],
     properties: [property({ source_listing_id: 'a' })],
   });
@@ -132,7 +132,7 @@ test('each investor is matched against their own preferences', async () => {
 
 test('an investor with no saved preferences is skipped, not spammed', async () => {
   const store = fakeStore({
-    investors: [{ user_id: 'investor-3', role: 'investor', preferences: {} }],
+    investors: [{ user_id: 'investor-3', role: 'investor', profiles: [{ name: 'Vuoto' }] }],
     properties: [property()],
   });
 
@@ -190,4 +190,65 @@ test('a run id is required so a pass cannot silently match nothing', async () =>
     /run id is required/,
   );
   await assert.rejects(() => reconcileInvestorAlerts({ runId: 'run-1' }), /store is required/);
+});
+
+// --- several profiles per investor -----------------------------------------
+
+test('a property found by two profiles is alerted once', async () => {
+  // A yield-led profile and a location-led one overlap. The apartment is still
+  // one apartment, so the investor must hear about it once - and the profile
+  // that found it first is recorded for context.
+  const investor = {
+    user_id: 'investor-1',
+    role: 'investor',
+    profiles: [
+      { name: 'Rendimento', min_door_score: 60 },
+      { name: 'Posizionamento', neighborhood_ids: ['navigli'] },
+    ],
+  };
+  const store = fakeStore({ investors: [investor], properties: [property({ source_listing_id: 'a' })] });
+
+  const summary = await reconcileInvestorAlerts({ store, runId: 'run-1' });
+
+  assert.equal(summary.alerts_created, 1);
+  assert.equal(store.alerts.size, 1);
+  assert.equal([...store.alerts.values()][0].matched_profile, 'Rendimento');
+  assert.equal(summary.per_investor[0].profiles, 2);
+});
+
+test('profiles select different properties without cancelling each other', async () => {
+  const investor = {
+    user_id: 'investor-1',
+    role: 'investor',
+    profiles: [
+      { name: 'Rendimento', min_door_score: 80 },
+      { name: 'Posizionamento', neighborhood_ids: ['navigli'], min_door_score: 50 },
+    ],
+  };
+  const store = fakeStore({
+    investors: [investor],
+    properties: [
+      property({ source_listing_id: 'yield', neighborhood: 'Centro', door_score: 90 }),
+      property({ source_listing_id: 'place', neighborhood: 'Navigli', door_score: 55 }),
+    ],
+  });
+
+  const summary = await reconcileInvestorAlerts({ store, runId: 'run-1' });
+
+  assert.equal(summary.alerts_created, 2, 'neither profile may suppress the other');
+  const byProfile = Object.fromEntries(
+    [...store.alerts.values()].map((row) => [row.source_listing_id, row.matched_profile]),
+  );
+  assert.deepEqual(byProfile, { yield: 'Rendimento', place: 'Posizionamento' });
+});
+
+test('an investor whose every profile is empty is skipped', async () => {
+  const store = fakeStore({
+    investors: [{ user_id: 'investor-9', role: 'investor', profiles: [{ name: 'a' }, { name: 'b' }] }],
+    properties: [property()],
+  });
+  const summary = await reconcileInvestorAlerts({ store, runId: 'run-1' });
+  assert.equal(summary.alerts_created, 0);
+  assert.equal(summary.investors_considered, 0);
+  assert.equal(summary.rejection_counts.investor_has_no_preferences, 1);
 });
