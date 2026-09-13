@@ -1,6 +1,5 @@
 import { createHash } from 'node:crypto';
-import { isSameOrigin } from './property-note.js';
-import { requireAuthenticatedUser } from './_auth.js';
+import { isSameOrigin, noStore, requireAuthenticatedUser } from './_auth.js';
 import {
   LISTING_ASSET_BUCKET,
   LISTING_ASSET_RETENTION_DAYS,
@@ -147,7 +146,7 @@ async function updateMetadata(payload) {
 }
 
 export default async function handler(request, response) {
-  response.setHeader('Cache-Control', 'no-store');
+  noStore(response);
   if (request.method !== 'POST') {
     response.setHeader('Allow', 'POST');
     return response.status(405).json({ error: 'Method not allowed' });

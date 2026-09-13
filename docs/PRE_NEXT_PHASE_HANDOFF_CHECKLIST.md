@@ -2,7 +2,7 @@
 
 **Purpose:** close, verify and release the current authentication/infrastructure work before starting another product feature.
 
-**Prepared:** 2026-09-05; updated with production evidence 2026-09-06
+**Prepared:** 2026-09-05; updated with production evidence 2026-09-06; updated with Phase 0 hardening evidence 2026-09-06
 **Repository:** `clarismetaverse/torium`
 **Current branch at handoff:** `main`
 **Current production commit:** `e7e3032`
@@ -98,25 +98,45 @@ If files are missing or substantially different, report the discrepancy before a
 
 ### 5.2 Review the Auth boundary
 
-- [ ] Trace login from `public/login.js` through `/api/account` to Supabase Auth.
-- [ ] Trace refresh rotation and confirm access/refresh tokens are never readable by browser JavaScript.
-- [ ] Confirm production cookies use the `__Host-` prefix, `Secure`, `HttpOnly`, `SameSite=Lax` and `Path=/`, with no `Domain` attribute.
-- [ ] Confirm logout invalidates the server session and clears every Auth cookie.
-- [ ] Confirm password-change flow requests global logout and clears every device session as designed.
-- [ ] Confirm recovery responses are generic for both existing and non-existing emails.
-- [ ] Confirm recovery fragments/tokens are removed from the URL before third-party or nonessential requests.
-- [ ] Confirm password policy is 12–128 characters in both browser and API validation.
-- [ ] Confirm active membership is mandatory after successful authentication.
-- [ ] Confirm roles come only from the server-managed `torium_memberships` row, never `user_metadata`.
-- [ ] Confirm missing or suspended membership fails closed and signs the session out.
-- [ ] Confirm `investor` cannot invoke run or revaluation endpoints.
-- [ ] Confirm `admin` can invoke allowed operational endpoints.
-- [ ] Confirm cross-origin mutation requests are rejected.
-- [ ] Confirm Auth/account responses are `Cache-Control: no-store`.
-- [ ] Confirm the browser never receives the service-role key or raw Supabase refresh token.
-- [ ] Review audit events: store the minimal event type/outcome/context only; never store password, token, raw IP or sensitive email payload.
+- [x] Trace login from `public/login.js` through `/api/account` to Supabase Auth.
+- [x] Trace refresh rotation and confirm access/refresh tokens are never readable by browser JavaScript.
+- [x] Confirm production cookies use the `__Host-` prefix, `Secure`, `HttpOnly`, `SameSite=Lax` and `Path=/`, with no `Domain` attribute.
+- [x] Confirm logout invalidates the server session and clears every Auth cookie.
+- [x] Confirm password-change flow requests global logout and clears every device session as designed.
+- [x] Confirm recovery responses are generic for both existing and non-existing emails.
+- [x] Confirm recovery fragments/tokens are removed from the URL before third-party or nonessential requests.
+- [x] Confirm password policy is 12–128 characters in both browser and API validation.
+- [x] Confirm active membership is mandatory after successful authentication.
+- [x] Confirm roles come only from the server-managed `torium_memberships` row, never `user_metadata`.
+- [x] Confirm missing or suspended membership fails closed and signs the session out.
+- [x] Confirm `investor` cannot invoke run or revaluation endpoints.
+- [x] Confirm `admin` can invoke allowed operational endpoints.
+- [x] Confirm cross-origin mutation requests are rejected.
+- [x] Confirm Auth/account responses are `Cache-Control: no-store`.
+- [x] Confirm the browser never receives the service-role key or raw Supabase refresh token.
+- [x] Review audit events: store the minimal event type/outcome/context only; never store password, token, raw IP or sensitive email payload.
 
 **Acceptance evidence:** a short request/authorization matrix naming every tested route and expected `200/302/401/403/405` outcome.
+
+**Evidence 2026-09-06.** The matrix is now executable rather than narrative:
+`test/auth-authorization-matrix.test.js` (25 tests) and
+`test/auth-frontend-guard.test.js` (11 tests) drive the real handlers and the
+real browser scripts against a Supabase double. Full suite: 176/176.
+
+| Caller | `/api/auth-session` GET | preferences | run endpoints |
+| --- | --- | --- | --- |
+| anonymous | 401 | 401 | 403 origin, then 401 |
+| authenticated, no membership | 403 `membership_inactive` | 403 | 403 |
+| suspended | 403, session revoked | 403 | 403 |
+| active investor | 200 | 200 | 403 `Insufficient permissions` |
+| active admin | 200 | 200 | reaches request validation |
+
+Four defects were found and fixed during this review; each is documented with
+its root cause in [TORIUM authentication and authorization](TORIUM_AUTH.md):
+a login open redirect via `next=/\host`, shared-cache directives on
+authenticated bodies, a self-service invite that could never send and would have
+granted membership to anyone, and an origin check that failed open when no
+`Origin` header was supplied.
 
 ### 5.3 Review Vercel routing and static-page guards
 
@@ -240,8 +260,8 @@ These items may require credentials, DNS access or email delivery and therefore 
 
 - [ ] Decide and document session inactivity timeout and absolute maximum lifetime.
 - [ ] Enable stronger password and leaked-password protections when supported by the active plan.
-- [ ] Add TOTP MFA for admins first; define whether it is optional or mandatory for investors.
-- [ ] Add server-side rate limits for login, recovery, password update, preference writes and run endpoints.
+- [ ] Add TOTP MFA for admins first; define whether it is optional or mandatory for investors. The guard is ready behind `TORIUM_REQUIRE_ADMIN_MFA` (default off); enrolment UI and operator enrolment are still outstanding, and the flag must stay off until at least one admin has a factor.
+- [x] Add server-side rate limits for login, recovery, password update, preference writes and run endpoints. Durable counters in `public.torium_rate_limits`, shared across serverless instances, with pseudonymous subjects. Limits and the fail-open trade-off are documented in TORIUM_AUTH.md §5.
 - [ ] Add alerting for repeated Auth failures without logging credentials or raw personal data.
 
 ### 8.3 Create the first accounts

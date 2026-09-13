@@ -7,7 +7,7 @@ import {
   normalizeRenewalUpload,
   RENEWAL_BUCKET,
 } from '../lib/renewals.js';
-import { requireAuthenticatedUser } from './_auth.js';
+import { noStore, requireAuthenticatedUser } from './_auth.js';
 
 const SIGNED_URL_SECONDS = 60 * 60;
 
@@ -282,7 +282,7 @@ async function readProjects(request, response) {
   if (styleId) filters.push(`style_id=eq.${encodeURIComponent(styleId)}`);
   const projects = await renewalRest(`virtual_renewals?${filters.join('&')}`);
   if (!projects.length) {
-    response.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
+    noStore(response);
     return json(response, 200, { count: 0, projects: [] });
   }
 
@@ -345,7 +345,7 @@ async function readProjects(request, response) {
     listing: listingMap.get(project.source_listing_row_id) || null,
     assets: assetsByProject.get(project.id) || [],
   }));
-  response.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
+  noStore(response);
   return json(response, 200, { count: output.length, projects: output });
 }
 

@@ -138,9 +138,8 @@
       }
       catch(error){status.textContent=error.message}finally{save.disabled=false}
     });
-    document.getElementById('logout').onclick=async()=>{await fetch('/api/auth-session',{method:'DELETE'});location.replace('/login')};
-    const euro=value=>Number.isFinite(Number(value))&&value!==null&&value!==''?new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(Number(value)):'';
-    const pct=value=>value===null||value===undefined||value===''?'':Number(value).toFixed(1).replace('.',',')+'%';
+    const euro=value=>Number.isFinite(Number(value))&&value!==null&&value!==''?new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(Number(value)):'—';
+    const pct=value=>value===null||value===undefined||value===''?'—':Number(value).toFixed(1).replace('.',',')+'%';
     // Only the two portals TORIUM scrapes may be linked from a rendered alert.
     const safeUrl=value=>{try{const url=new URL(String(value));if(url.protocol!=='https:')return null;const host=url.hostname.toLowerCase();
       return ['idealista.it','immobiliare.it'].some(s=>host===s||host.endsWith('.'+s))?url.href:null}catch{return null}};
@@ -166,9 +165,9 @@
           +'<div class="alert-zone">'+h(alert.neighborhood||'Zona non indicata')+'</div>'
           +'<div class="alert-metrics">'
           +'<span>'+h(euro(alert.price_eur))+'</span>'
-          +'<span>'+(alert.size_mq?h(alert.size_mq)+' m²':'')+'</span>'
+          +'<span>'+(alert.size_mq?h(alert.size_mq)+' m²':'—')+'</span>'
           +'<span>'+h(euro(alert.price_by_area))+'/m²</span>'
-          +'<span>Door <b>'+(alert.door_score??'')+'</b></span>'
+          +'<span>Door <b>'+(alert.door_score??'—')+'</b></span>'
           +'<span>ROI <b>'+h(pct(alert.roi_base_pct))+'</b></span>'
           +'</div>'
           +'<div class="alert-links"><a href="'+h(run)+'">Apri in TORIUM</a>'

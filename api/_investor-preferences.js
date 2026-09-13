@@ -1,4 +1,5 @@
-import { requireAuthenticatedUser, isSameOrigin } from './_auth.js';
+import { requireAuthenticatedUser, requireSameOrigin } from './_auth.js';
+import { enforceRateLimit } from './_rate-limit.js';
 import { MILAN_CANONICAL_ZONES } from '../lib/milan-area-taxonomy.js';
 
 const ALLOWED_ZONE_IDS = new Set(MILAN_CANONICAL_ZONES.map((zone) => zone.id));
@@ -154,11 +155,10 @@ export default async function handler(request, response) {
       });
     }
 
-    if (!isSameOrigin(request)) {
-      return response.status(403).json({ error: 'Invalid request origin' });
-    }
+    if (!requireSameOrigin(request, response)) return;
 
     if (request.method === 'PUT') {
+      if (!await enforceRateLimit(request, response, 'preferences_write', session.user.id)) return;
       const id = profileId(request.body?.id);
       const name = normalizeProfileName(request.body?.name);
       const preferences = normalizePreferences(request.body);

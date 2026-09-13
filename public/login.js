@@ -1,10 +1,14 @@
 (() => {
   const params = new URLSearchParams(location.search);
-  const requested = params.get('next') || '/home';
-  const next = requested.startsWith('/') && !requested.startsWith('//') ? requested : '/home';
+  const next = toriumSafeNextPath(params.get('next'));
   const form = document.getElementById('loginForm');
+  const reason = params.get('reason');
   const submit = document.getElementById('submit');
   const status = document.getElementById('status');
+
+  if (reason === 'membership_inactive') {
+    status.textContent = 'Il tuo accesso TORIUM non è ancora attivo. Contatta un operatore.';
+  }
 
   fetch('/api/auth-session', { credentials: 'same-origin', cache: 'no-store' })
     .then((response) => {

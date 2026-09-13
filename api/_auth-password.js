@@ -2,7 +2,8 @@ import {
   authenticatedSession,
   clearAuthCookies,
   isSameOrigin,
-  membershipForUser,
+  noStore,
+  pseudonymize,
   requestInvite,
   recordAuthEvent,
   requestOrigin,
@@ -12,6 +13,7 @@ import {
   updatePassword,
   userForAccessToken,
 } from './_auth.js';
+import { enforceRateLimit } from './_rate-limit.js';
 
 const PASSWORD_MIN_LENGTH = 12;
 const PASSWORD_MAX_LENGTH = 128;
@@ -40,13 +42,12 @@ function genericRecoveryResponse(response) {
 function genericInviteResponse(response) {
   return response.status(200).json({
     ok: true,
-    message: 'Se possibile, riceverai un invito via email.',
+    message: 'Richiesta registrata. Se idonea, riceverai un invito via email.',
   });
 }
 
 export default async function handler(request, response) {
-  response.setHeader('Cache-Control', 'no-store, private');
-  response.setHeader('Pragma', 'no-cache');
+  noStore(response);
 
   if (!['POST', 'PUT'].includes(request.method)) {
     response.setHeader('Allow', 'POST, PUT');
@@ -58,30 +59,35 @@ export default async function handler(request, response) {
 
   if (request.method === 'POST' && request.body?.action === 'request') {
     const email = validEmail(request.body?.email);
+    // Rate limited on the source address alone so an unparsable address cannot
+    // be used to probe whether validation ran.
+    if (!await enforceRateLimit(request, response, 'recovery')) return;
     if (!email) return genericRecoveryResponse(response);
     try {
       const origin = requestOrigin(request);
       await requestPasswordRecovery(email, origin ? origin + '/set-password' : undefined);
+      await recordAuthEvent(null, 'recovery_requested', { subject: pseudonymize(email) });
     } catch (error) {
-      if (error.statusCode === 429) {
-        return response.status(429).json({ error: 'Troppe richieste. Riprova tra qualche minuto.' });
-      }
-      console.error('Password recovery request failed', error);
+      // Never surface upstream status: a 429 or 4xx here would tell the caller
+      // whether the address exists. The generic response is always returned.
+      console.error('Password recovery request failed', error.statusCode || error.message);
     }
     return genericRecoveryResponse(response);
   }
 
   if (request.method === 'POST' && request.body?.action === 'invite') {
     const email = validEmail(request.body?.email);
+    if (!await enforceRateLimit(request, response, 'invite')) return;
     if (!email) return genericInviteResponse(response);
     try {
       const redirectTo = requestOrigin(request);
-      await requestInvite(email, redirectTo ? redirectTo + '/set-password' : undefined, 'investor');
+      // Sends the Supabase invitation only. Membership is NOT activated here:
+      // the invited account reaches the "authenticated without active
+      // membership" state until an operator grants access.
+      await requestInvite(email, redirectTo ? redirectTo + '/set-password' : undefined);
+      await recordAuthEvent(null, 'invite_requested', { subject: pseudonymize(email) });
     } catch (error) {
-      if (error.statusCode === 429) {
-        return response.status(429).json({ error: 'Troppe richieste. Riprova tra qualche minuto.' });
-      }
-      console.error('Invite request failed', error);
+      console.error('Invite request failed', error.statusCode || error.message);
     }
     return genericInviteResponse(response);
   }
@@ -101,11 +107,14 @@ export default async function handler(request, response) {
       || refreshToken.length > 512) {
       return response.status(400).json({ error: 'Link non valido o incompleto' });
     }
+    if (!await enforceRateLimit(request, response, 'session_adopt')) return;
     const user = await userForAccessToken(accessToken);
-    const membership = await membershipForUser(user?.id);
-    if (!user || !membership) {
-      return response.status(403).json({ error: 'Invito o account TORIUM non attivo' });
+    if (!user?.id) {
+      return response.status(403).json({ error: 'Link non valido o scaduto' });
     }
+    // Password lifecycle is Supabase identity, not TORIUM authorization. An
+    // invited account must be able to set its password before an operator
+    // activates membership; product access stays denied until then.
     setAuthCookies(response, {
       access_token: accessToken,
       refresh_token: refreshToken,
@@ -117,10 +126,11 @@ export default async function handler(request, response) {
 
   if (request.method === 'PUT') {
     const session = await authenticatedSession(request, response);
-    if (!session?.user?.id || !await membershipForUser(session.user.id)) {
+    if (!session?.user?.id) {
       clearAuthCookies(response);
       return response.status(401).json({ error: 'Sessione di recupero non valida o scaduta' });
     }
+    if (!await enforceRateLimit(request, response, 'password_update', session.user.id)) return;
     let password;
     try {
       password = validatePassword(request.body?.password);
