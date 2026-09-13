@@ -160,7 +160,21 @@ One row per Auth user:
 
 Database checks enforce numeric bounds and valid ranges. Four RLS policies cover select/insert/update/delete. Every policy requires both ownership and active membership.
 
-### 4.3 `torium_auth_events`
+### 4.3 `investor_push_subscriptions`
+
+One row per browser installation an investor has allowed TORIUM to notify.
+
+- `endpoint` is unique across the table: one browser belongs to whoever is signed in on it now.
+- `p256dh` and `auth` are the browser's own keys. Payloads are encrypted to them per RFC 8291, so the push service forwards bytes it cannot read.
+- `device_label` is a coarse platform name ("iPhone", "Android"), never the user agent string.
+- A push service answering 404 or 410 sets `disabled_at` rather than deleting the row, so a device that goes quiet stays visible.
+- Grants: `select` to `authenticated`, nothing to `anon`. Writes are server-side only.
+
+### 4.4 `investor_push_deliveries`
+
+Delivery ledger, one row per subscription and run, unique on `(subscription_id, run_id)`. The row is claimed before the send, so a retried run cannot make the same device buzz twice. No grants to `anon` or `authenticated`.
+
+### 4.5 `torium_auth_events`
 
 Minimal events:
 

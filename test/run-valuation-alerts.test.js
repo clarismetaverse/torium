@@ -99,3 +99,32 @@ test('a digest failure never discards a completed valuation', async () => {
   // An undelivered alert stays pending; the cause never reaches the client.
   assert.doesNotMatch(JSON.stringify(result), /resend|re_abc123/i);
 });
+
+// --- push delivery ----------------------------------------------------------
+
+test('push delivery reports its outcome per device', async () => {
+  const { deliverPushForValuationRun } = await import('../api/run-valuation.js');
+  const result = await deliverPushForValuationRun('run-1', {
+    deliver: async ({ runId }) => {
+      assert.equal(runId, 'run-1');
+      return { considered: 3, sent: 2, skipped: 1, failed: 0, expired: 0 };
+    },
+  });
+  assert.deepEqual(result,
+    { status: 'ok', considered: 3, sent: 2, skipped: 1, failed: 0, expired: 0 });
+});
+
+test('a push failure never discards a completed valuation', async () => {
+  const { deliverPushForValuationRun } = await import('../api/run-valuation.js');
+  const result = await deliverPushForValuationRun('run-1', {
+    deliver: async () => {
+      throw new Error('push service unreachable for https://fcm.googleapis.com/fcm/send/secret-token');
+    },
+    logger: SILENT,
+  });
+
+  assert.equal(result.status, 'failed');
+  assert.equal(result.retryable, true);
+  // An endpoint is a capability: it must not travel back to the client.
+  assert.doesNotMatch(JSON.stringify(result), /fcm|secret-token/i);
+});

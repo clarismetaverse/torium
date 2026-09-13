@@ -29,6 +29,19 @@
       ]
     },
     {
+      "source": "/manifest.webmanifest",
+      "headers": [
+        { "key": "Content-Type", "value": "application/manifest+json; charset=utf-8" }
+      ]
+    },
+    {
+      "source": "/sw.js",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache" },
+        { "key": "Service-Worker-Allowed", "value": "/" }
+      ]
+    },
+    {
       "source": "/login",
       "headers": [
         { "key": "Content-Security-Policy", "value": "default-src 'self'; connect-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'" }
@@ -58,6 +71,7 @@
     { "source": "/api/auth-password", "destination": "/api/account?resource=password" },
     { "source": "/api/investor-preferences", "destination": "/api/account?resource=preferences" },
     { "source": "/api/investor-alerts", "destination": "/api/account?resource=alerts" },
+    { "source": "/api/push-subscription", "destination": "/api/account?resource=push" },
     { "source": "/api/triage-runs", "destination": "/api/triage?resource=runs" },
     { "source": "/api/triage-properties", "destination": "/api/triage?resource=properties" },
     { "source": "/api/triage-source-listings", "destination": "/api/triage?resource=source-listings" },
