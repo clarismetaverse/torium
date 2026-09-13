@@ -240,6 +240,7 @@ Priority:
 1. Finish the remaining Auth operations gate: SMTP, redirect allowlist, leaked-password protection, session limits and MFA enrolment. Rate limiting and the full role matrix are implemented and awaiting deployment.
 2. Reconstruct migration baseline and add CI.
 3. Complete stable property identity and reconciliation.
+   - [ ] Remove the asking price from `canonicalPropertyKey` in `pipelines/triage-multisource-massive.js`. The key is built from address + price + surface + floor, so a portal price change turns one listing into a new property, and two portals asking different prices for the same apartment never share a key. It is the same defect that was removed from `lib/property-identity.js` on 2026-09-13, surviving in the legacy path. Not done yet because the key is persisted as `canonical_source_key`, so changing it needs a plan for existing rows.
 4. Implement durable 5,000-result orchestration.
 5. Split scoring into physical/legal/economic/sellability/execution/confidence.
 6. Expand financial model and progress toward transaction AVM.
