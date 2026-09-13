@@ -138,7 +138,11 @@ test('malformed link payloads are still refused', async () => {
   }
 });
 
-test('a valid link for an account without an active membership is refused', async () => {
+test('an account without an active membership may still adopt the link', async () => {
+  // Password lifecycle is Supabase identity, not TORIUM authorization. An
+  // invited account has to be able to set its password before an operator
+  // grants access; product data stays denied until then, which every other
+  // endpoint asserts separately.
   const restore = installSupabaseStub({ activeMembership: false });
   try {
     const response = responseRecorder();
@@ -146,6 +150,23 @@ test('a valid link for an account without an active membership is refused', asyn
       action: 'adopt',
       type: 'recovery',
       access_token: ACCESS_TOKEN,
+      refresh_token: REFRESH_TOKEN,
+    }), response);
+    assert.equal(response.statusCode, 200);
+    assert.ok(response.cookies().some((cookie) => cookie.includes('torium_access_token')));
+  } finally {
+    restore();
+  }
+});
+
+test('a link whose token Supabase rejects is refused', async () => {
+  const restore = installSupabaseStub();
+  try {
+    const response = responseRecorder();
+    await passwordHandler(request({
+      action: 'adopt',
+      type: 'recovery',
+      access_token: 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJvdGhlciJ9.bm90LXRoZS1yaWdodC1vbmU',
       refresh_token: REFRESH_TOKEN,
     }), response);
     assert.equal(response.statusCode, 403);
