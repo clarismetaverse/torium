@@ -2,7 +2,7 @@ import 'dotenv/config';
 
 const email = String(process.argv[2] || '').trim().toLowerCase();
 const role = String(process.argv[3] || 'investor').trim().toLowerCase();
-const redirectTo = String(process.argv[4] || 'https://torium-nu.vercel.app/set-password').trim();
+const redirectTo = String(process.argv[4] || 'https://taurum.cloud/set-password').trim();
 const url = String(process.env.SUPABASE_URL || '').replace(/\/+$/, '');
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 

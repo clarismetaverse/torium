@@ -59,7 +59,7 @@ export function requestOrigin(request) {
 }
 
 export function siteOrigin(request) {
-  return requestOrigin(request) || process.env.TORIUM_SITE_ORIGIN || process.env.SITE_URL || 'https://torium-nu.vercel.app';
+  return requestOrigin(request) || process.env.TORIUM_SITE_ORIGIN || process.env.SITE_URL || 'https://taurum.cloud';
 }
 
 // Fails closed. Browsers always attach Origin to fetch-driven mutations, so a
