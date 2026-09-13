@@ -360,6 +360,36 @@ Requirements:
 9. recovery response does not enumerate accounts;
 10. password change revokes global sessions.
 
+## 11a. Push notification operations
+
+Push uses the browser standards directly - RFC 8291 payload encryption, RFC 8292 VAPID - with no third-party messaging service. There is no Firebase project, no SDK and no vendor account to keep alive; `lib/web-push.js` is verified against the RFC's own worked example in `test/web-push.test.js`.
+
+### Required environment
+
+| Variable | Secret | Purpose |
+| --- | --- | --- |
+| `TORIUM_VAPID_PUBLIC_KEY` | no | Handed to browsers at subscribe time. |
+| `TORIUM_VAPID_PRIVATE_KEY` | yes | Signs every push request. |
+| `TORIUM_VAPID_SUBJECT` | no | `mailto:` or `https:` contact for push service operators. |
+
+Generate the pair once with `node scripts/generate-vapid-keys.js` and add all three to the Vercel project. **Rotating the pair invalidates every existing subscription**: browsers bind a subscription to the public key it was created with, and every device must subscribe again.
+
+### Enabling a device
+
+1. Open `/account` and use the "Notifiche sul telefono" card. The button must be clicked: a permission prompt detached from a user gesture is ignored.
+2. On iPhone and iPad the site must first be added to the Home Screen. Safari exposes no Push API to a PWA opened in a tab, so the card shows install instructions instead of a button.
+
+### Verifying delivery
+
+```sql
+select status, count(*), max(created_at)
+from investor_push_deliveries
+where run_id = '<run id>'
+group by status;
+```
+
+`expired` means the push service declared the subscription dead and the device row was disabled; the investor must re-enable notifications. `failed` with a transient reason is picked up by the weekly email digest, which is unaffected.
+
 ## 12. Renewal publication
 
 1. confirm source listing exists;

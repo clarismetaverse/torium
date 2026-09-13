@@ -237,6 +237,7 @@ Priority:
 
 ## Highest-priority next work
 
+0. Configure the VAPID environment and apply `20260913140000_investor_push_subscriptions` so web push can be enabled in production.
 1. Finish the remaining Auth operations gate: SMTP, redirect allowlist, leaked-password protection, session limits and MFA enrolment. Rate limiting and the full role matrix are implemented and awaiting deployment.
 2. Reconstruct migration baseline and add CI.
 3. Complete stable property identity and reconciliation.

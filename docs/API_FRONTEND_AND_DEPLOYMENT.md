@@ -42,8 +42,13 @@ The API repeats authentication checks. Page redirects are usability controls, no
 | `/api/auth-password` | PUT | recovery/member session + same-origin | Set password, revoke global sessions and require login again. |
 | `/api/investor-preferences` | GET | active member | Return canonical zones and own preferences. |
 | `/api/investor-preferences` | PUT | active member + same-origin | Validate and upsert own preferences through user JWT/RLS. |
+| `/api/push-subscription` | GET | active member | Return the VAPID public key and this investor's registered devices. |
+| `/api/push-subscription` | POST | active member + same-origin + rate limit | Claim a browser push endpoint for the signed-in account. |
+| `/api/push-subscription` | DELETE | active member + same-origin + rate limit | Revoke one of the caller's own devices. |
 
 Physical implementation: all three logical groups are multiplexed by `api/account.js` through the `resource` query parameter and Vercel rewrites.
+
+Push registration is the one account resource whose writes use the service role rather than the caller's JWT. A push endpoint identifies a browser installation, not an account, so claiming one may mean removing the row of whoever was signed in on that browser before - which no row-level policy should let one investor do to another. The table therefore grants `select` only, and every write in `api/_push.js` is pinned to the session's own user id.
 
 ### 3.2 Triage reads
 

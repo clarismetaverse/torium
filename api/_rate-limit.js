@@ -17,6 +17,7 @@ export const RATE_LIMITS = {
   password_update: { limit: 10, windowSeconds: 900 },
   session_adopt: { limit: 20, windowSeconds: 900 },
   preferences_write: { limit: 60, windowSeconds: 900 },
+  push_register: { limit: 20, windowSeconds: 900 },
 };
 
 function serviceConfig() {
