@@ -6,6 +6,7 @@ import { buildImmobiliareSearchUrl } from '../lib/immobiliare-url-builder.js';
 import { syncSourceListingsRunToSupabase } from '../lib/supabase-source-listings-sync.js';
 import { buildStrategySearchName, compareShortlistItems, resolveSearchStrategy } from '../lib/search-strategies.js';
 import { findMilanIdealistaLocation } from '../lib/milan-idealista-locations.js';
+import { findMilanImmobiliareCentre, MILAN_IMMOBILIARE_RADIUS_KM } from '../lib/milan-immobiliare-areas.js';
 import { evaluateDataQuality } from '../lib/data-quality-gate.js';
 import { comparePropertyIdentity, propertyIdentityBlockKeys } from '../lib/property-identity.js';
 import { mergeUnifiedProperty, summarizePriceDifferences } from '../lib/source-offers.js';
@@ -82,9 +83,19 @@ export function resolveMassiveRunConfig(options = {}, env = process.env) {
   const maxPagesPerQuery = Number(options.maxPagesPerQuery ?? env.TORIUM_MASSIVE_MAX_PAGES_PER_QUERY ?? modeDefaults.maxPagesPerQuery);
   const defaultTotalRawListings = maxItemsPerQuery * Math.max(1, requestedAreas.length);
 
+  // Each portal divides Milan its own way: Idealista wants an opaque location
+  // id per neighbourhood, Immobiliare wants one of its own macrozone names.
+  // Sending one list to both would ask each of them half in the other's words,
+  // and an unrecognised area quietly becomes a city-wide search again.
+  const requestedAreasBySource = options.requestedAreasBySource
+    && typeof options.requestedAreasBySource === 'object'
+    ? options.requestedAreasBySource
+    : null;
+
   return {
     runMode,
     requestedAreas,
+    requestedAreasBySource,
     maxItemsPerQuery,
     maxItemsPerSource,
     maxPagesPerQuery,
@@ -195,14 +206,24 @@ async function startApifyActorRun(actorId, input) {
   return response?.data ?? response;
 }
 
-function buildImmobiliareStructuredPayload(area, variant) {
+function buildImmobiliareStructuredPayload(area, variant, maxItems = ACTIVE_RUN_CONFIG.maxItemsPerQuery) {
   const broadMilan = String(area || '').trim().toLowerCase() === 'milano';
+  // The `area` name is accepted by the actor and then ignored - it logs "Using
+  // area" and searches the whole municipality regardless. A centre and a radius
+  // is the only geography this actor honours, so when the area is one we have
+  // a centre for, the search is aimed there instead of merely labelled with it.
+  const centre = broadMilan ? null : findMilanImmobiliareCentre(area);
   return compactObject({
-    maxItems: ACTIVE_RUN_CONFIG.maxItemsPerQuery,
-    province: 'MI',
-    municipality: DEFAULT_CITY,
-    locations: [DEFAULT_CITY],
-    area: broadMilan ? null : area,
+    maxItems,
+    province: centre ? null : 'MI',
+    municipality: centre ? null : DEFAULT_CITY,
+    locations: centre ? null : [DEFAULT_CITY],
+    area: broadMilan || centre ? null : area,
+    ...(centre ? {
+      latitude: centre.latitude,
+      longitude: centre.longitude,
+      distanceKm: MILAN_IMMOBILIARE_RADIUS_KM,
+    } : {}),
     operation: 'buy',
     sortType: variant.sortType,
     minSize: ACTIVE_RUN_CONFIG.minSize,
@@ -240,7 +261,7 @@ function buildImmobiliareUrlPayload(area) {
   };
 }
 
-export function buildImmobiliareQueries(areas, strategy = SEARCH_STRATEGY) {
+export function buildImmobiliareQueries(areas, strategy = SEARCH_STRATEGY, maxItems = perQueryQuota(areas)) {
   if (IMMOBILIARE_ACTOR === 'url') {
     return areas.map((area) => ({
       actor: 'immobiliare-url',
@@ -259,7 +280,14 @@ export function buildImmobiliareQueries(areas, strategy = SEARCH_STRATEGY) {
   if (INCLUDE_RENOVATION_VARIANT) {
     variants.push({
       name: 'immobiliare-renovation',
-      sortType: strategy.id === 'neutral_fractionability' ? 'mostRecent' : 'lessExpensiveM2',
+      // An arm that ranks on the discount to an area has to sample that area
+      // neutrally. Ordering by price per square metre would hand it the twenty
+      // cheapest listings, and the median of the cheapest is not the area's
+      // price: every discount would then be measured against an already
+      // discounted reference and collapse towards zero.
+      sortType: ['neutral_fractionability', 'deal_quality'].includes(strategy.id)
+        ? 'mostRecent'
+        : 'lessExpensiveM2',
       propertyCondition: 'toBeRenovated',
     });
   }
@@ -267,20 +295,44 @@ export function buildImmobiliareQueries(areas, strategy = SEARCH_STRATEGY) {
     variants.push({ name: 'immobiliare-discounted-broad', sortType: 'discounted' });
   }
 
-  return areas.flatMap((area) => variants.map((variant) => ({
-    actor: 'immobiliare-structured',
-    actor_id: IMMOBILIARE_STRUCTURED_ACTOR_ID,
-    source_channel: 'immobiliare',
-    source_platform_name: 'immobiliare',
-    query_name: variant.name,
-    query_area: area,
-    query_municipality: DEFAULT_CITY,
-    query_province: 'MI',
-    payload: buildImmobiliareStructuredPayload(area, variant),
-  })));
+  return areas.flatMap((area) => variants.map((variant) => {
+    const centre = findMilanImmobiliareCentre(area);
+    return {
+      actor: 'immobiliare-structured',
+      actor_id: IMMOBILIARE_STRUCTURED_ACTOR_ID,
+      source_channel: 'immobiliare',
+      source_platform_name: 'immobiliare',
+      query_name: variant.name,
+      query_area: area,
+      query_municipality: DEFAULT_CITY,
+      query_province: 'MI',
+      // A radius query is enforced by the actor - probed at 2 km around two
+      // centres, nothing came back outside it - so the post-fetch text check
+      // must not run. It demands the area's own name in the listing, and a
+      // circle drawn on Cimiano legitimately returns Precotto and Bicocca,
+      // which would every one of them be thrown away.
+      source_area_enforced: Boolean(centre),
+      immobiliare_centre: centre ? { latitude: centre.latitude, longitude: centre.longitude } : null,
+      payload: buildImmobiliareStructuredPayload(area, variant, maxItems),
+    };
+  }));
 }
 
-export function buildIdealistaQueries(areas) {
+/**
+ * How many listings one query may ask for.
+ *
+ * When a source has been given its own list of areas, its share of the run is
+ * divided by how many places it was asked to look, so a portal partitioned into
+ * thirty-three zones does not receive the same per-query quota as one
+ * partitioned into thirteen and end up fetching three times as much.
+ */
+export function perQueryQuota(areas, config = ACTIVE_RUN_CONFIG) {
+  if (!config?.requestedAreasBySource) return config?.maxItemsPerQuery;
+  const count = Math.max(1, areas.length);
+  return Math.max(20, Math.ceil((config.maxItemsPerSource ?? config.maxItemsPerQuery) / count));
+}
+
+export function buildIdealistaQueries(areas, maxItems = perQueryQuota(areas)) {
   return areas.map((area) => {
     const idealistaLocation = findMilanIdealistaLocation(area);
     return {
@@ -304,7 +356,7 @@ export function buildIdealistaQueries(areas) {
       minSize: String(ACTIVE_RUN_CONFIG.minSize),
       ...(ACTIVE_RUN_CONFIG.idealistaCondition.length ? { condition: ACTIVE_RUN_CONFIG.idealistaCondition } : {}),
       sortBy: SEARCH_STRATEGY.idealistaSortBy,
-      maxItems: ACTIVE_RUN_CONFIG.maxItemsPerQuery,
+      maxItems,
       fetchDetails: false,
       fetchStats: false,
     },
@@ -509,8 +561,10 @@ export async function runMassiveTriage(options = {}) {
     });
     queries = built.queries;
   } else {
-    if (SOURCES.includes('idealista')) queries.push(...buildIdealistaQueries(ACTIVE_RUN_CONFIG.requestedAreas));
-    if (SOURCES.includes('immobiliare')) queries.push(...buildImmobiliareQueries(ACTIVE_RUN_CONFIG.requestedAreas, SEARCH_STRATEGY));
+    const areasFor = (source) => ACTIVE_RUN_CONFIG.requestedAreasBySource?.[source]
+      ?? ACTIVE_RUN_CONFIG.requestedAreas;
+    if (SOURCES.includes('idealista')) queries.push(...buildIdealistaQueries(areasFor('idealista')));
+    if (SOURCES.includes('immobiliare')) queries.push(...buildImmobiliareQueries(areasFor('immobiliare'), SEARCH_STRATEGY));
   }
   if (!queries.length) throw new Error('No sources selected. Set TORIUM_MASSIVE_SOURCES=immobiliare or immobiliare,idealista.');
 
@@ -698,6 +752,16 @@ export async function runMassiveTriage(options = {}) {
     gpt_analyzed_count: 0,
     result_links: buildResultLinks(shortlist),
   };
+
+  // A run that cannot say what it scored can only be audited through the
+  // database. Pointing TORIUM_RUN_DUMP_PATH at a file writes the scored
+  // collection beside the summary, which is how a run can be examined - or two
+  // rankings compared on one pool - without persisting anything.
+  const dumpPath = process.env.TORIUM_RUN_DUMP_PATH;
+  if (dumpPath) {
+    await fs.writeFile(dumpPath, JSON.stringify({ output, scored: scoredCollected }), 'utf8');
+    console.log(`Wrote ${scoredCollected.length} scored listings to ${dumpPath}`);
+  }
 
   await syncSourceListingsRunToSupabase(output, scoredCollected);
 
