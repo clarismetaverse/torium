@@ -1,16 +1,15 @@
 import 'dotenv/config';
 
-const APIFY_TOKEN = process.env.APIFY_TOKEN;
 const ACTOR_ENDPOINT = 'https://api.apify.com/v2/acts/igolaizola~idealista-scraper/run-sync-get-dataset-items';
 
 const DEFAULT_CITY = process.env.TORIUM_CITY || 'Milano';
 
-if (!APIFY_TOKEN) {
-  throw new Error('Missing APIFY_TOKEN. Create a .env file from .env.example and add your Apify token.');
-}
-
-async function runIdealistaScraper(input) {
-  const url = `${ACTOR_ENDPOINT}?token=${APIFY_TOKEN}`;
+export async function runIdealistaScraper(input) {
+  const token = process.env.APIFY_TOKEN;
+  if (!token) {
+    throw new Error('Missing APIFY_TOKEN. Create a .env file from .env.example and add your Apify token.');
+  }
+  const url = `${ACTOR_ENDPOINT}?token=${token}`;
 
   const response = await fetch(url, {
     method: 'POST',
@@ -28,7 +27,7 @@ async function runIdealistaScraper(input) {
   return response.json();
 }
 
-const searches = {
+export const searches = {
   residentialRenovationMilan: {
     country: 'it',
     operation: 'sale',
@@ -67,6 +66,73 @@ const searches = {
     fetchStats: false,
   },
 
+  // --- exit market ---------------------------------------------------------
+  //
+  // Everything above collects what TORIUM buys: large apartments to divide.
+  // These collect what it sells: small units, split by condition, so the exit
+  // price can be measured per zone instead of borrowed from a citywide average
+  // that mixes a 40 sqm renovated flat with a 200 sqm one to gut.
+
+  exitSmallRenovatedMilan: {
+    country: 'it',
+    operation: 'sale',
+    propertyType: 'homes',
+    location: DEFAULT_CITY,
+    maxSize: '60',
+    condition: ['good', 'newDevelopment'],
+    propertyStatus: ['free'],
+    sortBy: 'mostRecent',
+    maxItems: 300,
+    fetchDetails: false,
+    fetchStats: false,
+  },
+
+  exitSmallToRenovateMilan: {
+    country: 'it',
+    operation: 'sale',
+    propertyType: 'homes',
+    location: DEFAULT_CITY,
+    maxSize: '60',
+    condition: ['renew'],
+    propertyStatus: ['free'],
+    sortBy: 'mostRecent',
+    maxItems: 300,
+    fetchDetails: false,
+    fetchStats: false,
+  },
+
+  exitMidRenovatedMilan: {
+    country: 'it',
+    operation: 'sale',
+    propertyType: 'homes',
+    location: DEFAULT_CITY,
+    minSize: '60',
+    maxSize: '80',
+    condition: ['good', 'newDevelopment'],
+    propertyStatus: ['free'],
+    sortBy: 'mostRecent',
+    maxItems: 300,
+    fetchDetails: false,
+    fetchStats: false,
+  },
+
+  // The denominator of the size premium: large units in the same condition we
+  // sell in. Without it the premium would compare a renovated bilocale against
+  // an unrenovated large flat and count the renovation twice.
+  exitLargeRenovatedMilan: {
+    country: 'it',
+    operation: 'sale',
+    propertyType: 'homes',
+    location: DEFAULT_CITY,
+    minSize: '120',
+    condition: ['good', 'newDevelopment'],
+    propertyStatus: ['free'],
+    sortBy: 'mostRecent',
+    maxItems: 300,
+    fetchDetails: false,
+    fetchStats: false,
+  },
+
   buildingsMilan: {
     country: 'it',
     operation: 'sale',
@@ -94,7 +160,14 @@ async function main() {
   console.log(JSON.stringify(results, null, 2));
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+// Importing this module must not start a scrape: other scripts reuse the
+// searches and the runner, and a stray actor call costs real credits.
+const invokedDirectly = process.argv[1]
+  && import.meta.url === new URL(`file://${process.argv[1].replace(/\\/g, '/')}`).href;
+
+if (invokedDirectly) {
+  main().catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
+}
