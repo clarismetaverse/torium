@@ -5,7 +5,8 @@
 Independent ranking, underwriting benchmark quality and bounded fractioning
 collection foundation: [implementation and validation record](RANKING_BENCHMARK_FOUNDATION.md).
 Historical engines preserved; deal_quality_v2 is opt-in and not enabled by the
-frontend. Real canary awaits a usable Apify credential. No schema migration or
+frontend. A 10+10 real acquisition canary passed using Vercel's sensitive Apify
+credential (runtime-only); see the evidence and limitations in the linked record. No schema migration or
 historical data rewrite. The snapshot below describes the earlier deployed state.
 
 **Version:** 1.2

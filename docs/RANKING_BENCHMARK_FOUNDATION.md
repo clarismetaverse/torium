@@ -21,9 +21,10 @@ publish a fabricated benchmark. Existing production data has not been rewritten.
 4. **Benchmark quality — implemented and tested.** Identity, condition, room
    type, size band, freshness, sample thresholds and source-price preservation.
 5. **Same-pool comparison — implemented/tested with synthetic fixtures.**
-   **Real canary remains pending:** no usable local/process APIFY_TOKEN; an
-   authenticated production environment pull from Vercel returned an empty token.
-   This does not prove the deployed application lacks its runtime credential.
+   **Real acquisition canary passed on 2026-09-14** using the existing sensitive
+   APIFY_TOKEN inside Vercel preview. This credential cannot be exported locally.
+   See the evidence below; economic same-pool evaluation on real reviewed
+   benchmark data is still pending the collector, not implied by this scrape.
 
 ## Strategies and ranking stages
 
@@ -183,7 +184,31 @@ TORIUM_EXIT_BENCHMARK_PATH. A missing benchmark fails explicitly.
   exact quotas, bounded concurrency, deadline and cleanup, process isolation,
   persisted links/ROI/null unknown exits using mocked HTTP.
 - Full suite: 357 tests passed, zero failures (Node 24.18).
-- Live actor canary and production smoke/build/deploy are **not completed**.
+- Vercel preview build succeeded; production deployment remains **not performed**.
+
+### Live acquisition evidence — 2026-09-14
+
+Run: `1789408444834-rankingFoundationCanary-deal_quality_v2`.
+Idealista actor run `MJknzovXnEilyChAm`: 10 returned, succeeded.
+Immobiliare actor run `0PoYYkYtg3PGGJapY`: 10 returned, succeeded.
+Collection complete, no query errors, no outstanding owned actors to abort.
+20 source observations, 18 deduplicated homes, 12 eligible source observations,
+10 eligible unique homes. Two cross-portal matches, zero observed price spreads.
+All 20 observations contain title, source URL, positive price/area and thumbnail
+URL; 15 report a floor plan. Media URLs were inspected as data, not downloaded
+or browser-verified. No financial valuation or benchmark collection was performed.
+
+Scope: Milano, minimum 100 m2, mostRecent. Idealista used homes without condition
+filter; Immobiliare used apartment + toBeRenovated. Thus source eligibility rates
+are NOT directly comparable and this tiny sample proves connectivity/budget/
+normalization flow only, not unbiased geographical coverage or ranking accuracy.
+
+Executed with persist:false: no Supabase writes or changes to existing dashboard
+runs. A temporary preview-only endpoint used an expiring random deployment key
+and Vercel deployment protection; it was removed from local source after the test.
+No Apify credential was exposed or replaced. No temporary endpoint is committed.
+Both temporary preview deployments were deleted after the successful test; they
+cannot be revisited (rebuilding is possible). The production deployment was untouched.
 
 ## Next task (separate)
 
