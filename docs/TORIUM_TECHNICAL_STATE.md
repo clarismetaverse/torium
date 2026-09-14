@@ -1,5 +1,13 @@
 # TORIUM technical state
 
+## 2026-09-14 experimental branch update (not production)
+
+Independent ranking, underwriting benchmark quality and bounded fractioning
+collection foundation: [implementation and validation record](RANKING_BENCHMARK_FOUNDATION.md).
+Historical engines preserved; deal_quality_v2 is opt-in and not enabled by the
+frontend. Real canary awaits a usable Apify credential. No schema migration or
+historical data rewrite. The snapshot below describes the earlier deployed state.
+
 **Version:** 1.2
 **Snapshot:** 2026-09-06
 **Detailed index:** [docs/README.md](README.md)
