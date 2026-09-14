@@ -1,5 +1,17 @@
 # TORIUM vision and roadmap
 
+## 2026-09-14 ranking foundation milestone
+
+- Implemented on an independent branch: version-isolated evidence scoring,
+  shared unit-mix economics, bounded query budgets and benchmark quality gates.
+- Reproducible offline/mocked integration tests and a successful 10+10 live
+  acquisition canary; real economic benchmark coverage remains to be validated.
+- Next: benchmark mini-scraper and real same-pool coverage comparison, then
+  controlled activation. Do not merge Claude PR #34 as an implementation shortcut.
+- Later: durable workers, atomic valuation publication and calibrated AVM.
+
+Details: [ranking foundation](RANKING_BENCHMARK_FOUNDATION.md).
+
 **Version:** 1.0
 **Status:** active development
 **Last updated:** 2026-09-06

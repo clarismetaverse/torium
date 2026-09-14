@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import { allocateQueryBudget, executeQueryPlan } from '../lib/source-query-budget.js';
 import { runDoorEngine } from '../lib/door-engine.js';
 import { getPreTriageExclusion, summarizeExclusions } from '../lib/pre-triage-filters.js';
 import { normalizeSourceListing, listingMatchesAnyArea } from '../lib/source-normalizers.js';
@@ -97,6 +98,11 @@ export function resolveMassiveRunConfig(options = {}, env = process.env) {
 }
 
 let ACTIVE_RUN_CONFIG = resolveMassiveRunConfig();
+let activeQuerySignal;
+let runInProgress = false;
+let queryDeadlineAt;
+const ownedActorRuns = new Set();
+const actorsByPayload = new Map();
 
 function optionalNumberEnv(name, fallback = null) {
   const value = process.env[name];
@@ -138,7 +144,7 @@ function apifyUrl(pathname, params = {}) {
 }
 
 async function apifyFetchJson(pathname, options = {}, params = {}) {
-  const response = await fetch(apifyUrl(pathname, params), options);
+  const response = await fetch(apifyUrl(pathname, params), { ...options, signal: activeQuerySignal });
   const body = await response.text();
   if (!response.ok) throw new Error(`Apify request failed: ${response.status}\n${body}`);
   return body ? JSON.parse(body) : null;
@@ -173,8 +179,9 @@ async function pollApifyRun(runId) {
   while (true) {
     const run = await fetchApifyRun(runId);
     const status = run?.status;
-    if (status === 'SUCCEEDED') return run;
+    if (status === 'SUCCEEDED') { ownedActorRuns.delete(runId); return run; }
     if (['FAILED', 'TIMED-OUT', 'ABORTED'].includes(status)) {
+      ownedActorRuns.delete(runId);
       throw new Error(`Apify actor run ${runId} ended with status ${status}`);
     }
     const elapsedSeconds = Math.round((Date.now() - started) / 1000);
@@ -182,7 +189,7 @@ async function pollApifyRun(runId) {
       throw new Error(`Apify actor run ${runId} did not finish within ${APIFY_MAX_WAIT_SECONDS}s. Re-run with TORIUM_IDEALISTA_RUN_ID=${runId} after it succeeds.`);
     }
     console.log(`Waiting for Apify run ${runId}: ${status || 'UNKNOWN'} (${elapsedSeconds}s)`);
-    await sleep(APIFY_POLL_INTERVAL_SECONDS * 1000);
+    await abortableSleep(APIFY_POLL_INTERVAL_SECONDS * 1000, activeQuerySignal);
   }
 }
 
@@ -191,8 +198,10 @@ async function startApifyActorRun(actorId, input) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(input),
-  });
-  return response?.data ?? response;
+  }, queryDeadlineAt ? { timeout: String(Math.max(1, Math.ceil((queryDeadlineAt - Date.now()) / 1000))) } : {});
+  const run = response?.data ?? response;
+  if (queryDeadlineAt && run?.id) { ownedActorRuns.add(run.id); actorsByPayload.set(input, run.id); }
+  return run;
 }
 
 function buildImmobiliareStructuredPayload(area, variant) {
@@ -259,7 +268,7 @@ export function buildImmobiliareQueries(areas, strategy = SEARCH_STRATEGY) {
   if (INCLUDE_RENOVATION_VARIANT) {
     variants.push({
       name: 'immobiliare-renovation',
-      sortType: strategy.id === 'neutral_fractionability' ? 'mostRecent' : 'lessExpensiveM2',
+      sortType: ['neutral_fractionability', 'deal_quality_v2'].includes(strategy.id) ? 'mostRecent' : 'lessExpensiveM2',
       propertyCondition: 'toBeRenovated',
     });
   }
@@ -345,7 +354,7 @@ async function runApifyActorScraper(actorId, input, maxItems) {
 
 async function runSourceQuery(query) {
   if (query.actor === 'immobiliare-url' || query.actor === 'immobiliare-structured') {
-    return runApifyActorScraper(query.actor_id, query.payload, ACTIVE_RUN_CONFIG.maxItemsPerQuery);
+    return runApifyActorScraper(query.actor_id, query.payload, query.allocated_items ?? ACTIVE_RUN_CONFIG.maxItemsPerQuery);
   }
   if (query.actor === 'idealista') return runIdealistaScraper(query.payload);
   throw new Error(`Unsupported actor: ${query.actor}`);
@@ -479,7 +488,7 @@ function buildResultLinks(items) {
   }));
 }
 
-export async function runMassiveTriage(options = {}) {
+async function runMassiveTriageImpl(options = {}) {
   ACTIVE_RUN_CONFIG = resolveMassiveRunConfig(options);
   SEARCH_STRATEGY = resolveSearchStrategy(options.searchStrategy || process.env.TORIUM_SEARCH_STRATEGY);
   ACTIVE_USE_CASE = options.useCase === 'villa' ? 'villa' : 'fractioning';
@@ -513,6 +522,10 @@ export async function runMassiveTriage(options = {}) {
     if (SOURCES.includes('immobiliare')) queries.push(...buildImmobiliareQueries(ACTIVE_RUN_CONFIG.requestedAreas, SEARCH_STRATEGY));
   }
   if (!queries.length) throw new Error('No sources selected. Set TORIUM_MASSIVE_SOURCES=immobiliare or immobiliare,idealista.');
+  const queryBudgetMode = options.queryBudgetMode || process.env.TORIUM_QUERY_BUDGET_MODE || 'legacy';
+  if (!['legacy', 'balanced_v2'].includes(queryBudgetMode)) throw Error('Invalid query budget mode');
+  const balancedQueries = ACTIVE_USE_CASE !== 'villa' && queryBudgetMode === 'balanced_v2';
+  if (balancedQueries) queries = allocateQueryBudget(queries, ACTIVE_RUN_CONFIG.maxItemsPerSource, ACTIVE_RUN_CONFIG.maxTotalRawListings);
 
   console.log(JSON.stringify({
     run_mode: ACTIVE_RUN_CONFIG.runMode,
@@ -558,7 +571,13 @@ export async function runMassiveTriage(options = {}) {
   const queryPayloads = [];
   const queryErrors = [];
 
-  const executions = ACTIVE_USE_CASE === 'villa'
+  if (balancedQueries) queryDeadlineAt = Date.now() + Number(options.queryDeadlineMs ?? process.env.TORIUM_QUERY_DEADLINE_MS ?? 210000);
+  const executions = balancedQueries
+    ? await executeQueryPlan(queries, (query, signal) => { activeQuerySignal = signal; return runSourceQuery(query); }, {
+        concurrency: Number(options.queryConcurrency ?? process.env.TORIUM_QUERY_CONCURRENCY ?? 2),
+        deadlineMs: Number(options.queryDeadlineMs ?? process.env.TORIUM_QUERY_DEADLINE_MS ?? 210000),
+      })
+    : ACTIVE_USE_CASE === 'villa'
     ? await Promise.all(queries.map(async (query) => {
         try {
           return { query, rawResults: await runSourceQuery(query), error: null };
@@ -568,6 +587,7 @@ export async function runMassiveTriage(options = {}) {
       }))
     : queries.map((query) => ({ query, rawResults: null, error: null }));
 
+  const actorCleanup = balancedQueries ? await cleanupOwnedActors() : [];
   for (const execution of executions) {
     const { query } = execution;
     if (ACTIVE_USE_CASE !== 'villa' && collected.length >= ACTIVE_RUN_CONFIG.maxTotalRawListings) break;
@@ -578,19 +598,20 @@ export async function runMassiveTriage(options = {}) {
     console.log(`Running ${query.actor} query: ${query.query_name} / ${query.query_area || 'all'}`);
     let rawResults = execution.rawResults;
     try {
-      if (ACTIVE_USE_CASE !== 'villa') rawResults = await runSourceQuery(query);
+      if (ACTIVE_USE_CASE !== 'villa' && !balancedQueries) rawResults = await runSourceQuery(query);
       if (execution.error) throw execution.error;
     } catch (error) {
-      const message = String(error?.message || error);
+      const message = balancedQueries ? `Query ${execution.status}` : String(error?.message || error);
       console.error(`Source query failed (${query.actor} / ${query.query_area || 'all'}): ${message}`);
       queryErrors.push({ actor: query.actor, source_channel: query.source_channel, query_name: query.query_name, query_area: query.query_area, error: message });
-      queryPayloads.push({ actor: query.actor, source_channel: query.source_channel, query_name: query.query_name, query_area: query.query_area, payload: query.payload, returned_count: 0, status: 'failed', error: message });
+      queryPayloads.push({ actor: query.actor, actor_run_id: actorsByPayload.get(query.payload) || null, source_channel: query.source_channel, query_name: query.query_name, query_area: query.query_area, payload: query.payload, returned_count: 0, status: execution.status || 'failed', error: message });
       continue;
     }
     const rawItems = Array.isArray(rawResults) ? rawResults : [];
 
     queryPayloads.push({
       actor: query.actor,
+      actor_run_id: actorsByPayload.get(query.payload) || null,
       source_channel: query.source_channel,
       query_name: query.query_name,
       query_area: query.query_area,
@@ -661,6 +682,9 @@ export async function runMassiveTriage(options = {}) {
 
   const shortlist = preScored.slice(0, ACTIVE_RUN_CONFIG.topPrescoreLimit);
   const output = {
+    actor_cleanup: actorCleanup,
+    collection_status: queryErrors.length ? 'partial' : 'complete',
+    query_budget_mode: queryBudgetMode,
     run_id: nowRunId(searchName),
     search_name: searchName,
     run_mode: ACTIVE_RUN_CONFIG.runMode,
@@ -699,7 +723,8 @@ export async function runMassiveTriage(options = {}) {
     result_links: buildResultLinks(shortlist),
   };
 
-  await syncSourceListingsRunToSupabase(output, scoredCollected);
+  if (options.persist !== false) await syncSourceListingsRunToSupabase(output, scoredCollected);
+  if (options.onCollected) await options.onCollected({ output, listings: scoredCollected });
 
   console.log(JSON.stringify({
     run_id: output.run_id,
@@ -716,6 +741,37 @@ export async function runMassiveTriage(options = {}) {
   }, null, 2));
 
   return output;
+}
+
+export async function runMassiveTriage(options = {}) {
+  if (runInProgress) throw Error('A triage run is already active in this process');
+  runInProgress = true;
+  try { return await runMassiveTriageImpl(options); }
+  finally {
+    await cleanupOwnedActors();
+    runInProgress = false; activeQuerySignal = undefined; queryDeadlineAt = undefined; actorsByPayload.clear();
+  }
+}
+
+async function cleanupOwnedActors() {
+  const ids = [...ownedActorRuns];
+  ownedActorRuns.clear();
+  return Promise.all(ids.map(async id => {
+    try {
+      const response = await fetch(apifyUrl(`actor-runs/${id}/abort`), { method: 'POST', signal: AbortSignal.timeout(10000) });
+      return { actor_run_id: id, abort_requested: response.ok };
+    } catch { return { actor_run_id: id, abort_requested: false }; }
+  }));
+}
+
+function abortableSleep(ms, signal) {
+  if (!signal) return sleep(ms);
+  signal.throwIfAborted();
+  return new Promise((resolve, reject) => {
+    const abort = () => { clearTimeout(timer); reject(signal.reason); };
+    const timer = setTimeout(() => { signal.removeEventListener('abort', abort); resolve(); }, ms);
+    signal.addEventListener('abort', abort, { once: true });
+  });
 }
 
 if (process.argv[1]?.replaceAll('\\', '/').endsWith('pipelines/triage-multisource-massive.js')) {

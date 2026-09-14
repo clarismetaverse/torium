@@ -56,6 +56,9 @@ export default async function handler(request, response) {
     searchStrategy: strategy,
     sources: profile === 'milano_multisource' ? 'idealista,immobiliare' : 'idealista',
     ...profileOptions,
+    queryBudgetMode: 'balanced_v2',
+    queryConcurrency: 2,
+    queryDeadlineMs: 210000,
   });
 
   try {
@@ -65,6 +68,8 @@ export default async function handler(request, response) {
       run_id: output.run_id,
       search_name: output.search_name,
       search_strategy: output.search_strategy,
+      collection_status: output.collection_status,
+      query_errors: output.query_errors,
       profile,
       requested_limit: requestedLimit,
       requested_limit_per_source: requestedLimit,
